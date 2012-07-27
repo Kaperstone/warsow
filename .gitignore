@@ -1,2 +1,4 @@
 source/release/
 source/debug/
+source/build*/
+libsrcs/angelscript/angelSVN/sdk/angelscript/lib/
