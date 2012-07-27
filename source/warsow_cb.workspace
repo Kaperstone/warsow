@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="warsow">
+		<Project filename="cgame/cgame.cbp" />
+		<Project filename="game/game.cbp" />
+		<Project filename="wsw_server/wsw_server.cbp">
+			<Depends filename="game/game.cbp" />
+			<Depends filename="irc/irc.cbp" />
+			<Depends filename="angelwrap/angelwrap.cbp" />
+		</Project>
+		<Project filename="warsow/warsow.cbp" active="1">
+			<Depends filename="cgame/cgame.cbp" />
+			<Depends filename="game/game.cbp" />
+			<Depends filename="snd_openal/snd_openal.cbp" />
+			<Depends filename="snd_qf/snd_qf.cbp" />
+			<Depends filename="irc/irc.cbp" />
+			<Depends filename="angelwrap/angelwrap.cbp" />
+			<Depends filename="ui.old/ui.cbp" />
+		</Project>
+		<Project filename="snd_openal/snd_openal.cbp" />
+		<Project filename="snd_qf/snd_qf.cbp" />
+		<Project filename="irc/irc.cbp" />
+		<Project filename="tv_server/tv_server.cbp" />
+		<Project filename="angelwrap/angelwrap.cbp" />
+		<Project filename="ui.old/ui.cbp" />
+	</Workspace>
+</CodeBlocks_workspace_file>
