@@ -38,7 +38,8 @@ cvar_t *win_nowinkeys;
 // Global variables used internally by this module
 viddef_t viddef;             // global video state; used by other modules
 
-#define VID_DEFAULTMODE			"4"
+#define VID_DEFAULTMODE			"-2"
+#define VID_DEFAULTFALLBACKMODE	"4"
 
 #define VID_NUM_MODES (int)( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
@@ -106,8 +107,10 @@ vidmode_t vid_modes[] =
 	{ 1024, 600, qtrue },
 	{ 1200, 800, qtrue },
 	{ 1280, 800, qtrue },
+	{ 1360, 768, qtrue },
 	{ 1366, 768, qtrue },
 	{ 1440,	900, qtrue },
+	{ 1600,	900, qtrue },
 	{ 1680,	1050, qtrue },
 	{ 1920, 1080, qtrue },
 	{ 1920,	1200, qtrue },
@@ -252,7 +255,7 @@ static rserr_t VID_ChangeMode( vid_init_t vid_init )
 	}
 	else {
 		if( err == rserr_invalid_fullscreen ) {
-			Cvar_SetValue( "vid_fullscreen", 0 );
+			Cvar_ForceSet( "vid_fullscreen", "0" );
 			vid_fullscreen->modified = qfalse;
 			Com_Printf( "VID_ChangeMode() - fullscreen unavailable in this mode\n" );
 
@@ -263,6 +266,7 @@ static rserr_t VID_ChangeMode( vid_init_t vid_init )
 		else if( err == rserr_invalid_mode ) {
 			Cvar_SetValue( "vid_mode", vid_ref_prevmode );
 			vid_mode->modified = qfalse;
+
 			Com_Printf( "VID_ChangeMode() - invalid mode\n" );
 
 			r = VID_GetModeInfo( &w, &h, &ws, vid_mode->integer );
@@ -338,7 +342,6 @@ void VID_CheckChanges( void )
 			vid_ref_active = qfalse;
 		}
 
-
 		Cvar_GetLatchedVars( CVAR_LATCH_VIDEO );
 
 		// handle vid_mode changes
@@ -359,9 +362,9 @@ void VID_CheckChanges( void )
 
 		if( vid_mode->integer < -1 || vid_mode->integer >= VID_NUM_MODES ) {
 			Com_Printf( "Bad mode %i or custom resolution\n", vid_mode->integer );
-			Cvar_ForceSet( "vid_mode", VID_DEFAULTMODE );
+			Cvar_ForceSet( "vid_fullscreen", "0" );
+			Cvar_ForceSet( "vid_mode", VID_DEFAULTFALLBACKMODE );
 		}
-
 
 		err = VID_ChangeMode( &VID_Sys_Init_ );
 		if( err != rserr_ok ) {
@@ -436,7 +439,8 @@ void VID_Init( void )
 	vid_ref_verbose = qtrue;
 	vid_initialized = qtrue;
 	vid_ref_sound_restart = qfalse;
-	vid_ref_prevmode = atoi( vid_mode->dvalue );
+	vid_fullscreen->modified = qfalse;
+	vid_ref_prevmode = atoi( VID_DEFAULTFALLBACKMODE );
 
 	VID_CheckChanges();
 }

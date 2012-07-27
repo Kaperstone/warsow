@@ -17,6 +17,8 @@ namespace ASUI {
 
 	// asui_scriptevent.cpp
 	Rocket::Core::EventListenerInstancer *GetScriptEventListenerInstancer( void );
+	/// Releases Angelscript function pointers held by event listeners
+	void ReleaseScriptEventListenersFunctions( Rocket::Core::EventListenerInstancer * );
 }
 
 #endif

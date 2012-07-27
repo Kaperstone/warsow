@@ -299,7 +299,7 @@ gs_weapon_definition_t gs_weaponDefs[] =
 
 			//projectile def
 			INSTANT,						// speed
-			65,								// spread
+			70,								// spread
 
 			//ammo
 			10,								// pickup amount
@@ -531,7 +531,7 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			//damages
 			6.5,							// damage
 			0,								// selfdamage ratio (lg cant damage)
-			9,								// knockback
+			10,								// knockback
 			300,							// stun
 			0,								// splash radius
 			0,								// splash minimum damage
@@ -563,7 +563,7 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			//damages
 			6.5,							// damage
 			0,								// selfdamage ratio (lg cant damage)
-			9,								// knockback
+			10,								// knockback
 			300,							// stun
 			0,								// splash radius
 			0,								// splash minimum damage
@@ -629,12 +629,12 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			0,								// smooth refire
 
 			//damages
-			75,								// damage
+			60,								// damage
 			0,  							// selfdamage ratio (eb cant selfdamage)
 			40,								// knockback
 			1000,							// stun
 			0,								// splash radius
-			75,								// minimum damage
+			60,								// minimum damage
 			35,								// minimum knockback
 
 			//projectile def

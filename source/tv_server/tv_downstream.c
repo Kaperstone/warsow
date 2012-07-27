@@ -344,7 +344,7 @@ void TV_Downstream_AddServerCommand( client_t *client, const char *cmd )
 	{
 		// length of the index/value (leave room for one space and null char)
 		size_t len = strlen( cmd ) - 1;
-		for( i = client->reliableSequence; i > client->reliableAcknowledge; i-- )
+		for( i = client->reliableSequence; i > client->reliableSent; i-- )
 		{
 			size_t otherLen;
 			char *otherCmd;

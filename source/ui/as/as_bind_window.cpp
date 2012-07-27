@@ -54,6 +54,7 @@ public:
 			FunctionCallScheduler *scheduler = it->second;
 
 			doc->RemoveReference();
+			scheduler->shutdown();
 			__delete__( scheduler );
 		}
 		schedulers.clear();

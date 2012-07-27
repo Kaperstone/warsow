@@ -638,17 +638,17 @@ static const glsl_feature_t * const glsl_programtypes_features[] =
 
 #define MYHALFTYPES "" \
 "#if !defined(myhalf)\n" \
-"#if !defined(__GLSL_CG_DATA_TYPES)\n" \
+"//#if !defined(__GLSL_CG_DATA_TYPES)\n" \
 "#define myhalf float\n" \
 "#define myhalf2 vec2\n" \
 "#define myhalf3 vec3\n" \
 "#define myhalf4 vec4\n" \
-"#else\n" \
-"#define myhalf half\n" \
-"#define myhalf2 half2\n" \
-"#define myhalf3 half3\n" \
-"#define myhalf4 half4\n" \
-"#endif\n" \
+"//#else\n" \
+"//#define myhalf half\n" \
+"//#define myhalf2 half2\n" \
+"//#define myhalf3 half3\n" \
+"//#define myhalf4 half4\n" \
+"//#endif\n" \
 "#endif\n"
 
 #define MYTWOPI "" \

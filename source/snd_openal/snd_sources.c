@@ -307,7 +307,7 @@ src_t *S_AllocSource( int priority, int entNum, int channel )
 		if( srclist[i].isLocked )
 			continue;
 
-		if( !srclist[i].isActive /*&& ( empty == -1 )*/ ) //, pick last rather than first empty -teemu
+		if( !srclist[i].isActive && ( empty == -1 ) )
 			empty = i;
 
 		if( srclist[i].priority < weakest_priority ||

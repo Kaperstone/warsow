@@ -3426,8 +3426,10 @@ static void R_TouchBuiltinTextures( void )
 	r_dlighttexture->registration_sequence = 
 	r_particletexture->registration_sequence = 
 	r_fogtexture->registration_sequence = 
-	r_coronatexture->registration_sequence = 
-	r_drawflattexture->registration_sequence = r_front.registration_sequence;
+	r_coronatexture->registration_sequence = r_front.registration_sequence;
+	if( r_drawflattexture != NULL ) {
+		r_drawflattexture->registration_sequence = r_front.registration_sequence;
+	}
 }
 
 /*

@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../matchmaker/mm_query.h"
 
 // interval between successive attempts to get match UUID from the mm
-#define SV_MM_MATCH_UUID_FETCH_INTERVAL		60	// in seconds
+#define SV_MM_MATCH_UUID_FETCH_INTERVAL		20	// in seconds
 
 /*
 * private vars
@@ -217,7 +217,6 @@ static void sv_mm_clientconnect_done( stat_query_t *query, qboolean success, voi
 	 * (currently we dont even tell MM about these so ignore)
 	 */
 	
-
 	session_id = (int)customp;
 	isession_id = 0;
 	cl = SV_MM_ClientForSession( session_id );
@@ -231,11 +230,6 @@ static void sv_mm_clientconnect_done( stat_query_t *query, qboolean success, voi
 
 	if( !success )
 		Com_Printf( "SV_MM_ClientConnect: Error\n" );
-
-	/*
-	* ch : clientconnect now returns this info
-	* session-id login-name gametype rating gametype rating gametype ..
-	*/
 	else
 	{
 		root = sq_api->GetRoot( query );
@@ -257,8 +251,10 @@ static void sv_mm_clientconnect_done( stat_query_t *query, qboolean success, voi
 			}
 			else
 			{
+				const char *login = sq_api->GetString( root, "login" );
 				ratings_section = sq_api->GetSection( root, "ratings" );
-				Info_SetValueForKey( cl->userinfo, "cl_mm_login", sq_api->GetString( root, "login" ) );
+				if( !Info_SetValueForKey( cl->userinfo, "cl_mm_login", login ) )
+					Com_Printf( "Failed to set infokey cl_mm_login for player %s\n", login );
 				if( ge != NULL && ratings_section != NULL )
 				{
 					int idx = 0;
@@ -272,6 +268,7 @@ static void sv_mm_clientconnect_done( stat_query_t *query, qboolean success, voi
 						element = sq_api->GetArraySection( ratings_section, idx++ );
 					}
 				}
+				SV_UserinfoChanged( cl );
 			}
 		}
 	}

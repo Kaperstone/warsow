@@ -214,23 +214,23 @@ void TVM_ClientUserinfoChanged( tvm_relay_t *relay, edict_t *ent, char *userinfo
 	s = Info_ValueForKey( userinfo, "fov" );
 	if( !s )
 	{
-		cl->pers.fov = 90;
+		cl->pers.fov = 100;
 	}
 	else
 	{
 		cl->pers.fov = atoi( s );
-		clamp( cl->pers.fov, 1, 160 );
+		clamp( cl->pers.fov, 1, 140 );
 	}
 
 	s = Info_ValueForKey( userinfo, "zoomfov" );
 	if( !s )
 	{
-		cl->pers.zoomfov = 40;
+		cl->pers.zoomfov = 30;
 	}
 	else
 	{
 		cl->pers.zoomfov = atoi( s );
-		clamp( cl->pers.zoomfov, 1, 90 );
+		clamp( cl->pers.zoomfov, 1, 60 );
 	}
 
 	// save off the userinfo in case we want to check something later

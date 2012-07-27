@@ -47,7 +47,7 @@
 #endif
 
 #define DOWNSCALE_ITEMS // Ugly hack for the release. Item models are way too big
-//#define ELECTROBOLT_TEST
+#define ELECTROBOLT_TEST
 
 #define MUMBLE_SUPPORT
 

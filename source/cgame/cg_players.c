@@ -203,8 +203,8 @@ void CG_LoadClientInfo( cg_clientInfo_t *ci, char *info, int client )
 	s = Info_ValueForKey( info, "fov" );
 	if( !(s && s[0]) || sscanf( s, "%3i %3i", &ci->fov, &ci->zoomfov ) != 2 )
 	{
-		ci->fov = 100;
-		ci->zoomfov = 40;
+		ci->fov = DEFAULT_FOV;
+		ci->zoomfov = DEFAULT_ZOOMFOV;
 	}
 
 	// color

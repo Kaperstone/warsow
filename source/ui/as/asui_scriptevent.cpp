@@ -36,6 +36,7 @@ class ScriptEventListener : public EventListener
 	String funcName;
 	String script;
 	bool loaded;
+	bool released;
 	int uniqueId;
 
 	/** DAMN MIXTURE OF Rocket::String, std::string and std::ostringstream!! **/
@@ -89,6 +90,8 @@ class ScriptEventListener : public EventListener
 				// I think we only hit this scenario when we do smth like
 				// elem.setInnerRML( '<button onclick="window.close();" />' );
 				funcPtr = ASBind::CreateFunctionPtr( scriptFunc, funcPtr );
+				funcPtr.addref();
+				scriptFunc->Release();
 			}
 			return;
 		}
@@ -96,22 +99,31 @@ class ScriptEventListener : public EventListener
 		funcPtr = ASBind::CreateFunctionPtr( funcName.CString(), module, funcPtr );
 		if( !funcPtr.isValid() ) {
 			Com_Printf( S_COLOR_YELLOW "WARNING: ScriptEventListener::fetchFunctionPtr failed with %s\n", funcName.CString() );
+			return;
 		}
+		funcPtr.addref();
 	}
 
 public:
 
-	ScriptEventListener( const String &s, int uniqueId ) : script( s ), loaded( false ), uniqueId( uniqueId )
+	ScriptEventListener( const String &s, int uniqueId ) : script( s ), 
+		loaded( false ), released( false ),  uniqueId( uniqueId )
 	{
 		asmodule = UI_Main::Get()->getAS();
 	}
 
 	virtual ~ScriptEventListener() {
-		// TODO: release funcPtr?
+		releaseFunctionPtr();
 	}
 
 	virtual void ProcessEvent( Event &event )
 	{
+		if( released ) {
+			// the function pointer has been released, but
+			// we're hanging around, waiting for shutdown or GC
+			return;
+		}
+
 		// onloads cant be called within building process
 		if( /* event.GetType() == "load" && */ asmodule->isBuilding() )
 		{
@@ -154,6 +166,12 @@ public:
 			Com_Printf( S_COLOR_RED "ScriptEventListener: Not gonna call invalid function %s %s\n", funcName.CString(), script.CString() );
 		}
 	}
+
+	void releaseFunctionPtr()
+	{
+		released = true;
+		funcPtr.release();
+	}
 };
 
 //==============================================================
@@ -177,14 +195,11 @@ public:
 			Com_Printf( S_COLOR_YELLOW "WARNING: ScriptEventCaller::CreateFunctionPtr failed with %s\n", func ? func->GetDeclaration() : "NULL" );
 			return;
 		}
-		func->AddRef();
 	}
 
 	virtual ~ScriptEventCaller() 
 	{
-		if( funcPtr.isValid() ) {
-			funcPtr.release();
-		}
+		funcPtr.release();
 	}
 
 	// Perform the cleanup
@@ -244,7 +259,7 @@ EventListener *CreateScriptEventCaller( ASInterface *as, asIScriptFunction *func
 
 class ScriptEventListenerInstancer : public EventListenerInstancer
 {
-	typedef std::vector<EventListener*> listenerList;
+	typedef std::vector<ScriptEventListener*> listenerList;
 
 	listenerList listeners;
 	int idCounter;
@@ -260,8 +275,6 @@ public:
 
 	virtual Rocket::Core::EventListener* InstanceEventListener( const String& value, Element *elem )
 	{
-		//Com_Printf("UI_EventListenerInstancer: value = %s\n", value.CString() );
-
 		if( !value.Length() )
 			return 0;
 
@@ -270,14 +283,28 @@ public:
 		return listener;
 	}
 
-	void Release()
+	/// Releases pointers to AS functions held by allocated listeners
+	void ReleaseListnersFunctions()
 	{
 		listenerList::iterator it;
-		for( it = listeners.begin(); it != listeners.end(); it++ )
+		for( it = listeners.begin(); it != listeners.end(); it++ ) {
+			(*it)->releaseFunctionPtr();
+		}
+	}
+
+	/// Releases all allocated listeners
+	void ReleaseListners()
+	{
+		listenerList::iterator it;
+		for( it = listeners.begin(); it != listeners.end(); it++ ) {
 			__delete__( *it );
-
+		}
 		listeners.clear();
+	}
 
+	void Release()
+	{
+		ReleaseListners();
 		__delete__( this );
 	}
 };
@@ -287,6 +314,14 @@ EventListenerInstancer *GetScriptEventListenerInstancer( void )
 	EventListenerInstancer *instancer = __new__( ScriptEventListenerInstancer )();
 	// instancer->RemoveReference();
 	return instancer;
+}
+
+void ReleaseScriptEventListenersFunctions( EventListenerInstancer *instancer )
+{
+	ScriptEventListenerInstancer *scriptInstancer = static_cast<ScriptEventListenerInstancer *>( instancer );
+	if( scriptInstancer ) {
+		scriptInstancer->ReleaseListnersFunctions();
+	}
 }
 
 }

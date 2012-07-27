@@ -175,17 +175,17 @@ static void StatQuery_CallbackGeneric( wswcurl_req *req, int status, void *custo
 	if( status < 0 )
 	{
 		Com_Printf( "StatQuery HTTP error: \"%s\", url \"%s\"\n", wswcurl_errorstr( status ), wswcurl_get_effective_url( req ) );
-		StatQuery_DestroyQuery( query );
-		return;
 	}
-
-	// check the MIME type and see if we have JSON, if so parse it up
-	content_type = wswcurl_get_content_type( req );
-	if( content_type && !strcmp( content_type, "application/json" ) )
+	else
 	{
-		StatQuery_CacheResponseRaw( query );
-		if( query->response_raw )
-			query->json_in = cJSON_Parse( query->response_raw );
+		// check the MIME type and see if we have JSON, if so parse it up
+		content_type = wswcurl_get_content_type( req );
+		if( content_type && !strcmp( content_type, "application/json" ) )
+		{
+			StatQuery_CacheResponseRaw( query );
+			if( query->response_raw )
+				query->json_in = cJSON_Parse( query->response_raw );
+		}
 	}
 
 	if( query->callback_fn )
@@ -274,10 +274,19 @@ stat_query_t *StatQuery_CreateQuery( const char *str, qboolean get )
 {
 	stat_query_t *query;
 
+	assert( str != NULL );
+	if( str == NULL ) {
+		return NULL;
+	}
+
 	query = SQALLOC( sizeof( *query ) );
 	memset( query, 0, sizeof( *query ) );
 
 	query->json_out = cJSON_CreateObject();
+
+	if( str[0] == '/' ) {
+		str += 1;
+	}
 
 	if( !get )
 		query->req = wswcurl_create( "%s/%s", mm_url->string, str );

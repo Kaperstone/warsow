@@ -224,7 +224,7 @@ qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose )
 	s_testsound = trap_Cvar_Get( "s_testsound", "0", 0 );
 	s_swapstereo = trap_Cvar_Get( "s_swapstereo", "0", CVAR_ARCHIVE );
 	s_vorbis = trap_Cvar_Get( "s_vorbis", "1", CVAR_ARCHIVE );
-	s_pseudoAcoustics = trap_Cvar_Get( "s_pseudoAcoustics", "1", CVAR_ARCHIVE );
+	s_pseudoAcoustics = trap_Cvar_Get( "s_pseudoAcoustics", "0", CVAR_ARCHIVE );
 	s_separationDelay = trap_Cvar_Get( "s_separationDelay", "1.0", CVAR_ARCHIVE );
 
 #ifdef ENABLE_PLAY

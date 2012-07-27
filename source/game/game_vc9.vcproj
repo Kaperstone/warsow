@@ -1966,6 +1966,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\gameshared\gs_ref.h"
+				>
+			</File>
+			<File
 				RelativePath="..\matchmaker\mm_rating.h"
 				>
 			</File>

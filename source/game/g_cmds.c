@@ -1168,7 +1168,7 @@ static void Cmd_Whois_f( edict_t *ent )
 			target = ent;
 	}
 
-	cl = ent->r.client;
+	cl = target->r.client;
 
 	if( cl->mm_session <= 0 )
 	{
@@ -1178,7 +1178,7 @@ static void Cmd_Whois_f( edict_t *ent )
 
 	login = Info_ValueForKey( cl->userinfo, "cl_mm_login" );
 
-	G_PrintMsg( ent, "%s is %s (userinfo %s)\n", cl->netname, login, cl->userinfo );
+	G_PrintMsg( ent, "%s is %s\n", cl->netname, login );
 }
 
 //===========================================================

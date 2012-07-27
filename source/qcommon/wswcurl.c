@@ -312,6 +312,7 @@ size_t wswcurl_getsize( wswcurl_req *req, size_t *rxreceived )
 {
 	while( !req->headers_done && req->status >= 0 && req->status != WSTATUS_FINISHED && req->status != WSTATUS_QUEUED ) {
 		// blocking read until we finish reading all headers
+		CURLDBG(("   CURL BLOCKING GETSIZE LOOP\n"));
 		wswcurl_perform_single( req );
 	}
 
@@ -341,8 +342,10 @@ size_t wswcurl_read(wswcurl_req *req, void *buffer, size_t size)
 		wswcurl_unpause(req);
 
 	// Make sure we have data in buffer
-	while ( req->status >= 0 && req->status != WSTATUS_FINISHED && req->status != WSTATUS_QUEUED && (req->rxreceived-req->rxreturned) < size )
+	while ( req->status >= 0 && req->status != WSTATUS_FINISHED && req->status != WSTATUS_QUEUED && (req->rxreceived-req->rxreturned) < size ) {
+		CURLDBG(("   CURL BLOCKING READ LOOP\n"));
 		wswcurl_perform_single (req);
+	}
 
 	// hmm, signal an error?
 	if( req->status < 0 )
@@ -604,6 +607,8 @@ wswcurl_req *wswcurl_create( const char *furl, ... )
 	CURLSETOPT( retreq->curl, res, CURLOPT_WRITEDATA, ( void * )retreq );
 	CURLSETOPT( retreq->curl, res, CURLOPT_WRITEHEADER, ( void * )retreq );
 	CURLSETOPT( retreq->curl, res, CURLOPT_PRIVATE, ( void * )retreq );
+
+	CURLDBG((va("   CURL CREATE %s\n", url)));
 
 	return retreq;
 }

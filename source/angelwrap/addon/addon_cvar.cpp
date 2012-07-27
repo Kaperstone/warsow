@@ -180,11 +180,11 @@ void RegisterCvarAddon( asIScriptEngine *engine )
 	// register object methods
 
 	r = engine->RegisterObjectMethod( "Cvar", "void reset()", asFUNCTION( objectCVar_Reset ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
-	r = engine->RegisterObjectMethod( "Cvar", "void set( String &in )", asFUNCTION( objectCVar_setS ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
+	r = engine->RegisterObjectMethod( "Cvar", "void set( const String &in )", asFUNCTION( objectCVar_setS ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "Cvar", "void set( float value )", asFUNCTION( objectCVar_setF ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "Cvar", "void set( int value )", asFUNCTION( objectCVar_setI ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "Cvar", "void set( double value )", asFUNCTION( objectCVar_setD ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
-	r = engine->RegisterObjectMethod( "Cvar", "void forceSet( String &in )", asFUNCTION( objectCVar_forceSetS ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
+	r = engine->RegisterObjectMethod( "Cvar", "void forceSet( const String &in )", asFUNCTION( objectCVar_forceSetS ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "Cvar", "void forceSet( float value )", asFUNCTION( objectCVar_forceSetF ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "Cvar", "void forceSet( int value )", asFUNCTION( objectCVar_forceSetI ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "Cvar", "void forceSet( double value )", asFUNCTION( objectCVar_forceSetD ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );

@@ -19,12 +19,11 @@ namespace WSWUI
 		RocketModule( int vidWidth, int vidHeight );
 		~RocketModule();
 
-		// pre-initialization
-		// bool initRocket( int vidWidth, int vidHeight );
-		// void shutdownRocket();
-
 		// post-initialization
 		void registerCustoms();
+
+		// pre-shutdown
+		void unregisterCustoms();
 
 		// cursor functions
 		void loadCursor( const String& rmlCursor );
@@ -70,6 +69,7 @@ namespace WSWUI
 
 		// hold this so we can unref these in the end
 		std::list<Rocket::Core::ElementInstancer*> elementInstancers;
+		Rocket::Core::EventListenerInstancer *scriptEventListenerInstancer;
 	};
 }
 

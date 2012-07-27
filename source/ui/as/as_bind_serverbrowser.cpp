@@ -16,6 +16,16 @@ void PrebindServerbrowser( ASInterface *as )
 	ASBind::Class<ServerBrowserDataSource, ASBind::class_singleref>( as->getEngine() );
 }
 
+static bool Serverbrowser_addFavorite( ServerBrowserDataSource *browser, const asstring_t &fav )
+{
+	return browser->addFavorite( fav.buffer );
+}
+
+static bool Serverbrowser_removeFavorite( ServerBrowserDataSource *browser, const asstring_t &fav )
+{
+	return browser->removeFavorite( fav.buffer );
+}
+
 void BindServerbrowser( ASInterface *as )
 {
 	ASBind::GetClass<ServerBrowserDataSource>( as->getEngine() )
@@ -24,7 +34,8 @@ void BindServerbrowser( ASInterface *as )
 		.method( &ServerBrowserDataSource::startRefresh, "refresh" )
 		.method( &ServerBrowserDataSource::isUpdating, "isUpdating" )
 		.method( &ServerBrowserDataSource::stopUpdate, "stopUpdate" )
-
+		.method( &Serverbrowser_addFavorite, "addFavorite", true )
+		.method( &Serverbrowser_removeFavorite, "removeFavorite", true )
 		;
 }
 

@@ -82,7 +82,6 @@ static stat_query_api_t *sq_api = NULL;
 * public vars
 */
 cvar_t *cl_mm_user;
-cvar_t *cl_mm_password;		// REMOVE
 cvar_t *cl_mm_session;
 cvar_t *cl_mm_autologin;
 
@@ -802,7 +801,6 @@ void CL_MM_Init( void )
 
 	// TODO: remove as cvar
 	cl_mm_user = Cvar_Get( "cl_mm_user", "", CVAR_ARCHIVE );
-	cl_mm_password = Cvar_Get( "cl_mm_password", "", CVAR_ARCHIVE );
 
 	/*
 	* add commands

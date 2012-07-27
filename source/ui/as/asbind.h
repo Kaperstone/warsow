@@ -1019,7 +1019,8 @@ struct FunctionPtrBase {
 	asIScriptFunction *getPtr( void ) { return fptr; }
 	const char *getName( void ) { return fptr != NULL ? fptr->GetName() : "#NULL#"; }
 	bool isValid( void ) { return fptr != NULL; }
-	void release( void ) { if (fptr != NULL) { fptr->Release(); fptr = NULL; } }
+	void addref( void ) { if (fptr != NULL) { fptr->AddRef(); } }
+	void release( void ) { if (fptr != NULL) { asIScriptFunction *fptr_ = fptr; fptr = NULL; fptr_->Release(); } }
 	void setContext( asIScriptContext *_ctx ) { ctx = _ctx; }
 
 	// general calling function

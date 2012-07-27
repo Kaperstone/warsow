@@ -57,6 +57,7 @@ namespace WSWUI {
 		bool			tv;
 		unsigned int 	ping;
 		unsigned int 	ping_retries;
+		mutable bool	favorite;
 
 		// Keep which refresh it's part of
 		int refresh_batch;
@@ -189,6 +190,7 @@ namespace WSWUI {
 		// active queries
 		typedef std::pair<unsigned int, std::string> ActiveQuery;
 		typedef std::list<ActiveQuery> ActiveList;
+
 		ActiveList activeQueries;
 		// owner
 		ServerBrowserDataSource *serverBrowser;
@@ -236,6 +238,7 @@ namespace WSWUI {
 		typedef std::set<ServerInfo, ServerInfo::_LessBinary<quint64, &ServerInfo::iaddress> > ServerInfoList;
 		typedef std::list<ServerInfo*> ReferenceList;
 		typedef std::map<String, ReferenceList> ReferenceListMap;
+		typedef std::set<quint64> FavoritesList;
 
 		// shortcut for the set insert
 		typedef std::pair<ServerInfoList::iterator, bool> ServerInfoListPair;
@@ -260,6 +263,8 @@ namespace WSWUI {
 
 		ServerBrowserFilter filter;
 		ServerInfoFetcher fetcher;
+
+		FavoritesList favorites;
 
 		// we use pointers on referenceList! how can we use struct here?
 		ServerInfo::ComparePtrFunction sortCompare;
@@ -356,6 +361,12 @@ namespace WSWUI {
 		// called to reform visibleServers and hiddenServers -> export to AS?
 		void filtersUpdated( void );
 
+		// adds a serveraddress to our favorites -> export to AS
+		bool addFavorite( const char *fav );
+
+		// we don't like that server anymore -> export to AS
+		bool removeFavorite( const char *fav );
+
 		bool isUpdating( void ) { return active; }
 
 		// DEBUG
@@ -363,6 +374,9 @@ namespace WSWUI {
 
 	private:
 		void tableNameForServerInfo( const ServerInfo &, String &table ) const;
+		void addServerToTable( ServerInfo &info, String tableName );
+		void removeServerFromTable( ServerInfo &info, String tableName );
+		void notifyOfFavoriteChange( quint64 iaddr, bool add );
 	};
 
 }

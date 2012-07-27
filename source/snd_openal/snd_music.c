@@ -31,6 +31,7 @@ static ALuint source;
 static ALuint buffers[MUSIC_BUFFERS];
 
 static qboolean queued_buffers;
+static qboolean alloced_buffers;
 
 static qbyte decode_buffer[MUSIC_BUFFER_SIZE];
 
@@ -609,6 +610,9 @@ start_playback:
 		return;
 	}
 
+	alloced_buffers = qfalse;
+	queued_buffers = qfalse;
+
 	qalGenBuffers( MUSIC_BUFFERS, buffers );
 	if( ( error = qalGetError() ) != AL_NO_ERROR )
 	{
@@ -617,7 +621,7 @@ start_playback:
 		return;
 	}
 
-	queued_buffers = qfalse;
+	alloced_buffers = qtrue;
 }
 
 void S_StopBackgroundTrack( void )
@@ -627,9 +631,11 @@ void S_StopBackgroundTrack( void )
 	if( source )
 		qalSourceStop( source );
 
-	qalSourceUnqueueBuffers( source, MUSIC_BUFFERS, buffers );
-	qalDeleteBuffers( MUSIC_BUFFERS, buffers );
-	queued_buffers = qfalse;
+	if( alloced_buffers ) {
+		qalSourceUnqueueBuffers( source, MUSIC_BUFFERS, buffers );
+		qalDeleteBuffers( MUSIC_BUFFERS, buffers );
+		alloced_buffers = queued_buffers = qfalse;
+	}
 
 	music_source_free();
 

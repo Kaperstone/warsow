@@ -149,6 +149,9 @@ static void Element_EventListenerCallback( Element *elem, Event *event )
 static EventListener *Element_AddEventListener( Element *elem, const asstring_t &event, asIScriptFunction *func ) {
 	EventListener *listener = CreateScriptEventCaller( UI_Main::Get()->getAS(), func );
 	elem->AddEventListener( ASSTR(event), listener );
+	if( func ) {
+		func->Release();
+	}
 	return listener;	// RETREF?
 }
 

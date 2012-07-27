@@ -188,7 +188,7 @@ static void PlayerTouchWall( int nbTestDir, float maxZnormal, vec3_t *normal )
 
 		if( trace.fraction > 0 )
 		{
-			if( dist > trace.fraction && abs( trace.plane.normal[2] ) < maxZnormal )
+			if( dist > trace.fraction && fabs( trace.plane.normal[2] ) < maxZnormal )
 			{
 				dist = trace.fraction;
 				VectorCopy( trace.plane.normal, *normal );
@@ -1759,7 +1759,7 @@ void Pmove( pmove_t *pmove )
 	VectorCopy( pm->playerState->pmove.origin, pml.origin );
 	VectorCopy( pm->playerState->pmove.velocity, pml.velocity );
 
-	fallvelocity = ( ( pml.velocity[2] < 0.0f ) ? abs( pml.velocity[2] ) : 0.0f );
+	fallvelocity = ( ( pml.velocity[2] < 0.0f ) ? fabs( pml.velocity[2] ) : 0.0f );
 
 	// save old org in case we get stuck
 	VectorCopy( pm->playerState->pmove.origin, pml.previous_origin );
@@ -2041,7 +2041,7 @@ void Pmove( pmove_t *pmove )
 
 	if( oldGroundEntity == -1 )
 	{
-		falldelta = fallvelocity - ( ( pml.velocity[2] < 0.0f ) ? abs( pml.velocity[2] ) : 0.0f );
+		falldelta = fallvelocity - ( ( pml.velocity[2] < 0.0f ) ? fabs( pml.velocity[2] ) : 0.0f );
 
 		// scale delta if in water
 		if( pm->waterlevel == 3 )

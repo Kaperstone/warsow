@@ -34,6 +34,7 @@
 #include "formatters/ui_duration_formatter.h"
 #include "formatters/ui_filetype_formatter.h"
 #include "formatters/ui_colorcode_formatter.h"
+#include "formatters/ui_empty_formatter.h"
 
 namespace WSWUI
 {
@@ -42,7 +43,7 @@ UI_Main *UI_Main::self = 0;
 UI_Main::UI_Main( int vidWidth, int vidHeight, int protocol, int sharedSeed, bool demoPlaying, const char *demoName )
 	// pointers to zero
 	: asmodule(0), rocketModule(0),
-	levelshot_fmt(0), datetime_fmt(0), duration_fmt(0), filetype_fmt(0), colorcode_fmt(0), crosshair_fmt(0),
+	levelshot_fmt(0), datetime_fmt(0), duration_fmt(0), filetype_fmt(0), colorcode_fmt(0), crosshair_fmt(0), empty_fmt(0),
 	serverBrowser(0), gameTypes(0), maps(0), vidProfiles(0), huds(0), videoModes(0), demos(0), mods(0), playerModels(0), crosshairs(0), 
 	navigator(0), /* backwards development compatibility: */ currentLoader(0),
 
@@ -70,6 +71,8 @@ UI_Main::UI_Main( int vidWidth, int vidHeight, int protocol, int sharedSeed, boo
 	if( !initRocket() )
 		throw std::runtime_error( "UI: Failed to initialize libRocket" );
 
+	registerRocketCustoms();
+
 	// TESTING, moved these from initRocket, between Init and postinit functions
 	serverBrowser = __new__( ServerBrowserDataSource )();
 	gameTypes = __new__(GameTypesDataSource)();
@@ -87,6 +90,7 @@ UI_Main::UI_Main( int vidWidth, int vidHeight, int protocol, int sharedSeed, boo
 	duration_fmt = __new__( DurationFormatter )();
 	filetype_fmt = __new__( FiletypeFormatter )();
 	colorcode_fmt = __new__( ColorCodeFormatter )();
+	empty_fmt = __new__( EmptyFormatter )();
 	playerModels = __new__( ModelsDataSource )();
 	vidProfiles = __new__( ProfilesDataSource )();
 	navigator = __new__( NavigationStack )();
@@ -132,6 +136,8 @@ UI_Main::~UI_Main()
 	trap::Cmd_RemoveCommand( "menu_force" );
 	trap::Cmd_RemoveCommand( "menu_open" );
 	trap::Cmd_RemoveCommand( "menu_close" );
+
+	unregisterRocketCustoms();
 
 	// shutdown AS before rocket, thus script objects get a chance to release
 	// their references to rocket elements
@@ -219,12 +225,17 @@ bool UI_Main::initRocket( void )
 {
 	// this may throw runtime_error.. ok pass it back up
 	rocketModule = __new__( RocketModule )( refreshState.width, refreshState.height );
-
-	// REMOVED custom objects creation from here..
-
-	rocketModule->registerCustoms();
-
 	return true;
+}
+
+void UI_Main::registerRocketCustoms( void )
+{
+	rocketModule->registerCustoms();
+}
+
+void UI_Main::unregisterRocketCustoms( void )
+{
+	rocketModule->unregisterCustoms();
 }
 
 void UI_Main::shutdownRocket( void )

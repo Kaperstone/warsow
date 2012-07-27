@@ -802,13 +802,6 @@ static void target_give_use( edict_t *self, edict_t *other, edict_t *activator )
 	int i, numsounds = 0;
 	gsitem_t *sounds[MAX_GIVE_SOUNDS];
 
-	if( !(self->spawnflags & 1) )
-	{
-		// do not give anything in warmup, postmatches, etc
-		if( GS_MatchState() != MATCH_STATE_PLAYTIME )
-			return;
-	}
-
 	give = NULL;
 
 	// more than one item can be given
@@ -822,30 +815,35 @@ static void target_give_use( edict_t *self, edict_t *other, edict_t *activator )
 		if( !( item->flags & ITFLAG_PICKABLE ) )
 			continue;
 
-		// play only unique pickup sounds, to prevent spam
-		if( item->pickup_sound )
-		{
-			for( i = 0; i < numsounds; i++ )
-			{
-				if( !Q_stricmp( sounds[i]->pickup_sound, item->pickup_sound ) )
-					break;
-			}
+		Touch_Item( give, activator, NULL, 0 );
 
-			if( i == numsounds )
+		// a hacky way to check for successful item pickup
+		if( activator->r.client && activator->r.client->ps.stats[STAT_PICKUP_ITEM] == give->item->tag )
+		{
+			// play only unique pickup sounds, to prevent spam
+			if( item->pickup_sound )
 			{
-				if( i < MAX_GIVE_SOUNDS )
+				for( i = 0; i < numsounds; i++ )
+				{
+					if( !Q_stricmp( sounds[i]->pickup_sound, item->pickup_sound ) )
+						break;
+				}
+
+				if( i == numsounds )
+				{
+					if( i < MAX_GIVE_SOUNDS )
+					{
+						give->attenuation = 0;
+						sounds[numsounds++] = item;
+					}
+				}
+				else
 				{
 					give->attenuation = 0;
-					sounds[numsounds++] = item;
 				}
-			}
-			else
-			{
-				give->attenuation = 0;
 			}
 		}
 
-		Touch_Item( give, activator, NULL, 0 );
 		give->nextThink = 0;
 		give->think = 0;
 		give->attenuation = 1;

@@ -315,9 +315,9 @@ rserr_t GLimp_SetMode( int x, int y, int width, int height, qboolean fullscreen,
 				VID_SetWindowSize( fullscreen );
 				return rserr_ok;
 			}
-		}
 
-		return rserr_restart_required;
+			return rserr_restart_required;
+		}
 	}
 
 	Com_Printf( "Initializing OpenGL display\n" );

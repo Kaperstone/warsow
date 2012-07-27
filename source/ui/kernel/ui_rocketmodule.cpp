@@ -301,7 +301,10 @@ void RocketModule::registerCustoms()
 	// EVENT LISTENERS
 
 	// inline script events
-	registerEventListener( ASUI::GetScriptEventListenerInstancer() );
+	scriptEventListenerInstancer = ASUI::GetScriptEventListenerInstancer();
+	scriptEventListenerInstancer->AddReference();
+
+	registerEventListener( scriptEventListenerInstancer );
 
 	//
 	// FONT EFFECTS
@@ -316,6 +319,15 @@ void RocketModule::registerCustoms()
 		.AddParser("string");
 	Rocket::Core::StyleSheetSpecification::RegisterProperty("sound-click", "", false)
 		.AddParser("string");
+}
+
+void RocketModule::unregisterCustoms()
+{
+	if( scriptEventListenerInstancer ) {
+		ASUI::ReleaseScriptEventListenersFunctions( scriptEventListenerInstancer );
+		scriptEventListenerInstancer->RemoveReference();
+		scriptEventListenerInstancer = NULL;
+	}
 }
 
 //==================================================

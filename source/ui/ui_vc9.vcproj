@@ -967,6 +967,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\formatters\ui_empty_formatter.h"
+					>
+				</File>
+				<File
 					RelativePath=".\formatters\ui_filetype_formatter.h"
 					>
 				</File>

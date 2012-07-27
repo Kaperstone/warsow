@@ -220,7 +220,7 @@ static void CL_SendConnectPacket( void )
 {
 	userinfo_modified = qfalse;
 
-	Com_Printf("CL_MM_Initialized: %d, cls.mm_ticket: %u\n", CL_MM_Initialized(), cls.mm_ticket );
+	Com_DPrintf("CL_MM_Initialized: %d, cls.mm_ticket: %u\n", CL_MM_Initialized(), cls.mm_ticket );
 	if( CL_MM_Initialized() && cls.mm_ticket != 0 )
 		Netchan_OutOfBandPrint( cls.socket, &cls.serveraddress, "connect %i %i %i \"%s\" %i %u\n",
 				APP_PROTOCOL_VERSION, Netchan_GamePort(), cls.challenge, Cvar_Userinfo(), 0, cls.mm_ticket );
@@ -1020,6 +1020,32 @@ static void CL_ConnectionlessPacket( const socket_t *socket, const netadr_t *add
 
 	Com_DPrintf( "%s: %s\n", NET_AddressToString( address ), s );
 
+	// server responding to a status broadcast
+	if( !strcmp( c, "info" ) )
+	{
+		CL_ParseStatusMessage( socket, address, msg );
+		return;
+	}
+
+	// jal : wsw
+	// server responding to a detailed info broadcast
+	if( !strcmp( c, "infoResponse" ) )
+	{
+		CL_ParseGetInfoResponse( socket, address, msg );
+		return;
+	}
+	if( !strcmp( c, "statusResponse" ) )
+	{
+		CL_ParseGetStatusResponse( socket, address, msg );
+		return;
+	}
+
+	if( cls.demo.playing )
+	{
+		Com_DPrintf( "Received connectionless cmd \"%s\" from %s while playing a demo\n", s, NET_AddressToString( address ) );
+		return;
+	}
+
 	// server connection
 	if( !strcmp( c, "client_connect" ) )
 	{
@@ -1105,13 +1131,6 @@ static void CL_ConnectionlessPacket( const socket_t *socket, const netadr_t *add
 		return;
 	}
 
-	// server responding to a status broadcast
-	if( !strcmp( c, "info" ) )
-	{
-		CL_ParseStatusMessage( socket, address, msg );
-		return;
-	}
-
 	// remote command from gui front end
 	if( !strcmp( c, "cmd" ) )
 	{
@@ -1189,19 +1208,6 @@ static void CL_ConnectionlessPacket( const socket_t *socket, const netadr_t *add
 	if( !strcmp( c, "echo" ) )
 	{
 		Netchan_OutOfBandPrint( socket, address, "%s", Cmd_Argv( 1 ) );
-		return;
-	}
-
-	// jal : wsw
-	// server responding to a detailed info broadcast
-	if( !strcmp( c, "infoResponse" ) )
-	{
-		CL_ParseGetInfoResponse( socket, address, msg );
-		return;
-	}
-	if( !strcmp( c, "statusResponse" ) )
-	{
-		CL_ParseGetStatusResponse( socket, address, msg );
 		return;
 	}
 
@@ -1286,6 +1292,11 @@ void CL_ReadPackets( void )
 				continue;
 			}
 
+			if( cls.demo.playing ) {
+				// only allow connectionless packets during demo playback
+				continue;
+			}
+
 			if( cls.state == CA_DISCONNECTED || cls.state == CA_GETTING_TICKET || cls.state == CA_CONNECTING || cls.state == CA_CINEMATIC )
 			{
 				Com_DPrintf( "%s: Not connected\n", NET_AddressToString( &address ) );
@@ -1323,6 +1334,10 @@ void CL_ReadPackets( void )
 		}
 	}
 
+	if( cls.demo.playing ) {
+		return;
+	}
+
 	// not expected, but could happen if cls.realtime is cleared and lastPacketReceivedTime is not
 	if( cls.lastPacketReceivedTime > cls.realtime )
 		cls.lastPacketReceivedTime = cls.realtime;
@@ -1342,7 +1357,6 @@ void CL_ReadPackets( void )
 	}
 	else
 		cl.timeoutcount = 0;
-
 }
 
 //=============================================================================
@@ -1953,8 +1967,8 @@ static void CL_InitLocal( void )
 	Cvar_Get( "skin", DEFAULT_PLAYERSKIN, CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get( "hand", "0", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get( "handicap", "0", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get( "fov", "100", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get( "zoomfov", "40", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get( "fov", STR_TOSTR( DEFAULT_FOV ), CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get( "zoomfov", STR_TOSTR( DEFAULT_ZOOMFOV ), CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get( "zoomsens", "0", CVAR_ARCHIVE );
 
 	Cvar_Get( "cl_download_name", "", CVAR_READONLY );
@@ -2372,10 +2386,10 @@ static void CL_NetFrame( int realmsec, int gamemsec )
 	if( realmsec > 5000 )  // if in the debugger last frame, don't timeout
 		cls.lastPacketReceivedTime = cls.realtime;
 
-	if( cls.demo.playing )
+	if( cls.demo.playing ) {
 		CL_ReadDemoPackets(); // fetch results from demo file
-	else
-		CL_ReadPackets(); // fetch results from server
+	}
+	CL_ReadPackets(); // fetch results from server
 
 	// send packets to server
 	if( cls.netchan.unsentFragments )

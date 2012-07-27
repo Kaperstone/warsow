@@ -277,9 +277,16 @@ Document *NavigationStack::pushDocument(const std::string &name, bool modal, boo
 		return top;
 	}
 
-	// if modal, dont hide previous, else hide it
-	if( !modal && top )
-		top->Hide();
+	// pop all unviewed documents off the stack
+	if( top && !top->IsViewed() ) {
+		_popDocument( false );
+		top = documentStack.size() > 0 ? documentStack.back() : NULL;
+	}
+	else {
+		// if modal, dont hide previous, else hide it
+		if( !modal && top )
+			top->Hide();
+	}
 
 	// cache has reserved a ref for us
 	Document *doc = cache.getDocument( documentRealname );
@@ -304,9 +311,13 @@ Document *NavigationStack::pushDocument(const std::string &name, bool modal, boo
 		showStack( true );
 	}
 
-	if( UI_Main::Get()->debugOn() ) {
-		Com_Printf("NavigationStack::pushDocument returning %s with refcount %d\n",
-				documentRealname.c_str(), doc->getReference() );
+	// now check whether we're still on top of stack after the 'show' event
+	// as we could have been popped off the stack
+	if( doc == new_top ) {
+		if( UI_Main::Get()->debugOn() ) {
+			Com_Printf("NavigationStack::pushDocument returning %s with refcount %d\n",
+					documentRealname.c_str(), doc->getReference() );
+		}
 	}
 
 	return doc;

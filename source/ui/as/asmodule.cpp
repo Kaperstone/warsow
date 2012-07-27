@@ -372,6 +372,8 @@ public:
 
 		// add to currently active module. note that this->module may actually point
 		// to other module which was compiled last
+
+		// note that reference count for outFunction is increased here!
 		return module ? (module->CompileFunction( name, code, 0, asCOMP_ADD_TO_MODULE, outFunction ) >= 0) : false;
 	}
 

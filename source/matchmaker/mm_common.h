@@ -27,11 +27,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../matchmaker/mm_query.h"
 
 // these are in milliseconds
-#define MM_HEARTBEAT_INTERVAL	(90*1000)
-#define MM_LOGOUT_TIMEOUT	(3*1000)
+#define MM_HEARTBEAT_INTERVAL	3*60*1000
+#define MM_LOGOUT_TIMEOUT		3*1000
+
 // for client only
-#define MM_LOGIN2_INTERVAL		(1*1000)	// milliseconds
-#define MM_LOGIN2_RETRIES		5
+#define MM_LOGIN2_INTERVAL		3*1000	// milliseconds
+#define MM_LOGIN2_RETRIES		7
 
 extern cvar_t *mm_url;
 

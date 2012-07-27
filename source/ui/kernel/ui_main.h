@@ -46,6 +46,7 @@ class DurationFormatter;
 class CrosshairFormatter;
 class FiletypeFormatter;
 class ColorCodeFormatter;
+class EmptyFormatter;
 
 class UI_Main
 {
@@ -119,6 +120,8 @@ private:
 	void reloadUI( void );
 
 	bool initRocket( void );
+	void registerRocketCustoms( void );
+	void unregisterRocketCustoms( void );
 	void shutdownRocket( void );
 
 	void loadCursor( void );
@@ -138,6 +141,7 @@ private:
 	FiletypeFormatter *filetype_fmt;
 	ColorCodeFormatter *colorcode_fmt;
 	CrosshairFormatter *crosshair_fmt;
+	EmptyFormatter *empty_fmt;
 
 	ServerBrowserDataSource *serverBrowser;
 	GameTypesDataSource *gameTypes;

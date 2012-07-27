@@ -672,6 +672,10 @@ static stat_query_t *G_Match_GenerateReport( void )
 	// FIXME: globalize this
 	const char *weapnames[] = { "gb", "mg", "rg", "gl", "rl", "pg", "lg", "eb", "ig" };
 
+	// Feature: do not report matches with duration less than 1 minute (actually 66 seconds)
+	if( ( game.serverTime - GS_MatchStartTime() ) <= 66 * 1000 )
+		return 0;
+
 	query = sq_api->CreateQuery( "smr", qfalse );
 	if( !query )
 		return 0;
@@ -735,7 +739,7 @@ static stat_query_t *G_Match_GenerateReport( void )
 		sq_api->SetNumber( playersection, "dmg_taken", cl->stats.total_damage_received );
 		sq_api->SetNumber( playersection, "health_taken", cl->stats.health_taken );
 		sq_api->SetNumber( playersection, "armor_taken", cl->stats.armor_taken );
-		sq_api->SetNumber( playersection, "ga_taken", cl->stats.ya_taken );
+		sq_api->SetNumber( playersection, "ga_taken", cl->stats.ga_taken );
 		sq_api->SetNumber( playersection, "ya_taken", cl->stats.ya_taken );
 		sq_api->SetNumber( playersection, "ra_taken", cl->stats.ra_taken );
 		sq_api->SetNumber( playersection, "mh_taken", cl->stats.mh_taken );

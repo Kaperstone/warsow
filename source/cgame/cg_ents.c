@@ -335,7 +335,7 @@ static void CG_SetFramePlayerState( snapshot_t *frame, int index )
 		!frame->playerState.pmove.stats[PM_STAT_ZOOMTIME] )
 	{
 		frame->playerState.fov = cg_fov->integer;
-		clamp( frame->playerState.fov, 60, 160 );
+		clamp( frame->playerState.fov, MIN_FOV, MAX_FOV );
 	}
 
 	if( cgs.tv )

@@ -34,7 +34,7 @@ class SelectableDataGrid : public ElementDataGrid
 {
 public:
 	SelectableDataGrid( const String& tag ) : 
-		ElementDataGrid(tag), lastSelectedRow( NULL )
+		ElementDataGrid(tag), lastSelectedRow( NULL ), lastSelectedRowIndex( -1 )
 	{
 		SetProperty( "selected-row", "-1" );
 	}
@@ -55,10 +55,11 @@ public:
 
 		if( evt == "click" )
 		{
-			Element* elem = evt.GetTargetElement();
+			Element* elem;
 			int column = -1;
 
 			// get the column index
+			elem = evt.GetTargetElement();
 			while( elem && elem->GetTagName() != "datagridcell" ) {
 				elem = elem->GetParentNode();
 			}
@@ -67,6 +68,7 @@ public:
 			}
 
 			// get the row element
+			elem = evt.GetTargetElement();
 			while( elem && elem->GetTagName() != "datagridrow" ) {
 				elem = elem->GetParentNode();
 			}
@@ -91,6 +93,7 @@ public:
 
 				// select clicked row
 				lastSelectedRow = row;
+				lastSelectedRowIndex = index;
 
 				Rocket::Core::String indexStr(toString( index ).c_str());
 				this->SetProperty( "selected-row", indexStr );
@@ -104,10 +107,27 @@ public:
 				DispatchEvent( "rowselect", parameters );
 			}
 		}
+		else if( evt == "rowremove" )
+		{
+			int numRowsRemoved = evt.GetParameter< int >("num_rows_removed", 0);
+			if( !numRowsRemoved ) {
+				return;
+			}
+
+			int firstRowRemoved = evt.GetParameter< int >("first_row_removed", 0);
+			if( lastSelectedRowIndex >= firstRowRemoved && lastSelectedRowIndex < firstRowRemoved + numRowsRemoved ) {
+				lastSelectedRow->RemoveReference();
+				lastSelectedRow = NULL;
+
+				lastSelectedRowIndex = -1;
+				this->SetProperty( "selected-row", "-1" );
+			}
+		}
 	}
 
 private:
 	Element *lastSelectedRow;
+	int lastSelectedRowIndex;
 };
 
 //=====================

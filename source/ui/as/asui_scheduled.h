@@ -69,7 +69,7 @@ namespace ASUI {
 		ASInterface *asmodule;
 		int counter;
 
-		typedef std::map<int, ScheduledFunction>  FunctionMap;
+		typedef std::map<int, ScheduledFunction *>  FunctionMap;
 		FunctionMap functions;
 
 	};

@@ -20,33 +20,23 @@ ScheduledFunction::ScheduledFunction( asIScriptFunction *func, unsigned int dela
 {
 	if( any ) {
 		funcPtr2 = ASBind::CreateFunctionPtr( func, funcPtr2 );
-		if( funcPtr2.isValid() ) {
-			func->AddRef();
-		}
+		funcPtr2.addref();
 		any->AddRef();
 	}
 	else {
 		funcPtr = ASBind::CreateFunctionPtr( func, funcPtr );
-		if( funcPtr.isValid() ) {
-			func->AddRef();
-		}
+		funcPtr.addref();
 	}
-
-	/* TODO: intervalled function should be called right away? */
 }
 
 ScheduledFunction::~ScheduledFunction()
 {
 	if( any ) {
-		if( funcPtr2.isValid() ) {
-			funcPtr2.release();
-		}
+		funcPtr2.release();
 		any->Release();
 	}
 	else {
-		if( funcPtr.isValid() ) {
-			funcPtr.release();
-		}
+		funcPtr.release();
 	}
 }
 
@@ -97,7 +87,7 @@ FunctionCallScheduler::FunctionCallScheduler( ASInterface *asmodule )
 
 FunctionCallScheduler::~FunctionCallScheduler()
 {
-
+	functions.clear();
 }
 
 void FunctionCallScheduler::init( ASInterface *_asmodule )
@@ -110,8 +100,11 @@ void FunctionCallScheduler::update( void )
 {
 	for( FunctionMap::iterator it = functions.begin(); it!= functions.end(); )
 	{
-		if( !it->second.run() )
+		ScheduledFunction *func = it->second;
+		if( !func->run() ) {
 			functions.erase( it++ );
+			__delete__( func );
+		}
 		else
 			it++;
 	}
@@ -121,43 +114,45 @@ void FunctionCallScheduler::shutdown( void )
 {
 	for( FunctionMap::iterator it = functions.begin(); it!= functions.end(); )
 	{
+		ScheduledFunction *func = it->second;
 		functions.erase( it++ );
+		__delete__( func );
 	}
 }
 
 int FunctionCallScheduler::setTimeout( asIScriptFunction *func, unsigned int ms )
 {
-	// I'm not entirely sure why this is NOT needed
-//	func->AddRef();
-	functions[counter] = ScheduledFunction( func, ms, false, NULL, this );
+	functions[counter] = __new__( ScheduledFunction )( func, ms, false, NULL, this );
+	if( func ) {
+		func->Release();
+	}
 	return counter++;
 }
 
 int FunctionCallScheduler::setInterval( asIScriptFunction *func, unsigned int ms )
 {
-	// I'm not entirely sure why this is NOT needed
-//	func->AddRef();
-	functions[counter] = ScheduledFunction( func, ms, true, NULL, this );
+	functions[counter] = __new__( ScheduledFunction )( func, ms, true, NULL, this );
+	if( func ) {
+		func->Release();
+	}
 	return counter++;
 }
 
 int FunctionCallScheduler::setTimeout( asIScriptFunction *func, unsigned int ms, CScriptAnyInterface &any )
 {
-	any.AddRef();
-
-	// I'm not entirely sure why this is NOT needed
-//	func->AddRef();
-	functions[counter] = ScheduledFunction( func, ms, false, &any, this );
+	functions[counter] = __new__( ScheduledFunction )( func, ms, false, &any, this );
+	if( func ) {
+		func->Release();
+	}
 	return counter++;
 }
 
 int FunctionCallScheduler::setInterval( asIScriptFunction *func, unsigned int ms, CScriptAnyInterface &any )
 {
-	any.AddRef();
-
-	// I'm not entirely sure why this is NOT needed
-//	func->AddRef();
-	functions[counter] = ScheduledFunction( func, ms, true, &any, this );
+	functions[counter] = __new__( ScheduledFunction )( func, ms, true, &any, this );
+	if( func ) {
+		func->Release();
+	}
 	return counter++;
 }
 

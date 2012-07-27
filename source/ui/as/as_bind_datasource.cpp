@@ -50,12 +50,23 @@ static DataSource *DataSource_GetDataSource( const asstring_t &name )
 
 void PrebindDataSource( ASInterface *as )
 {
-	ASBind::Class<Rocket::Controls::DataSource, ASBind::class_nocount>( as->getEngine() );
+	ASBind::Class<Rocket::Controls::DataSource, ASBind::class_ref>( as->getEngine() );
+}
+
+void aaa( DataSource *ds )
+{
+}
+
+
+void bbb( DataSource *ds )
+{
 }
 
 void BindDataSource( ASInterface *as )
 {
 	ASBind::GetClass<Rocket::Controls::DataSource>( as->getEngine() )
+		.refs( &aaa, &bbb )
+
 		.constmethod( &DataSource_GetName, "get_name", true )
 		.constmethod( &DataSource_GetNumRows, "numRows", true )
 		.constmethod( &DataSource_GetField, "getField", true )

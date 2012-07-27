@@ -1091,23 +1091,23 @@ void ClientUserinfoChanged( edict_t *ent, char *userinfo )
 	s = Info_ValueForKey( userinfo, "fov" );
 	if( !s )
 	{
-		cl->fov = 110;
+		cl->fov = DEFAULT_FOV;
 	}
 	else
 	{
 		cl->fov = atoi( s );
-		clamp( cl->fov, 60, 160 );
+		clamp( cl->fov, MIN_FOV, MAX_FOV );
 	}
 
 	s = Info_ValueForKey( userinfo, "zoomfov" );
 	if( !s )
 	{
-		cl->zoomfov = 30;
+		cl->zoomfov = DEFAULT_ZOOMFOV;
 	}
 	else
 	{
 		cl->zoomfov = atoi( s );
-		clamp( cl->zoomfov, 1, 60 );
+		clamp( cl->zoomfov, MIN_ZOOMFOV, MAX_ZOOMFOV );
 	}
 
 #ifdef UCMDTIMENUDGE
