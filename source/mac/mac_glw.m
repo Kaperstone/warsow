@@ -24,8 +24,10 @@
 #include <OpenGL/OpenGL.h>
 
 #include "../ref_gl/r_local.h"
-#include "../client/keys.h"
+#include "../client/client.h"
 #include "mac_glw.h"
+
+void VID_NewWindow( int width, int height );
 
 glwstate_t glw_state = { NULL, qfalse };
 
@@ -35,20 +37,20 @@ glwstate_t glw_state = { NULL, qfalse };
  * @param fullscreen <code>qtrue</code> for a fullscreen mode,
  *     <code>qfalse</code> otherwise
  */
-int GLimp_SetMode( int mode, qboolean fullscreen )
+rserr_t GLimp_SetMode( int x, int y, int width, int height, qboolean fullscreen, qboolean wideScreen )
 {
-	int width;
-	int height;
 	int colorbits;
-	qboolean wideScreen;
 
+  /*
 	if( !VID_GetModeInfo( &width, &height, &wideScreen, mode ) )
 	{
 		Com_Printf( " invalid mode\n" );
 		return rserr_invalid_mode;
 	}
+   */
 
-	colorbits = r_colorbits->integer;
+	if( r_colorbits->integer == 16 || r_colorbits->integer == 24 ) colorbits = r_colorbits->integer;
+	else colorbits = 0;
 
 #ifdef VIDEOMODE_HACK
 	/*
@@ -97,32 +99,12 @@ int GLimp_SetMode( int mode, qboolean fullscreen )
 }
 
 /**
- * Get current videomode
- */
-
-int GLimp_GetCurrentMode( void )
-{
-	const SDL_VideoInfo *info = NULL;
-
-	info = SDL_GetVideoInfo();
-	if( !info )
-	{
-		Com_Printf( "Video query failed: %s\n", SDL_GetError() );
-		return -1;
-	}
-	Com_Printf( "SDL: Detected resolution %ix%i\n", info->current_w, info->current_h );
-
-	return VID_GetModeNum( info->current_w, info->current_h );
-}
-
-/**
  * Shutdown GLimp sub system.
  */
 void GLimp_Shutdown()
 {
 
 }
-
 
 /**
  * Initialize GLimp sub system.
@@ -173,7 +155,7 @@ void GLimp_BeginFrame( void )
 void GLimp_EndFrame( void )
 {
 	SDL_GL_SwapBuffers();
-	
+
 	if( vid_fullscreen->modified || ( vid_fullscreen->integer && vid_multiscreen_head->modified ) )
 	{
 		Cbuf_ExecuteText( EXEC_APPEND, "vid_restart\n");
@@ -272,4 +254,11 @@ qboolean Sys_SetClipboardData( char *data )
 void Sys_FreeClipboardData( char *data )
 {
 	Q_free( data );
+}
+
+void	Sys_OpenURLInBrowser( const char *url )
+{
+  NSString *string_url = [NSString stringWithUTF8String:url];
+  NSURL *ns_url = [NSURL URLWithString:string_url];
+  [[NSWorkspace sharedWorkspace] openURL:ns_url];
 }

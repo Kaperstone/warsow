@@ -12,7 +12,8 @@ public:
 	ElementDataGridRow@ _beh_9_();&s
 	ElementForm@ _beh_9_();&s
 	ElementFormControl@ _beh_9_();&s
-	OptionsForm@ _beh_9_();&s
+	ElementTabSet@ _beh_9_();&s
+	ElementOptionsForm@ _beh_9_();&s
 
 	/* object methods */
 	bool setProp(const String&in, const String&in);

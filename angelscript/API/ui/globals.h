@@ -68,6 +68,13 @@ typedef enum
 
 typedef enum
 {
+	DOWNLOADTYPE_NONE = 0x0,
+	DOWNLOADTYPE_SERVER = 0x1,
+	DOWNLOADTYPE_WEB = 0x2,
+} eDownloadType;
+
+typedef enum
+{
 	MM_LOGIN_STATE_LOGGED_OUT = 0x0,
 	MM_LOGIN_STATE_IN_PROGRESS = 0x1,
 	MM_LOGIN_STATE_LOGGED_IN = 0x2,

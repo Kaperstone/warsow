@@ -56,7 +56,8 @@ cvar_t *cg_crosshair_strong_color;
 cvar_t *cg_crosshair_damage_color;
 
 cvar_t *cg_clientHUD;
-cvar_t *cg_debug_HUD;
+cvar_t *cg_specHUD;
+cvar_t *cg_debugHUD;
 cvar_t *cg_showSpeed;
 cvar_t *cg_showPickup;
 cvar_t *cg_showTimer;
@@ -281,6 +282,7 @@ void CG_ScreenInit( void )
 	cg_crosshair_strong_color->modified = qtrue;
 
 	cg_clientHUD =		trap_Cvar_Get( "cg_clientHUD", "default", CVAR_ARCHIVE );
+	cg_specHUD =		trap_Cvar_Get( "cg_specHUD", "default", CVAR_ARCHIVE );
 	cg_showTimer =		trap_Cvar_Get( "cg_showTimer", "1", CVAR_ARCHIVE );
 	cg_showSpeed =		trap_Cvar_Get( "cg_showSpeed", "0", CVAR_ARCHIVE );
 	cg_showPickup =		trap_Cvar_Get( "cg_showPickup", "1", CVAR_ARCHIVE );
@@ -303,7 +305,8 @@ void CG_ScreenInit( void )
 	cg_scoreboardWidthScale = trap_Cvar_Get( "cg_scoreboardWidthScale", "1.0", CVAR_ARCHIVE );
 
 	// wsw : hud debug prints
-	cg_debug_HUD =		    trap_Cvar_Get( "cg_debug_HUD", "0", 0 );
+	cg_debugHUD =		    trap_Cvar_Get( "cg_debugHUD", "0", 0 );
+
 	//
 	// register our commands
 	//
@@ -1270,10 +1273,26 @@ void CG_Draw2DView( void )
 		cg.motd = NULL;
 	}
 
-	if( cg_clientHUD->modified )
+	// if changed from or to spec, reload the HUD
+	if (SPECSTATECHANGED()) {
+		cg_specHUD->modified = cg_clientHUD->modified = qtrue;
+	}
+
+	if (ISREALSPECTATOR())
 	{
-		CG_LoadStatusBar();
-		cg_clientHUD->modified = qfalse;
+		if( cg_specHUD->modified )
+		{
+			CG_LoadStatusBar();
+			cg_specHUD->modified = qfalse;
+		}
+	}
+	else
+	{
+		if( cg_clientHUD->modified )
+		{
+			CG_LoadStatusBar();
+			cg_clientHUD->modified = qfalse;
+		}
 	}
 
 	drawScoreboard = qfalse;

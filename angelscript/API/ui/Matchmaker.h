@@ -15,5 +15,6 @@ public:
 	String@ get_lastError() const;
 	String@ get_user() const;
 	String@ profileURL(bool) const;
+	String@ baseWebURL() const;
 };
 

@@ -22,11 +22,15 @@ public:
 	int get_height() const;
 	uint history_size() const;
 	void history_back() const;
+	void startLocalSound(const String&in) const;
+	void startBackgroundTrack(String&in, String&in, bool arg2 = true) const;
+	void stopBackgroundTrack() const;
 	int setTimeout(TimerCallback@, uint);
 	int setInterval(TimerCallback@, uint);
 	int setTimeout(TimerCallback2@, uint, any&in);
 	int setInterval(TimerCallback2@, uint, any&in);
 	void clearTimeout(int);
 	void clearInterval(int);
+	void flash(uint);
 };
 

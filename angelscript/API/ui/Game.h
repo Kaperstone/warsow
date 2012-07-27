@@ -10,9 +10,6 @@ public:
 
 	/* object methods */
 	const DemoInfo& get_demo() const;
-	void startLocalSound() const;
-	void startBackgroundTrack(String&in, String&in, bool arg2 = true) const;
-	void stopBackgroundTrack() const;
 	String@ get_name() const;
 	String@ configString(int) const;
 	String@ cs(int) const;
@@ -23,5 +20,8 @@ public:
 	void execInsert(const String&in) const;
 	void print(const String&in) const;
 	void dprint(const String&in) const;
+	String@ get_serverName() const;
+	String@ get_rejectMessage() const;
+	const DownloadInfo& get_download() const;
 };
 

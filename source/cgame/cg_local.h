@@ -277,6 +277,7 @@ typedef struct
 	cgs_media_handle_t *shaderElectroBeamBBeta;
 	cgs_media_handle_t *shaderInstaBeam;
 	cgs_media_handle_t *shaderLaserGunBeam;
+	cgs_media_handle_t *shaderLaserGunBeamOld;
 	cgs_media_handle_t *shaderElectroboltMark;
 	cgs_media_handle_t *shaderInstagunMark;
 
@@ -413,6 +414,8 @@ typedef struct
 // this is not exactly "static" but still...
 typedef struct
 {
+	const char *serverName;
+	const char *demoName;
 	unsigned int playerNum;
 
 	// shaders
@@ -598,6 +601,9 @@ extern cg_state_t cg;
 
 #define ISVIEWERENTITY( entNum )  ( ( cg.predictedPlayerState.POVnum > 0 ) && ( (int)cg.predictedPlayerState.POVnum == entNum ) && ( cg.view.type == VIEWDEF_PLAYERVIEW ) )
 #define ISBRUSHMODEL( x ) ( ( ( x > 0 ) && ( (int)x < trap_CM_NumInlineModels() ) ) ? qtrue : qfalse )
+
+#define ISREALSPECTATOR()		(cg.frame.playerState.stats[STAT_REALTEAM] == TEAM_SPECTATOR)
+#define SPECSTATECHANGED()		((cg.frame.playerState.stats[STAT_REALTEAM] == TEAM_SPECTATOR) != (cg.oldFrame.playerState.stats[STAT_REALTEAM] == TEAM_SPECTATOR))
 
 extern centity_t cg_entities[MAX_EDICTS];
 
@@ -833,8 +839,6 @@ extern cvar_t *cg_forceTeamPlayersTeamBeta;
 
 extern cvar_t *cg_teamColoredBeams;
 
-extern cvar_t *cg_demoname;
-
 extern cvar_t *cg_playList;
 extern cvar_t *cg_playListShuffle;
 
@@ -844,7 +848,7 @@ extern cvar_t *cg_flashWindowCount;
 #define CG_Free( data ) trap_MemFree( data, __FILE__, __LINE__ )
 
 int CG_API( void );
-void CG_Init( unsigned int playerNum, int vidWidth, int vidHeight, qboolean demoplaying, qboolean pure, unsigned int snapFrameTime, int protocol, int sharedSeed );
+void CG_Init( const char *serverName, unsigned int playerNum, int vidWidth, int vidHeight, qboolean demoplaying, const char *demoName, qboolean pure, unsigned int snapFrameTime, int protocol, int sharedSeed );
 void CG_Shutdown( void );
 void CG_ValidateItemDef( int tag, char *name );
 void CG_Printf( const char *format, ... );
@@ -868,9 +872,9 @@ void CG_LocalPrint( qboolean team, const char *format, ... );
 //
 // cg_svcmds.c
 //
-void CG_Cmd_DemoGet_f( void );
 void CG_ConfigString( int i, const char *s );
 void CG_GameCommand( const char *command );
+void CG_SC_AutoRecordAction( const char *action );
 
 //
 // cg_teams.c
@@ -964,6 +968,7 @@ extern cvar_t *cg_ebbeam_time;
 extern cvar_t *cg_instabeam_width;
 extern cvar_t *cg_instabeam_alpha;
 extern cvar_t *cg_instabeam_time;
+extern cvar_t *cg_lgbeam_old;
 
 void CG_ClearPolys( void );
 void CG_AddPolys( void );

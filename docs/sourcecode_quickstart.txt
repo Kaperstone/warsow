@@ -4,7 +4,7 @@
   Author           : Bart Meuris (KoFFiE)
   E-Mail           : bart.meuris@gmail.com
   Start date       : 2007-10-17
-  Last modified    : 2007-10-17
+  Last modified    : 2012-06-14
   Maintainer       : Bart Meuris
 ------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
@@ -92,6 +92,10 @@ irc        : built-in IRC client module
 null       : Empty implementations of the client module and platform specific
              video initialisation for dedicated servers. Also contains an
              empty platform sys implementation (sys_null.c) to help porting.
+angelwrap  : Angelscript module, exporting C++ API to the game module which
+             is written in plain C and and the C++ UI module
+cin        : Video codecs module
+matchmaker : Interface to remote matchmaking and statistics system
 
 For the sound sub-system, 2 different backends exist at the moment, which are
 dynamicly loadable. These are:

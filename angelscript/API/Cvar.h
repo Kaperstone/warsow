@@ -12,11 +12,11 @@ public:
 
 	/* object methods */
 	void reset();
-	void set(String&in);
+	void set(const String&in);
 	void set(float);
 	void set(int);
 	void set(double);
-	void forceSet(String&in);
+	void forceSet(const String&in);
 	void forceSet(float);
 	void forceSet(int);
 	void forceSet(double);
