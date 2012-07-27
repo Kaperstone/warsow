@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tvm_local.h"
 
@@ -373,7 +373,7 @@ void TVM_ClientThink( tvm_relay_t *relay, edict_t *ent, usercmd_t *ucmd, int tim
 	else
 	{
 		edict_t *spec;
-		
+
 		if( ent->relay->playernum < 0 )
 			spec = NULL;
 		else
@@ -404,7 +404,7 @@ void TVM_ClientThink( tvm_relay_t *relay, edict_t *ent, usercmd_t *ucmd, int tim
 	pm.cmd = *ucmd;
 	pm.playerState = &client->ps;
 	pm.playerState->pmove.stats[PM_STAT_MAXSPEED] = 320;
-	
+
 	VectorCopy( ent->r.mins, pm.mins );
 	VectorCopy( ent->r.maxs, pm.maxs );
 

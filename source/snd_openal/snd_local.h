@@ -49,6 +49,7 @@ extern struct mempool_s *soundpool;
 typedef struct sfx_s
 {
 	char filename[MAX_QPATH];
+	int registration_sequence;
 	ALuint buffer;      // OpenAL buffer
 	qboolean inMemory;
 	qboolean isLocked;
@@ -79,7 +80,9 @@ void S_Error( const char *format, ... );
 qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose );
 void S_Shutdown( qboolean verbose );
 
-void S_SoundsInMemory( void );
+void S_BeginRegistration( void );
+void S_EndRegistration( void );
+
 void S_FreeSounds( void );
 void S_StopAllSounds( void );
 
@@ -102,7 +105,8 @@ void S_StartLocalSound( const char *s );
 void S_AddLoopSound( struct sfx_s *sfx, int entnum, float fvol, float attenuation );
 
 // cinema
-void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *data, qboolean music );
+void S_RawSamples( unsigned int samples, unsigned int rate, unsigned short width, unsigned short channels, const qbyte *data, qboolean music );
+unsigned int S_GetRawSamplesTime( void );
 
 // music
 void S_StartBackgroundTrack( const char *intro, const char *loop );
@@ -110,12 +114,14 @@ void S_StopBackgroundTrack( void );
 void S_PrevBackgroundTrack( void );
 void S_NextBackgroundTrack( void );
 void S_PauseBackgroundTrack( void );
+void S_LockBackgroundTrack( qboolean lock );
 
 /*
 * Util (snd_main.c)
 */
 ALuint S_SoundFormat( int width, int channels );
 const char *S_ErrorMessage( ALenum error );
+ALfloat S_GetBufferLength( ALuint buffer );
 
 /*
 * Buffer management
@@ -187,6 +193,7 @@ typedef struct snd_decoder_s snd_decoder_t;
 typedef struct snd_stream_s
 {
 	snd_decoder_t *decoder;
+	qboolean isUrl;
 	snd_info_t info; // TODO: Change to AL_FORMAT?
 	void *ptr; // decoder specific stuff
 } snd_stream_t;
@@ -195,6 +202,7 @@ typedef struct bgTrack_s
 {
 	char *filename;
 	qboolean ignore;
+	qboolean isUrl;
 	snd_stream_t *stream;
 
 	struct bgTrack_s *next; // the next track to be played, the looping part aways points to itself
@@ -205,10 +213,13 @@ typedef struct bgTrack_s
 qboolean S_InitDecoders( qboolean verbose );
 void S_ShutdownDecoders( qboolean verbose );
 void *S_LoadSound( const char *filename, snd_info_t *info );
-snd_stream_t *S_OpenStream( const char *filename );
-int S_ReadStream( snd_stream_t *stream, int bytes, void *buffer, qboolean loop );
+snd_stream_t *S_OpenStream( const char *filename, qboolean *delay );
+qboolean S_ContOpenStream( snd_stream_t *stream );
+int S_ReadStream( snd_stream_t *stream, int bytes, void *buffer );
 void S_CloseStream( snd_stream_t *stream );
-void S_ResetStream( snd_stream_t *stream );
+qboolean S_ResetStream( snd_stream_t *stream );
+qboolean S_EoStream( snd_stream_t *stream );
+int S_FTellSteam( snd_stream_t *stream );
 
 void S_BeginAviDemo( void );
 void S_StopAviDemo( void );

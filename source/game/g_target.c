@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 #include "g_local.h"
 
 //QUAKED target_temp_entity (1 0 0) (-8 -8 -8) (8 8 8)
@@ -136,7 +136,7 @@ static void target_explosion_explode( edict_t *self )
 	int radius;
 	edict_t *event;
 
-	G_TakeRadiusDamage( self, self->activator, NULL, NULL, MOD_EXPLOSIVE );
+	G_RadiusDamage( self, self->activator, NULL, NULL, MOD_EXPLOSIVE );
 
 	if( ( self->projectileInfo.radius * 1/8 ) > 255 )
 	{
@@ -144,7 +144,6 @@ static void target_explosion_explode( edict_t *self )
 		if( radius < 1 )
 			radius = 1;
 		event = G_SpawnEvent( EV_EXPLOSION2, radius, self->s.origin );
-		event->r.svflags |= SVF_NOORIGIN2;
 	}
 	else
 	{
@@ -152,7 +151,6 @@ static void target_explosion_explode( edict_t *self )
 		if( radius < 1 )
 			radius = 1;
 		event = G_SpawnEvent( EV_EXPLOSION1, radius, self->s.origin );
-		event->r.svflags |= SVF_NOORIGIN2;
 	}
 
 	save = self->delay;
@@ -196,23 +194,23 @@ Changes level to "map" when fired
 */
 void use_target_changelevel( edict_t *self, edict_t *other, edict_t *activator )
 {
-//	if( GS_MatchState() >= MATCH_STATE_POSTMATCH )
-		return;		// allready activated
-/*
+	//	if( GS_MatchState() >= MATCH_STATE_POSTMATCH )
+	return;		// allready activated
+	/*
 	if( 0 )
 	{
-		// if noexit, do a ton of damage to other
-		if( noexit->value && other != world )
-		{
-			T_Damage( other, self, self, vec3_origin, other->s.origin, vec3_origin, 10 * other->max_health, 1000, 0 );
-			return;
-		}
-
-		// let everyone know who hit the exit
-		if( other && other->client )
-			G_Printf( "%s exited the level.\n", other->client->pers.netname);
+	// if noexit, do a ton of damage to other
+	if( noexit->value && other != world )
+	{
+	T_Damage( other, self, self, vec3_origin, other->s.origin, vec3_origin, 10 * other->max_health, 1000, 0 );
+	return;
 	}
-*/
+
+	// let everyone know who hit the exit
+	if( other && other->client )
+	G_Printf( "%s exited the level.\n", other->client->pers.netname);
+	}
+	*/
 	trap_Cvar_SetValue( "g_maprotation", -1 );
 	G_Match_LaunchState( MATCH_STATE_POSTMATCH );
 }
@@ -383,12 +381,12 @@ static void target_laser_think( edict_t *self )
 			if( game.edicts[tr.ent].r.client && self->activator->r.client )
 			{
 				if( !GS_TeamBasedGametype() ||
-				    game.edicts[tr.ent].s.team != self->activator->s.team )
-					G_TakeDamage( &game.edicts[tr.ent], self, self->activator, self->moveinfo.movedir, self->moveinfo.movedir, tr.endpos, self->dmg, 1, 0, 0, self->count );
+					game.edicts[tr.ent].s.team != self->activator->s.team )
+					G_Damage( &game.edicts[tr.ent], self, self->activator, self->moveinfo.movedir, self->moveinfo.movedir, tr.endpos, self->dmg, 1, 0, 0, self->count );
 			}
 			else
 			{
-				G_TakeDamage( &game.edicts[tr.ent], self, self->activator, self->moveinfo.movedir, self->moveinfo.movedir, tr.endpos, self->dmg, 1, 0, 0, self->count );
+				G_Damage( &game.edicts[tr.ent], self, self->activator, self->moveinfo.movedir, self->moveinfo.movedir, tr.endpos, self->dmg, 1, 0, 0, self->count );
 			}
 		}
 
@@ -413,6 +411,10 @@ static void target_laser_think( edict_t *self )
 	}
 
 	VectorCopy( tr.endpos, self->s.origin2 );
+	G_SetBoundsForSpanEntity( self, 8 );
+
+	GClip_LinkEntity( self );
+
 	self->nextThink = level.time + 1;
 }
 
@@ -490,10 +492,6 @@ void target_laser_start( edict_t *self )
 
 	if( !self->dmg )
 		self->dmg = 1;
-
-	VectorSet( self->r.mins, -8, -8, -8 );
-	VectorSet( self->r.maxs, 8, 8, 8 );
-	GClip_LinkEntity( self );
 
 	if( self->spawnflags & 1 )
 		target_laser_on( self );
@@ -581,9 +579,9 @@ static void target_lightramp_use( edict_t *self, edict_t *other, edict_t *activa
 void SP_target_lightramp( edict_t *self )
 {
 	if( !self->message || strlen( self->message ) != 2 ||
-	    self->message[0] < 'a' || self->message[0] > 'z' ||
-	    self->message[1] < 'a' || self->message[1] > 'z' ||
-	    self->message[0] == self->message[1] )
+		self->message[0] < 'a' || self->message[0] > 'z' ||
+		self->message[1] < 'a' || self->message[1] > 'z' ||
+		self->message[0] == self->message[1] )
 	{
 		if( developer->integer )
 			G_Printf( "target_lightramp has bad ramp (%s) at %s\n", self->message, vtos( self->s.origin ) );
@@ -690,29 +688,20 @@ void SP_target_position( edict_t *self )
 //notctf : when set to 1, entity will not spawn in "Teamplay" and "CTF" modes. (jal: todo)
 void SP_target_location( edict_t *self )
 {
+	int location;
+
 	self->r.svflags |= SVF_NOCLIENT;
 
 	// wsw : jal : locations names
-	if( self->count > 0 && self->count < 10 )
-	{
-		G_RegisterMapLocationName( va( "%c%c%s", Q_COLOR_ESCAPE, self->count + '0', self->message ) );
+	if( self->count > 0 && self->count < 10 ) {
+		location = G_RegisterMapLocationName( va( "%c%c%s", Q_COLOR_ESCAPE, self->count + '0', self->message ) );
 	}
-	else
-	{
-		G_RegisterMapLocationName( self->message );
+	else {
+		location = G_RegisterMapLocationName( self->message );
 	}
 
-	if( self->count )
-	{
-		if( self->count < 0 )
-		{
-			self->count = 0;
-		}
-		else if( self->count > 7 )
-		{
-			self->count = 7;
-		}
-	}
+	clamp( self->count, 0, 7 );
+	self->style = location;
 }
 
 

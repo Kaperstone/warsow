@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tvm_local.h"
 
@@ -79,10 +79,14 @@ static void TVM_UpdateStatNums( tvm_relay_t *relay )
 {
 	const char *stats;
 
-	stats = relay->configStrings[CS_SCORESTATNUMS];
+	stats = relay->configStrings[CS_STATNUMS];
 	relay->stats.frags = atoi( COM_Parse( &stats ) );
+	relay->stats.health = atoi( COM_Parse( &stats ) );
+	relay->stats.last_killer = atoi( COM_Parse( &stats ) );
 
 	clamp( relay->stats.frags, 0, PS_MAX_STATS-1 );
+	clamp( relay->stats.health, 0, PS_MAX_STATS-1 );
+	clamp( relay->stats.last_killer, 0, PS_MAX_STATS-1 );
 }
 
 
@@ -97,6 +101,7 @@ static void TVM_UpdatePowerupFXNums( tvm_relay_t *relay )
 	relay->effects.quad = atoi( COM_Parse( &effects ) );
 	relay->effects.shell = atoi( COM_Parse( &effects ) );
 	relay->effects.enemy_flag = atoi( COM_Parse( &effects ) );
+	relay->effects.regen = atoi( COM_Parse( &effects ) );
 }
 
 //============
@@ -174,18 +179,33 @@ qboolean TVM_ConfigString( tvm_relay_t *relay, int number, const char *value )
 
 	switch( number )
 	{
-		case CS_TVSERVER:
-			TVM_UpdateServerSettings( relay );
-			break;
-		case CS_SCORESTATNUMS:
-			TVM_UpdateStatNums( relay );
-			break;
-		case CS_POWERUPEFFECTS:
-			TVM_UpdatePowerupFXNums( relay );
-			break;
-		default:
-			break;
+	case CS_TVSERVER:
+		TVM_UpdateServerSettings( relay );
+		break;
+	case CS_STATNUMS:
+		TVM_UpdateStatNums( relay );
+		break;
+	case CS_POWERUPEFFECTS:
+		TVM_UpdatePowerupFXNums( relay );
+		break;
+	default:
+		break;
 	}
 
 	return ( !relay->configStringsOverwritten[number] );
+}
+
+//=================
+//TVM_SetAudoTrack
+//=================
+void TVM_SetAudoTrack( tvm_relay_t *relay, const char *track )
+{
+	if( !track ) {
+		relay->configStringsOverwritten[CS_AUDIOTRACK] = qfalse;
+		track = relay->configStrings[CS_AUDIOTRACK];
+	} else {
+		relay->configStringsOverwritten[CS_AUDIOTRACK] = qtrue;
+	}
+
+	trap_ConfigString( relay, CS_AUDIOTRACK, track ? track : "" );
 }

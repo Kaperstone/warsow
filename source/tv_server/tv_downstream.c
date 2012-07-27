@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -28,9 +28,9 @@
 #include "tv_downstream_oob.h"
 #include "tv_relay_client.h"
 
-//=============
-//TV_Downstream_ClientResetCommandBuffers
-//=============
+/*
+* TV_Downstream_ClientResetCommandBuffers
+*/
 void TV_Downstream_ClientResetCommandBuffers( client_t *client, qboolean resetReliable )
 {
 	// clear the sounds datagram
@@ -60,9 +60,9 @@ void TV_Downstream_ClientResetCommandBuffers( client_t *client, qboolean resetRe
 	memset( client->ucmds, 0, sizeof( client->ucmds ) );
 }
 
-//===============
-//TV_Downstream_AddGameCommand
-//===============
+/*
+* TV_Downstream_AddGameCommand
+*/
 void TV_Downstream_AddGameCommand( relay_t *relay, client_t *client, const char *cmd )
 {
 	int index;
@@ -87,11 +87,11 @@ void TV_Downstream_AddGameCommand( relay_t *relay, client_t *client, const char 
 	}
 }
 
-//============
-//TV_Downstream_Msg
-//
-//NULL sends to all the message to all clients
-//============
+/*
+* TV_Downstream_Msg
+* 
+* NULL sends to all the message to all clients
+*/
 void TV_Downstream_Msg( client_t *client, relay_t *relay, client_t *who, qboolean chat, const char *format, ... )
 {
 	int i;
@@ -147,13 +147,13 @@ static void strip_highchars( char *in )
 	*out = 0;
 }
 
-//===========
-//TV_Downstream_FixName
-//
-// Make name valid, so it's not used by anyone else or so. See G_SetName
-// Client can be given, so conflict with that client's name won't matter
-// The returned value will be overwritten by the next call to this function
-//============
+/*
+* TV_Downstream_FixName
+* 
+* Make name valid, so it's not used by anyone else or so. See G_SetName
+* Client can be given, so conflict with that client's name won't matter
+* The returned value will be overwritten by the next call to this function
+*/
 char *TV_Downstream_FixName( const char *original_name, client_t *client )
 {
 	const char *invalid_prefixes[] = { "console", "[team]", "[spec]", "[bot]", "[coach]", "[tv]", NULL };
@@ -251,12 +251,12 @@ char *TV_Downstream_FixName( const char *original_name, client_t *client )
 	return name;
 }
 
-//=================
-//TV_Downstream_UserinfoChanged
-//
-//Pull specific info from a newly changed userinfo string
-//into a more C friendly form.
-//=================
+/*
+* TV_Downstream_UserinfoChanged
+* 
+* Pull specific info from a newly changed userinfo string
+* into a more C friendly form.
+*/
 void TV_Downstream_UserinfoChanged( client_t *client )
 {
 	char *val;
@@ -295,9 +295,9 @@ void TV_Downstream_UserinfoChanged( client_t *client )
 	}
 }
 
-//==================
-//TV_Downstream_Netchan_Transmit
-//==================
+/*
+* TV_Downstream_Netchan_Transmit
+*/
 static qboolean TV_Downstream_Netchan_Transmit( netchan_t *netchan, msg_t *msg )
 {
 	int zerror;
@@ -319,12 +319,12 @@ static qboolean TV_Downstream_Netchan_Transmit( netchan_t *netchan, msg_t *msg )
 	return Netchan_Transmit( netchan, msg );
 }
 
-//======================
-//TV_Downstream_AddServerCommand
-//
-//The given command will be transmitted to the client, and is guaranteed to
-//not have future snapshot_t executed before it is executed
-//======================
+/*
+* TV_Downstream_AddServerCommand
+* 
+* The given command will be transmitted to the client, and is guaranteed to
+* not have future snapshot_t executed before it is executed
+*/
 void TV_Downstream_AddServerCommand( client_t *client, const char *cmd )
 {
 	int index;
@@ -335,6 +335,34 @@ void TV_Downstream_AddServerCommand( client_t *client, const char *cmd )
 
 	if( !cmd || !cmd[0] || !strlen( cmd ) )
 		return;
+
+	// ch : To avoid overflow of messages from excessive amount of configstrings
+	// we batch them here. On incoming "cs" command, we'll trackback the queue
+	// to find a pending "cs" command that has space in it. If we'll find one,
+	// we'll batch this there, if not, we'll create a new one.
+	if( !strncmp( cmd, "cs ", 3 ) )
+	{
+		// length of the index/value (leave room for one space and null char)
+		size_t len = strlen( cmd ) - 1;
+		for( i = client->reliableSequence; i > client->reliableAcknowledge; i-- )
+		{
+			size_t otherLen;
+			char *otherCmd;
+
+			otherCmd= client->reliableCommands[i & ( MAX_RELIABLE_COMMANDS - 1)];
+			if( !strncmp( otherCmd, "cs ", 3 ) )
+			{
+				otherLen = strlen( otherCmd );
+				// is there any room? (should check for sizeof client->reliableCommands[0]?)
+				if( (otherLen + len) < MAX_STRING_CHARS )
+				{
+					// yahoo, put it in here
+					Q_strncatz( otherCmd, cmd + 2, MAX_STRING_CHARS - 1 );
+					return;
+				}
+			}
+		}
+	}
 
 	client->reliableSequence++;
 	// if we would be losing an old command that hasn't been acknowledged, we must drop the connection
@@ -355,13 +383,13 @@ void TV_Downstream_AddServerCommand( client_t *client, const char *cmd )
 	Q_strncpyz( client->reliableCommands[index], cmd, sizeof( client->reliableCommands[index] ) );
 }
 
-//=================
-//TV_Downstream_SendServerCommand
-//
-//Sends a reliable command string to be interpreted by
-//the client: "cs", "changing", "disconnect", etc
-//A NULL client will broadcast to all clients
-//=================
+/*
+* TV_Downstream_SendServerCommand
+* 
+* Sends a reliable command string to be interpreted by
+* the client: "cs", "changing", "disconnect", etc
+* A NULL client will broadcast to all clients
+*/
 void TV_Downstream_SendServerCommand( client_t *cl, const char *format, ... )
 {
 	va_list	argptr;
@@ -390,11 +418,11 @@ void TV_Downstream_SendServerCommand( client_t *cl, const char *format, ... )
 	}
 }
 
-//==================
-//TV_Downstream_AddReliableCommandsToMessage
-//
-//(re)send all server commands the client hasn't acknowledged yet
-//==================
+/*
+* TV_Downstream_AddReliableCommandsToMessage
+* 
+* (re)send all server commands the client hasn't acknowledged yet
+*/
 void TV_Downstream_AddReliableCommandsToMessage( client_t *client, msg_t *msg )
 {
 	unsigned int i;
@@ -416,9 +444,9 @@ void TV_Downstream_AddReliableCommandsToMessage( client_t *client, msg_t *msg )
 		client->reliableAcknowledge = client->reliableSent;
 }
 
-//=======================
-//TV_Downstream_InitClientMessage
-//=======================
+/*
+* TV_Downstream_InitClientMessage
+*/
 void TV_Downstream_InitClientMessage( client_t *client, msg_t *msg, qbyte *data, size_t size )
 {
 	assert( client );
@@ -439,9 +467,9 @@ void TV_Downstream_InitClientMessage( client_t *client, msg_t *msg, qbyte *data,
 	}
 }
 
-//=======================
-//TV_Downstream_SendMessageToClient
-//=======================
+/*
+* TV_Downstream_SendMessageToClient
+*/
 qboolean TV_Downstream_SendMessageToClient( client_t *client, msg_t *msg )
 {
 	assert( client );
@@ -451,9 +479,9 @@ qboolean TV_Downstream_SendMessageToClient( client_t *client, msg_t *msg )
 }
 
 
-//=====================
-//TV_Downstream_DropClient
-//=====================
+/*
+* TV_Downstream_DropClient
+*/
 void TV_Downstream_DropClient( client_t *drop, int type, const char *format, ... )
 {
 	va_list	argptr;
@@ -516,9 +544,9 @@ void TV_Downstream_DropClient( client_t *drop, int type, const char *format, ...
 	drop->name[0] = 0;
 }
 
-//=================
-// TV_Downstream_ChangeStream
-//=================
+/*
+* TV_Downstream_ChangeStream
+*/
 qboolean TV_Downstream_ChangeStream( client_t *client, relay_t *relay )
 {
 	relay_t *oldrelay;
@@ -557,9 +585,9 @@ qboolean TV_Downstream_ChangeStream( client_t *client, relay_t *relay )
 	return qtrue;
 }
 
-//=================
-// TV_Downstream_ProcessPacket
-//=================
+/*
+* TV_Downstream_ProcessPacket
+*/
 static qboolean TV_Downstream_ProcessPacket( netchan_t *netchan, msg_t *msg )
 {
 	int sequence, sequence_ack;
@@ -587,9 +615,9 @@ static qboolean TV_Downstream_ProcessPacket( netchan_t *netchan, msg_t *msg )
 	return qtrue;
 }
 
-//=================
-//TV_Downstream_ReadPackets
-//=================
+/*
+* TV_Downstream_ReadPackets
+*/
 void TV_Downstream_ReadPackets( void )
 {
 	int i, socketind, ret, game_port;
@@ -708,7 +736,7 @@ void TV_Downstream_ReadPackets( void )
 				if( remoteaddr_port != addr_port )
 				{
 					Com_DPrintf( "%s" S_COLOR_WHITE ": Fixing up a translated port from %i to %i\n", cl->name,
-								 remoteaddr_port, addr_port );
+						remoteaddr_port, addr_port );
 					NET_SetAddressPort( &cl->netchan.remoteAddress, addr_port );
 				}
 
@@ -761,9 +789,9 @@ void TV_Downstream_ReadPackets( void )
 	}
 }
 
-//==================
-//TV_Downstream_CheckTimeouts
-//==================
+/*
+* TV_Downstream_CheckTimeouts
+*/
 void TV_Downstream_CheckTimeouts( void )
 {
 	client_t *client;
@@ -798,7 +826,7 @@ void TV_Downstream_CheckTimeouts( void )
 		}
 
 		if( ( client->state != CS_FREE && client->state != CS_ZOMBIE ) &&
-		   ( client->lastPacketReceivedTime + 1000 * tv_timeout->value < tvs.realtime ) )
+			( client->lastPacketReceivedTime + 1000 * tv_timeout->value < tvs.realtime ) )
 		{
 			TV_Downstream_DropClient( client, DROP_TYPE_GENERAL, "Upstream timed out" );
 			client->state = CS_FREE; // don't bother with zombie state
@@ -808,7 +836,7 @@ void TV_Downstream_CheckTimeouts( void )
 
 		// timeout downloads left open
 		if( ( client->state != CS_FREE && client->state != CS_ZOMBIE ) &&
-		   ( client->download.name && client->download.timeout < tvs.realtime ) )
+			( client->download.name && client->download.timeout < tvs.realtime ) )
 		{
 			Com_Printf( "Download of %s to %s" S_COLOR_WHITE " timed out\n", client->download.name, client->name );
 
@@ -827,9 +855,9 @@ void TV_Downstream_CheckTimeouts( void )
 	}
 }
 
-//=======================
-//TV_Downstream_SendClientsFragments
-//=======================
+/*
+* TV_Downstream_SendClientsFragments
+*/
 qboolean TV_Downstream_SendClientsFragments( void )
 {
 	client_t *client;
@@ -851,7 +879,7 @@ qboolean TV_Downstream_SendClientsFragments( void )
 			if( client->reliable )
 			{
 				TV_Downstream_DropClient( client, DROP_TYPE_GENERAL, "Error sending fragment: %s\n",
-				                         NET_ErrorString() );
+					NET_ErrorString() );
 			}
 			continue;
 		}
@@ -863,9 +891,9 @@ qboolean TV_Downstream_SendClientsFragments( void )
 	return remaining;
 }
 
-//=======================
-//TV_Downstream_SendClientMessages
-//=======================
+/*
+* TV_Downstream_SendClientMessages
+*/
 void TV_Downstream_SendClientMessages( void )
 {
 	int i;
@@ -882,12 +910,12 @@ void TV_Downstream_SendClientMessages( void )
 		if( client->state < CS_SPAWNED )
 		{
 			// send pending reliable commands, or send heartbeats for not timing out
-/*			if( client->reliableSequence > client->reliableSent ||
-   		(client->reliableSequence > client->reliableAcknowledge &&
-   		tvs.realtime - client->lastPacketSentTime > 50) ||
-   		tvs.realtime - client->lastPacketSentTime > 500 ) */
+			/*			if( client->reliableSequence > client->reliableSent ||
+			(client->reliableSequence > client->reliableAcknowledge &&
+			tvs.realtime - client->lastPacketSentTime > 50) ||
+			tvs.realtime - client->lastPacketSentTime > 500 ) */
 			if( client->reliableSequence > client->reliableAcknowledge ||
-			    tvs.realtime - client->lastPacketSentTime > 1000 )
+				tvs.realtime - client->lastPacketSentTime > 1000 )
 			{
 				TV_Downstream_InitClientMessage( client, &message, messageData, sizeof( messageData ) );
 
@@ -898,7 +926,7 @@ void TV_Downstream_SendClientMessages( void )
 					if( client->reliable )
 					{
 						TV_Downstream_DropClient( client, DROP_TYPE_GENERAL, "Error sending message: %s\n",
-						                         NET_ErrorString() );
+							NET_ErrorString() );
 					}
 				}
 			}
@@ -906,9 +934,9 @@ void TV_Downstream_SendClientMessages( void )
 	}
 }
 
-//===================
-//TV_Downstream_FindNextUserCommand - Returns the next valid usercmd_t in execution list
-//===================
+/*
+* TV_Downstream_FindNextUserCommand - Returns the next valid usercmd_t in execution list
+*/
 usercmd_t *TV_Downstream_FindNextUserCommand( client_t *client )
 {
 	usercmd_t *ucmd;
@@ -936,9 +964,9 @@ usercmd_t *TV_Downstream_FindNextUserCommand( client_t *client )
 	return ucmd;
 }
 
-//===================
-//TV_Downstream_ExecuteClientThinks
-//===================
+/*
+* TV_Downstream_ExecuteClientThinks
+*/
 void TV_Downstream_ExecuteClientThinks( relay_t *relay, client_t *client )
 {
 	unsigned int msec, higherTime;
@@ -983,10 +1011,10 @@ void TV_Downstream_ExecuteClientThinks( relay_t *relay, client_t *client )
 
 static netadr_t tv_master_adr[MAX_MASTERS];    // address of group servers
 
-//====================
-//TV_Downstream_AddMaster_f
-//Add a master server to the list
-//====================
+/*
+* TV_Downstream_AddMaster_f
+* Add a master server to the list
+*/
 static void TV_Downstream_AddMaster_f( const char *master )
 {
 	int i;
@@ -1020,10 +1048,10 @@ static void TV_Downstream_AddMaster_f( const char *master )
 	Com_Printf( "'TV_Downstream_AddMaster_f' List of master servers is already full\n" );
 }
 
-//====================
-//TV_Downstream_InitMaster
-//Set up the main master server
-//====================
+/*
+* TV_Downstream_InitMaster
+* Set up the main master server
+*/
 void TV_Downstream_InitMaster( void )
 {
 	int i;
@@ -1052,11 +1080,11 @@ void TV_Downstream_InitMaster( void )
 	tvs.lobby.last_heartbeat = HEARTBEAT_SECONDS * 1000; // wait a while before sending first heartbeat
 }
 
-//================
-//TV_Downstream_MasterHeartbeat
-//Send a message to the master every few minutes to
-//let it know we are alive, and log information
-//================
+/*
+* TV_Downstream_MasterHeartbeat
+* Send a message to the master every few minutes to
+* let it know we are alive, and log information
+*/
 void TV_Downstream_MasterHeartbeat( void )
 {
 	int i;

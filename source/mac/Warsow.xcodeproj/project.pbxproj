@@ -14,7 +14,6 @@
 		282251C80F6BE8F2002F3547 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 283CABD10EA33F8100209134 /* libcurl.dylib */; };
 		282251DB0F6BEA38002F3547 /* mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721AE0F5DEAA0006FB1A8 /* mem.c */; };
 		282251DC0F6BEA38002F3547 /* trie.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721C50F5DEAA0006FB1A8 /* trie.c */; };
-		282251DD0F6BEA38002F3547 /* rsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B70F5DEAA0006FB1A8 /* rsa.c */; };
 		282251DE0F6BEA38002F3547 /* snap_write.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721BE0F5DEAA0006FB1A8 /* snap_write.c */; };
 		282251DF0F6BEA38002F3547 /* net.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B10F5DEAA0006FB1A8 /* net.c */; };
 		282251E00F6BEA38002F3547 /* glob.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721A80F5DEAA0006FB1A8 /* glob.c */; };
@@ -37,10 +36,8 @@
 		282251F10F6BEA38002F3547 /* net_chan.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B20F5DEAA0006FB1A8 /* net_chan.c */; };
 		282251F20F6BEA38002F3547 /* mlist.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721AF0F5DEAA0006FB1A8 /* mlist.c */; };
 		282251F30F6BEA38002F3547 /* irc.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721AA0F5DEAA0006FB1A8 /* irc.c */; };
-		282251F40F6BEA38002F3547 /* sha1.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B90F5DEAA0006FB1A8 /* sha1.c */; };
 		282251F50F6BEA38002F3547 /* library.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721AB0F5DEAA0006FB1A8 /* library.c */; };
 		282251F60F6BEA38002F3547 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721A20F5DEAA0006FB1A8 /* common.c */; };
-		282251F70F6BEA38002F3547 /* bignum.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721970F5DEAA0006FB1A8 /* bignum.c */; };
 		282251F80F6BEA38002F3547 /* snap_read.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721BC0F5DEAA0006FB1A8 /* snap_read.c */; };
 		282251F90F6BEA38002F3547 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721AC0F5DEAA0006FB1A8 /* md5.c */; };
 		282251FA0F6BEA46002F3547 /* sv_mm.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721F40F5DEAA0006FB1A8 /* sv_mm.c */; };
@@ -170,12 +167,10 @@
 		286755900F5DF51400C05B53 /* cmd.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721A00F5DEAA0006FB1A8 /* cmd.c */; };
 		286755910F5DF51400C05B53 /* svnrev.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721C00F5DEAA0006FB1A8 /* svnrev.c */; };
 		286755920F5DF51400C05B53 /* glob.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721A80F5DEAA0006FB1A8 /* glob.c */; };
-		286755930F5DF51400C05B53 /* rsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B70F5DEAA0006FB1A8 /* rsa.c */; };
 		286755940F5DF51400C05B53 /* cm_trace.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A7219F0F5DEAA0006FB1A8 /* cm_trace.c */; };
 		286755950F5DF51400C05B53 /* cm_q3bsp.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A7219E0F5DEAA0006FB1A8 /* cm_q3bsp.c */; };
 		286755960F5DF51400C05B53 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721A20F5DEAA0006FB1A8 /* common.c */; };
 		286755970F5DF51400C05B53 /* net.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B10F5DEAA0006FB1A8 /* net.c */; };
-		286755980F5DF51400C05B53 /* bignum.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721970F5DEAA0006FB1A8 /* bignum.c */; };
 		286755990F5DF51400C05B53 /* webdownload.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721C80F5DEAA0006FB1A8 /* webdownload.c */; };
 		2867559A0F5DF51400C05B53 /* cm_q1bsp.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A7219C0F5DEAA0006FB1A8 /* cm_q1bsp.c */; };
 		2867559B0F5DF51400C05B53 /* dynvar.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721A50F5DEAA0006FB1A8 /* dynvar.c */; };
@@ -183,7 +178,6 @@
 		2867559D0F5DF51400C05B53 /* net_chan.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B20F5DEAA0006FB1A8 /* net_chan.c */; };
 		2867559E0F5DF51400C05B53 /* patch.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B30F5DEAA0006FB1A8 /* patch.c */; };
 		2867559F0F5DF51400C05B53 /* cm_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A7219B0F5DEAA0006FB1A8 /* cm_main.c */; };
-		286755A00F5DF51400C05B53 /* sha1.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721B90F5DEAA0006FB1A8 /* sha1.c */; };
 		286755A10F5DF51400C05B53 /* snap_read.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721BC0F5DEAA0006FB1A8 /* snap_read.c */; };
 		286755A20F5DF51400C05B53 /* library.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A721AB0F5DEAA0006FB1A8 /* library.c */; };
 		286755A30F5DF51400C05B53 /* cm_q2bsp.c in Sources */ = {isa = PBXBuildFile; fileRef = 28A7219D0F5DEAA0006FB1A8 /* cm_q2bsp.c */; };
@@ -745,9 +739,6 @@
 		28A721940F5DEAA0006FB1A8 /* anticheat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = anticheat.c; sourceTree = "<group>"; };
 		28A721950F5DEAA0006FB1A8 /* anticheat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = anticheat.h; sourceTree = "<group>"; };
 		28A721960F5DEAA0006FB1A8 /* ascript.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ascript.c; sourceTree = "<group>"; };
-		28A721970F5DEAA0006FB1A8 /* bignum.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bignum.c; sourceTree = "<group>"; };
-		28A721980F5DEAA0006FB1A8 /* bignum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bignum.h; sourceTree = "<group>"; };
-		28A721990F5DEAA0006FB1A8 /* bn_mul.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bn_mul.h; sourceTree = "<group>"; };
 		28A7219A0F5DEAA0006FB1A8 /* cm_local.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cm_local.h; sourceTree = "<group>"; };
 		28A7219B0F5DEAA0006FB1A8 /* cm_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cm_main.c; sourceTree = "<group>"; };
 		28A7219C0F5DEAA0006FB1A8 /* cm_q1bsp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cm_q1bsp.c; sourceTree = "<group>"; };
@@ -777,10 +768,6 @@
 		28A721B40F5DEAA0006FB1A8 /* qcommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qcommon.h; sourceTree = "<group>"; };
 		28A721B50F5DEAA0006FB1A8 /* qfiles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qfiles.h; sourceTree = "<group>"; };
 		28A721B60F5DEAA0006FB1A8 /* quake1pal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quake1pal.h; sourceTree = "<group>"; };
-		28A721B70F5DEAA0006FB1A8 /* rsa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rsa.c; sourceTree = "<group>"; };
-		28A721B80F5DEAA0006FB1A8 /* rsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rsa.h; sourceTree = "<group>"; };
-		28A721B90F5DEAA0006FB1A8 /* sha1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sha1.c; sourceTree = "<group>"; };
-		28A721BA0F5DEAA0006FB1A8 /* sha1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha1.h; sourceTree = "<group>"; };
 		28A721BB0F5DEAA0006FB1A8 /* snap_demos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = snap_demos.c; sourceTree = "<group>"; };
 		28A721BC0F5DEAA0006FB1A8 /* snap_read.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = snap_read.c; sourceTree = "<group>"; };
 		28A721BD0F5DEAA0006FB1A8 /* snap_read.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = snap_read.h; sourceTree = "<group>"; };
@@ -1517,9 +1504,6 @@
 				28A721940F5DEAA0006FB1A8 /* anticheat.c */,
 				28A721950F5DEAA0006FB1A8 /* anticheat.h */,
 				28A721960F5DEAA0006FB1A8 /* ascript.c */,
-				28A721970F5DEAA0006FB1A8 /* bignum.c */,
-				28A721980F5DEAA0006FB1A8 /* bignum.h */,
-				28A721990F5DEAA0006FB1A8 /* bn_mul.h */,
 				28A7219A0F5DEAA0006FB1A8 /* cm_local.h */,
 				28A7219B0F5DEAA0006FB1A8 /* cm_main.c */,
 				28A7219C0F5DEAA0006FB1A8 /* cm_q1bsp.c */,
@@ -1549,10 +1533,6 @@
 				28A721B40F5DEAA0006FB1A8 /* qcommon.h */,
 				28A721B50F5DEAA0006FB1A8 /* qfiles.h */,
 				28A721B60F5DEAA0006FB1A8 /* quake1pal.h */,
-				28A721B70F5DEAA0006FB1A8 /* rsa.c */,
-				28A721B80F5DEAA0006FB1A8 /* rsa.h */,
-				28A721B90F5DEAA0006FB1A8 /* sha1.c */,
-				28A721BA0F5DEAA0006FB1A8 /* sha1.h */,
 				28A721BB0F5DEAA0006FB1A8 /* snap_demos.c */,
 				28A721BC0F5DEAA0006FB1A8 /* snap_read.c */,
 				28A721BD0F5DEAA0006FB1A8 /* snap_read.h */,
@@ -2472,12 +2452,10 @@
 				286755900F5DF51400C05B53 /* cmd.c in Sources */,
 				286755910F5DF51400C05B53 /* svnrev.c in Sources */,
 				286755920F5DF51400C05B53 /* glob.c in Sources */,
-				286755930F5DF51400C05B53 /* rsa.c in Sources */,
 				286755940F5DF51400C05B53 /* cm_trace.c in Sources */,
 				286755950F5DF51400C05B53 /* cm_q3bsp.c in Sources */,
 				286755960F5DF51400C05B53 /* common.c in Sources */,
 				286755970F5DF51400C05B53 /* net.c in Sources */,
-				286755980F5DF51400C05B53 /* bignum.c in Sources */,
 				286755990F5DF51400C05B53 /* webdownload.c in Sources */,
 				2867559A0F5DF51400C05B53 /* cm_q1bsp.c in Sources */,
 				2867559B0F5DF51400C05B53 /* dynvar.c in Sources */,
@@ -2485,7 +2463,6 @@
 				2867559D0F5DF51400C05B53 /* net_chan.c in Sources */,
 				2867559E0F5DF51400C05B53 /* patch.c in Sources */,
 				2867559F0F5DF51400C05B53 /* cm_main.c in Sources */,
-				286755A00F5DF51400C05B53 /* sha1.c in Sources */,
 				286755A10F5DF51400C05B53 /* snap_read.c in Sources */,
 				286755A20F5DF51400C05B53 /* library.c in Sources */,
 				286755A30F5DF51400C05B53 /* cm_q2bsp.c in Sources */,
@@ -2557,7 +2534,6 @@
 				282252030F6BEA46002F3547 /* sv_game.c in Sources */,
 				282251DB0F6BEA38002F3547 /* mem.c in Sources */,
 				282251DC0F6BEA38002F3547 /* trie.c in Sources */,
-				282251DD0F6BEA38002F3547 /* rsa.c in Sources */,
 				282251DE0F6BEA38002F3547 /* snap_write.c in Sources */,
 				282251DF0F6BEA38002F3547 /* net.c in Sources */,
 				282251E00F6BEA38002F3547 /* glob.c in Sources */,
@@ -2580,10 +2556,8 @@
 				282251F10F6BEA38002F3547 /* net_chan.c in Sources */,
 				282251F20F6BEA38002F3547 /* mlist.c in Sources */,
 				282251F30F6BEA38002F3547 /* irc.c in Sources */,
-				282251F40F6BEA38002F3547 /* sha1.c in Sources */,
 				282251F50F6BEA38002F3547 /* library.c in Sources */,
 				282251F60F6BEA38002F3547 /* common.c in Sources */,
-				282251F70F6BEA38002F3547 /* bignum.c in Sources */,
 				282251F80F6BEA38002F3547 /* snap_read.c in Sources */,
 				282251F90F6BEA38002F3547 /* md5.c in Sources */,
 			);

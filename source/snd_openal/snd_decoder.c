@@ -118,7 +118,7 @@ void *S_LoadSound( const char *filename, snd_info_t *info )
 	return decoder->load( fn, info );
 }
 
-snd_stream_t *S_OpenStream( const char *filename )
+snd_stream_t *S_OpenStream( const char *filename, qboolean *delay )
 {
 	snd_decoder_t *decoder;
 	char fn[MAX_QPATH];
@@ -133,12 +133,17 @@ snd_stream_t *S_OpenStream( const char *filename )
 	Q_strncpyz( fn, filename, sizeof( fn ) );
 	COM_DefaultExtension( fn, decoder->ext, sizeof( fn ) );
 
-	return decoder->open( fn );
+	return decoder->open( fn, delay );
 }
 
-int S_ReadStream( snd_stream_t *stream, int bytes, void *buffer, qboolean loop )
+qboolean S_ContOpenStream( snd_stream_t *stream )
 {
-	return stream->decoder->read( stream, bytes, buffer, loop );
+	return stream->decoder->cont_open( stream );
+}
+
+int S_ReadStream( snd_stream_t *stream, int bytes, void *buffer )
+{
+	return stream->decoder->read( stream, bytes, buffer );
 }
 
 void S_CloseStream( snd_stream_t *stream )
@@ -146,11 +151,20 @@ void S_CloseStream( snd_stream_t *stream )
 	stream->decoder->close( stream );
 }
 
-void S_ResetStream( snd_stream_t *stream )
+qboolean S_ResetStream( snd_stream_t *stream )
 {
-	stream->decoder->reset( stream );
+	return stream->decoder->reset( stream );
 }
 
+qboolean S_EoStream( snd_stream_t *stream )
+{
+	return stream->decoder->eof( stream );
+}
+
+int S_FTellSteam( snd_stream_t *stream )
+{
+	return stream->decoder->tell( stream );
+}
 
 /**
 * Util functions used by decoders (snd_decoder.h)

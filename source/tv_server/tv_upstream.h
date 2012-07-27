@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #ifndef __TV_UPSTREAM_H
 #define __TV_UPSTREAM_H
@@ -86,16 +86,25 @@ struct upstream_s
 
 	struct mempool_s *mempool;
 
-	qboolean demorecording;
-	qboolean demowaiting;
-	unsigned int demobasetime, demoduration;
-	qboolean demoautorecording;
+	struct {
+		qboolean recording;
+		qboolean waiting;
+		unsigned int basetime, duration;
+		qboolean autorecording;
 
-	qboolean demoplaying;
-	int demofilehandle;
-	int demofilelen;
-	char *demofilename, *demotempname;
-	qboolean demorandom;
+		qboolean playing;
+		int filehandle;
+		int filelen;
+		char *filename, *tempname;
+		qboolean random;
+
+		time_t localtime;
+
+		char meta_data[SNAP_MAX_DEMO_META_DATA_SIZE];
+		size_t meta_data_realsize;
+	} demo;
+
+	char *audiotrack;
 
 	// relays
 	relay_t	relay;
@@ -117,5 +126,6 @@ void TV_Upstream_Reconnect_f( upstream_t *upstream );
 upstream_t *TV_Upstream_New( const char *name, const char *customname, int delay );
 void TV_Upstream_SetName( upstream_t *upstream, const char *name );
 void TV_Upstream_NameNotify( upstream_t *upstream, client_t *client );
+void TV_Upstream_SetAudioTrack( upstream_t *upstream, const char *track );
 
 #endif // __TV_UPSTREAM_H

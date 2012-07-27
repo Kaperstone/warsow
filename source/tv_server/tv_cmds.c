@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -119,7 +119,7 @@ static void TV_Status( void )
 			continue;
 
 		Com_Printf( "%3i: %22s: %s\n", i+1, NET_AddressToString( &tvs.upstreams[i]->serveraddress ),
-		            tvs.upstreams[i]->name );
+			tvs.upstreams[i]->name );
 		none = qfalse;
 	}
 	if( none )
@@ -446,6 +446,34 @@ static void SV_Heartbeat_f( void )
 	tvs.lobby.last_heartbeat = 0;
 }
 
+/*
+* TV_Music_f
+*/
+static void TV_Music_f( void )
+{
+	const char *text, *music;
+	qboolean res;
+	upstream_t *upstream;
+
+	if( Cmd_Argc() < 3 )
+	{
+		Com_Printf( "%s <upstream> <music>\n", Cmd_Argv( 0 ) );
+		return;
+	}
+
+	text = Cmd_Argv( 1 );
+	music = Cmd_Argv( 2 );
+
+	res = TV_UpstreamForText( text, &upstream );
+	if( !res || !upstream )
+	{
+		Com_Printf( "No such upstream: %s\n", text );
+		return;
+	}
+
+	TV_Upstream_SetAudioTrack( upstream, music );
+}
+
 // List of commands
 typedef struct
 {
@@ -471,6 +499,8 @@ static cmd_function_t cmdlist[] =
 	{ "rename", TV_Rename_f },
 
 	{ "heartbeat", SV_Heartbeat_f },
+
+	{ "music", TV_Music_f },
 
 	{ NULL, NULL }
 };

@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tvm_local.h"
 #include "tvm_misc.h"
@@ -63,7 +63,7 @@ static qboolean TVM_Chase_IsValidTarget( edict_t *ent, edict_t *target )
 
 	if( !target->r.inuse || target->local || !target->r.client )
 		return qfalse;
-	
+
 	if( target->s.team <= 0 ) // skip spectator team
 		return qfalse;
 
@@ -73,7 +73,7 @@ static qboolean TVM_Chase_IsValidTarget( edict_t *ent, edict_t *target )
 static int TVM_Chase_FindFollowPOV( edict_t *ent )
 {
 	int i, j;
-	int quad, warshell, scorelead;
+	int quad, warshell, regen, scorelead;
 	int maxteam;
 	int flags[8];
 	int newctfpov, newpoweruppov;
@@ -89,9 +89,22 @@ static int TVM_Chase_FindFollowPOV( edict_t *ent )
 	if( !ent->r.client || !ent->r.client->chase.active || !ent->r.client->chase.followmode )
 		return newpov;
 
+	// follow killer
+	if( ent->r.client->chase.followmode & 8 ) {
+		if( ent->r.client->chase.target >= 0 ) {
+			target = relay->edicts + ent->r.client->chase.target;
+
+			if( target->r.client->ps.stats[relay->stats.health] <= 0 && target->r.client->ps.stats[relay->stats.last_killer] ) {
+				target = relay->edicts + target->r.client->ps.stats[relay->stats.last_killer];
+				newpov = ENTNUM( target );
+				return newpov;
+			}
+		}
+	}
+
 	// find what players have what
 	score_max = -999999999;
-	quad = warshell = scorelead = -1;
+	quad = warshell = regen = scorelead = -1;
 	memset( flags, -1, sizeof( flags ) );
 	newctfpov = newpoweruppov = -1;
 	maxteam = 0;
@@ -118,6 +131,8 @@ static int TVM_Chase_FindFollowPOV( edict_t *ent )
 			quad = ENTNUM( target );
 		if( target->s.effects & relay->effects.shell )
 			warshell = ENTNUM( target );
+		if( target->s.effects & relay->effects.regen )
+			regen = ENTNUM( target );
 
 		if( target->s.team && (target->s.effects & relay->effects.enemy_flag) )
 		{
@@ -213,6 +228,8 @@ static int TVM_Chase_FindFollowPOV( edict_t *ent )
 			newpoweruppov = quad;
 		else if( warshell != -1 )
 			newpoweruppov = warshell;
+		else if( regen != -1 )
+			newpoweruppov = regen;
 
 		poweruppov = newpoweruppov;
 		pwupswitchTime = 0;
@@ -310,7 +327,7 @@ void TVM_ChasePlayer( edict_t *ent, char *name, int followmode )
 				continue;
 
 			Q_strncpyz( colorlessname, COM_RemoveColorTokens( e->r.client->pers.netname ), sizeof(colorlessname) );
-			
+
 			if( !Q_stricmp( COM_RemoveColorTokens( name ), colorlessname ) )
 			{
 				targetNum = PLAYERNUM( e );
@@ -475,42 +492,51 @@ static void TVM_SpectatorMode( edict_t *ent )
 //====================
 void TVM_Cmd_ChaseCam( edict_t *ent )
 {
+	const char *arg1;
+
 	assert( ent && ent->local && ent->r.client );
 
 	// & 1 = scorelead
 	// & 2 = powerups
-	// & 4 = flags
+	// & 4 = objectives
+	// & 8 = fragger
 
+	arg1 = trap_Cmd_Argv( 1 );
 	if( trap_Cmd_Argc() < 2 )
 	{
 		TVM_ChasePlayer( ent, NULL, 0 );
 	}
-	else if( !Q_stricmp( trap_Cmd_Argv( 1 ), "auto" ) )
+	else if( !Q_stricmp( arg1, "auto" ) )
 	{
 		TVM_PrintMsg( ent->relay, ent, "Chasecam mode is 'auto'. It will follow the score leader when no powerup nor flag is carried.\n" );
 		TVM_ChasePlayer( ent, NULL, 7 );
 	}
-	else if( !Q_stricmp( trap_Cmd_Argv( 1 ), "carriers" ) )
+	else if( !Q_stricmp( arg1, "carriers" ) )
 	{
 		TVM_PrintMsg( ent->relay, ent, "Chasecam mode is 'carriers'. It will switch to flag or powerup carriers when any of these items is picked up.\n" );
 		TVM_ChasePlayer( ent, NULL, 6 );
 	}
-	else if( !Q_stricmp( trap_Cmd_Argv( 1 ), "powerups" ) )
+	else if( !Q_stricmp( arg1, "powerups" ) )
 	{
 		TVM_PrintMsg( ent->relay, ent, "Chasecam mode is 'powerups'. It will switch to powerup carriers when any of these items is picked up.\n" );
 		TVM_ChasePlayer( ent, NULL, 2 );
 	}
-	else if( !Q_stricmp( trap_Cmd_Argv( 1 ), "objectives" ) )
+	else if( !Q_stricmp( arg1, "objectives" ) )
 	{
 		TVM_PrintMsg( ent->relay, ent, "Chasecam mode is 'objectives'. It will switch to flag carriers when any of these items is picked up.\n" );
 		TVM_ChasePlayer( ent, NULL, 4 );
 	}
-	else if( !Q_stricmp( trap_Cmd_Argv( 1 ), "score" ) )
+	else if( !Q_stricmp( arg1, "score" ) )
 	{
 		TVM_PrintMsg( ent->relay, ent, "Chasecam mode is 'score'. It will always follow the highest fragger.\n" );
 		TVM_ChasePlayer( ent, NULL, 1 );
 	}
-	else if( !Q_stricmp( trap_Cmd_Argv( 1 ), "help" ) )
+	else if( !Q_stricmp( arg1, "fragger" ) )
+	{
+		TVM_PrintMsg( ent->relay, ent, "Chasecam mode is 'fragger'. The last fragging player will be followed.\n" );
+		TVM_ChasePlayer( ent, NULL, 8 );
+	}
+	else if( !Q_stricmp( arg1, "help" ) )
 	{
 		TVM_PrintMsg( ent->relay, ent, "Chasecam modes:\n" );
 		TVM_PrintMsg( ent->relay, ent, "- 'auto': Chase the score leader unless there's an objective carrier or a powerup carrier.\n" );

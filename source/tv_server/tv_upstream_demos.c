@@ -1,26 +1,28 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 #include "tv_upstream.h"
 #include "tv_upstream_demos.h"
+
+#define TV_Upstream_SetDemoMetaKeyValue(u,k,v) (u)->demo.meta_data_realsize = SNAP_SetDemoMetaKeyValue((u)->demo.meta_data, sizeof((u)->demo.meta_data), (u)->demo.meta_data_realsize, k, v)
 
 /*
 ============================================================================
@@ -42,7 +44,7 @@ qboolean TV_Upstream_IsAutoRecordable( upstream_t *upstream )
 
 	assert( upstream );
 
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 		return qfalse;
 	if( !Q_stricmp( tv_autorecord->string, "*" ) )
 		return qtrue;
@@ -117,7 +119,7 @@ void TV_Upstream_AutoRecordAction( upstream_t *upstream, const char *action )
 		return;
 
 	// filter out autorecord commands when playing a demo
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 		return;
 
 	gametype = upstream->configstrings[CS_GAMETYPENAME];
@@ -125,7 +127,7 @@ void TV_Upstream_AutoRecordAction( upstream_t *upstream, const char *action )
 
 	if( !Q_stricmp( action, "start" ) )
 	{
-		if( upstream->demorecording )
+		if( upstream->demo.recording )
 			return;
 
 		if( !TV_Upstream_IsAutoRecordable( upstream ) )
@@ -134,7 +136,7 @@ void TV_Upstream_AutoRecordAction( upstream_t *upstream, const char *action )
 		TV_Upstream_StopDemoRecord( upstream, qtrue, qfalse );
 		TV_Upstream_StartDemoRecord( upstream, name, qfalse );
 
-		upstream->demoautorecording = qtrue;
+		upstream->demo.autorecording = qtrue;
 	}
 	else if( !Q_stricmp( action, "altstart" ) )
 	{
@@ -143,22 +145,22 @@ void TV_Upstream_AutoRecordAction( upstream_t *upstream, const char *action )
 
 		TV_Upstream_StartDemoRecord( upstream, name, qtrue );
 
-		upstream->demoautorecording = qtrue;
+		upstream->demo.autorecording = qtrue;
 	}
 	else if( !Q_stricmp( action, "stop" ) )
 	{
-		if( upstream->demoautorecording )
+		if( upstream->demo.autorecording )
 		{
 			TV_Upstream_StopDemoRecord( upstream, qfalse, qfalse );
-			upstream->demoautorecording = qfalse;
+			upstream->demo.autorecording = qfalse;
 		}
 	}
 	else if( !Q_stricmp( action, "cancel" ) )
 	{
-		if( upstream->demoautorecording )
+		if( upstream->demo.autorecording )
 		{
 			TV_Upstream_StopDemoRecord( upstream, qtrue, qtrue );
-			upstream->demoautorecording = qfalse;
+			upstream->demo.autorecording = qfalse;
 		}
 	}
 }
@@ -170,14 +172,14 @@ void TV_Upstream_AutoRecordAction( upstream_t *upstream, const char *action )
 */
 void TV_Upstream_WriteDemoMessage( upstream_t *upstream, msg_t *msg )
 {
-	if( upstream->demofilehandle <= 0 )
+	if( upstream->demo.filehandle <= 0 )
 	{
-		upstream->demorecording = qfalse;
+		upstream->demo.recording = qfalse;
 		return;
 	}
 
 	// the first eight bytes are just packet sequencing stuff
-	SNAP_RecordDemoMessage( upstream->demofilehandle, msg, 8 );
+	SNAP_RecordDemoMessage( upstream->demo.filehandle, msg, 8 );
 }
 
 /*
@@ -191,14 +193,14 @@ void TV_Upstream_StartDemoRecord( upstream_t *upstream, const char *demoname, qb
 	assert( upstream );
 	assert( demoname );
 
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 	{
 		if( !silent )
 			Com_Printf( "You can't record from another demo.\n" );
 		return;
 	}
 
-	if( upstream->demorecording )
+	if( upstream->demo.recording )
 	{
 		if( !silent )
 			Com_Printf( "Already recording.\n" );
@@ -212,53 +214,49 @@ void TV_Upstream_StartDemoRecord( upstream_t *upstream, const char *demoname, qb
 
 	// store the name
 	name_size = sizeof( char ) * ( strlen( "demos/tvserver" ) + 1 + strlen( servername ) + 1 + strlen( demoname ) + strlen( APP_DEMO_EXTENSION_STR ) + 1 );
-	upstream->demofilename = Mem_ZoneMalloc( name_size );
+	upstream->demo.filename = Mem_ZoneMalloc( name_size );
 
-	Q_snprintfz( upstream->demofilename, name_size, "demos/tvserver/%s/%s", servername, demoname );
-	COM_SanitizeFilePath( upstream->demofilename );
-	COM_DefaultExtension( upstream->demofilename, APP_DEMO_EXTENSION_STR, name_size );
+	Q_snprintfz( upstream->demo.filename, name_size, "demos/tvserver/%s/%s", servername, demoname );
+	COM_SanitizeFilePath( upstream->demo.filename );
+	COM_DefaultExtension( upstream->demo.filename, APP_DEMO_EXTENSION_STR, name_size );
 
 	Mem_TempFree( servername );
 
-	if( !COM_ValidateRelativeFilename( upstream->demofilename ) )
+	if( !COM_ValidateRelativeFilename( upstream->demo.filename ) )
 	{
 		if( !silent )
 			Com_Printf( "Invalid filename.\n" );
-		Mem_ZoneFree( upstream->demofilename );
+		Mem_ZoneFree( upstream->demo.filename );
 		return;
 	}
 
 	// temp name
-	name_size = sizeof( char ) * ( strlen( upstream->demofilename ) + strlen( ".rec" ) + 1 );
-	upstream->demotempname = Mem_ZoneMalloc( name_size );
-	Q_snprintfz( upstream->demotempname, name_size, "%s.rec", upstream->demofilename );
+	name_size = sizeof( char ) * ( strlen( upstream->demo.filename ) + strlen( ".rec" ) + 1 );
+	upstream->demo.tempname = Mem_ZoneMalloc( name_size );
+	Q_snprintfz( upstream->demo.tempname, name_size, "%s.rec", upstream->demo.filename );
 
 	// open the demo file
-	if( FS_FOpenFile( upstream->demotempname, &upstream->demofilehandle, FS_WRITE ) == -1 )
+	if( FS_FOpenFile( upstream->demo.tempname, &upstream->demo.filehandle, FS_WRITE ) == -1 )
 	{
 		Com_Printf( "Error: Couldn't create the demo file.\n" );
 
-		Mem_ZoneFree( upstream->demotempname );
-		upstream->demotempname = NULL;
-		Mem_ZoneFree( upstream->demofilename );
-		upstream->demofilename = NULL;
+		Mem_ZoneFree( upstream->demo.tempname );
+		upstream->demo.tempname = NULL;
+		Mem_ZoneFree( upstream->demo.filename );
+		upstream->demo.filename = NULL;
 		return;
 	}
 
 	if( !silent )
-		Com_Printf( "Recording demo: %s\n", upstream->demofilename );
+		Com_Printf( "Recording demo: %s\n", upstream->demo.filename );
 
-	upstream->demorecording = qtrue;
-	upstream->demobasetime = upstream->demoduration = 0;
+	upstream->demo.recording = qtrue;
+	upstream->demo.localtime = 0;
+	upstream->demo.basetime = upstream->demo.duration = 0;
 
 	// don't start saving messages until a non-delta compressed message is received
 	TV_Upstream_AddReliableCommand( upstream, "nodelta" ); // request non delta compressed frame from server
-	upstream->demowaiting = qtrue;
-
-	// write out messages to hold the startup information
-	SNAP_BeginDemoRecording( upstream->demofilehandle, 0x10000 + upstream->servercount, 
-		upstream->snapFrameTime, upstream->levelname, upstream->reliable ? SV_BITFLAGS_RELIABLE : 0, 
-		upstream->purelist, upstream->configstrings[0], upstream->baselines );
+	upstream->demo.waiting = qtrue;
 
 	// the rest of the demo file will be individual frames
 }
@@ -270,45 +268,57 @@ void TV_Upstream_StopDemoRecord( upstream_t *upstream, qboolean silent, qboolean
 {
 	assert( upstream );
 
-	if( !upstream->demorecording )
+	if( !upstream->demo.recording )
 	{
 		if( !silent )
 			Com_Printf( "Not recording a demo.\n" );
 		return;
 	}
 
-	// finish up
-	SNAP_StopDemoRecording( upstream->demofilehandle, upstream->demobasetime, upstream->demoduration );
+	// write some meta information about the match/demo
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "hostname", upstream->configstrings[CS_HOSTNAME] );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "localtime", va( "%u", upstream->demo.localtime ) );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "multipov", "1" );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "duration", va( "%u", (int)ceil( upstream->demo.duration/1000.0f ) ) );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "mapname", upstream->configstrings[CS_MAPNAME] );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "gametype", upstream->configstrings[CS_GAMETYPENAME] );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "levelname", upstream->configstrings[CS_MESSAGE] );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "matchname", upstream->configstrings[CS_MATCHNAME] );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "matchscore", upstream->configstrings[CS_MATCHSCORE] );
+	TV_Upstream_SetDemoMetaKeyValue( upstream, "matchuuid", upstream->configstrings[CS_MATCHUUID] );
 
-	FS_FCloseFile( upstream->demofilehandle );
+	// finish up
+	SNAP_StopDemoRecording( upstream->demo.filehandle, upstream->demo.meta_data, upstream->demo.meta_data_realsize );
+
+	FS_FCloseFile( upstream->demo.filehandle );
 
 	// cancel the demos
 	if( cancel )
 	{
 		// remove the file that correspond to cls.demo.file
 		if( !silent )
-			Com_Printf( "Canceling demo: %s\n", upstream->demofilename );
-		if( !FS_RemoveFile( upstream->demotempname ) && !silent )
+			Com_Printf( "Canceling demo: %s\n", upstream->demo.filename );
+		if( !FS_RemoveFile( upstream->demo.tempname ) && !silent )
 			Com_Printf( "Error canceling demo." );
 	}
 	else
 	{
-		if( !FS_MoveFile( upstream->demotempname, upstream->demofilename ) )
+		if( !FS_MoveFile( upstream->demo.tempname, upstream->demo.filename ) )
 			Com_Printf( "Error: Failed to rename the demo file\n" );
 	}
 
 	if( !silent )
-		Com_Printf( "Stopped demo: %s\n", upstream->demofilename );
+		Com_Printf( "Stopped demo: %s\n", upstream->demo.filename );
 
-	upstream->demofilehandle = 0; // file id
+	upstream->demo.filehandle = 0; // file id
 
-	Mem_ZoneFree( upstream->demofilename );
-	upstream->demofilename = NULL;
-	Mem_ZoneFree( upstream->demotempname );
-	upstream->demotempname = NULL;
+	Mem_ZoneFree( upstream->demo.filename );
+	upstream->demo.filename = NULL;
+	Mem_ZoneFree( upstream->demo.tempname );
+	upstream->demo.tempname = NULL;
 
-	upstream->demorecording = qfalse;
-	upstream->demoautorecording = qfalse;
+	upstream->demo.recording = qfalse;
+	upstream->demo.autorecording = qfalse;
 }
 
 /*
@@ -515,7 +525,7 @@ void TV_Upstream_StartDemo( upstream_t *upstream, const char *demoname, qboolean
 	tempdemofilehandle = 0;
 	tempdemofilelen = -1;
 
-	TV_Upstream_NextDemo( demoname, upstream->demofilename, randomize, &name, &filepath );
+	TV_Upstream_NextDemo( demoname, upstream->demo.filename, randomize, &name, &filepath );
 
 	if( filepath )
 	{
@@ -528,11 +538,11 @@ void TV_Upstream_StartDemo( upstream_t *upstream, const char *demoname, qboolean
 	if( name )
 		Com_Printf( "Starting demo from %s\n", filepath );
 
-	upstream->demoplaying = qtrue;
-	upstream->demofilename = name ? TV_Upstream_CopyString( upstream, name ) : NULL;
-	upstream->demofilehandle = tempdemofilehandle;
-	upstream->demofilelen = tempdemofilelen;
-	upstream->demorandom = randomize;
+	upstream->demo.playing = qtrue;
+	upstream->demo.filename = name ? TV_Upstream_CopyString( upstream, name ) : NULL;
+	upstream->demo.filehandle = tempdemofilehandle;
+	upstream->demo.filelen = tempdemofilelen;
+	upstream->demo.random = randomize;
 	upstream->state = CA_HANDSHAKE;
 	upstream->reliable = qfalse;
 
@@ -553,18 +563,18 @@ void TV_Upstream_StartDemo( upstream_t *upstream, const char *demoname, qboolean
 */
 void TV_Upstream_StopDemo( upstream_t *upstream )
 {
-	if( upstream->demofilehandle )
+	if( upstream->demo.filehandle )
 	{
-		FS_FCloseFile( upstream->demofilehandle );
-		upstream->demofilehandle = 0;
+		FS_FCloseFile( upstream->demo.filehandle );
+		upstream->demo.filehandle = 0;
 	}
 
-	if( upstream->demofilename )
+	if( upstream->demo.filename )
 	{
-		Mem_Free( upstream->demofilename );
-		upstream->demofilename = NULL;
+		Mem_Free( upstream->demo.filename );
+		upstream->demo.filename = NULL;
 	}
 
-	upstream->demofilelen = 0;
-	upstream->demoplaying = qfalse;
+	upstream->demo.filelen = 0;
+	upstream->demo.playing = qfalse;
 }

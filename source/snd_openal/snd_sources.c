@@ -109,7 +109,7 @@ static void source_kill( src_t *src )
 static void source_spatialize( src_t *src )
 {
 	if( !src->attenuation )
-	{	
+	{
 		qalSourcei( src->source, AL_SOURCE_RELATIVE, AL_TRUE );
 		// this was set at source_setup, no need to redo every frame
 		//qalSourcefv( src->source, AL_POSITION, vec3_origin );
@@ -177,7 +177,7 @@ static void source_loop( int priority, sfx_t *sfx, int entNum, float fvol, float
 	if( new_source )
 	{
 		if( src->attenuation )
-			src->isTracking = qtrue;	
+			src->isTracking = qtrue;
 
 		source_spatialize( src );
 
@@ -307,7 +307,7 @@ src_t *S_AllocSource( int priority, int entNum, int channel )
 		if( srclist[i].isLocked )
 			continue;
 
-		if( !srclist[i].isActive && ( empty == -1 ) )
+		if( !srclist[i].isActive /*&& ( empty == -1 )*/ ) //, pick last rather than first empty -teemu
 			empty = i;
 
 		if( srclist[i].priority < weakest_priority ||
@@ -407,7 +407,7 @@ static void S_StartSound( sfx_t *sfx, const vec3_t origin, int entNum, int chann
 		if( origin )
 			VectorCopy( origin, src->origin );
 		else
-			src->isTracking = qtrue;	
+			src->isTracking = qtrue;
 	}
 
 	source_spatialize( src );

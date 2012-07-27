@@ -40,8 +40,11 @@ vec3_t listenerOrigin;
 vec3_t listenerVelocity;
 vec3_t listenerAxis[3];
 
-int soundtime;      // sample PAIRS
-int paintedtime;    // sample PAIRS
+unsigned int soundtime;      // sample PAIRS
+unsigned int paintedtime;    // sample PAIRS
+
+static int		s_registration_sequence;
+static qboolean	s_registering;
 
 // during registration it is possible to have more sounds
 // than could actually be referenced during gameplay,
@@ -70,6 +73,8 @@ cvar_t *s_show;
 cvar_t *s_mixahead;
 cvar_t *s_swapstereo;
 cvar_t *s_vorbis;
+cvar_t *s_pseudoAcoustics;
+cvar_t *s_separationDelay;
 
 static int s_attenuation_model = 0;
 static float s_attenuation_maxdistance = 0;
@@ -77,12 +82,16 @@ static float s_attenuation_refdistance = 0;
 
 struct mempool_s *soundpool;
 
-int s_rawend;
+unsigned int s_rawend;
 portable_samplepair_t s_rawsamples[MAX_RAW_SAMPLES];
+
+#define BACKGROUND_TRACK_BUFFERING_SIZE		MAX_RAW_SAMPLES*4+4000
 
 bgTrack_t *s_bgTrack;
 bgTrack_t *s_bgTrackHead;
-static qboolean s_bgTrackPaused = qfalse;
+static qboolean s_bgTrackPaused = qfalse;  // the track is manually paused
+static qboolean s_bgTrackLocked = qfalse;  // the track is blocked by the game (e.g. the window's minimized)
+static qboolean s_bgTrackBuffering = qfalse;
 
 static int s_aviNumSamples;
 static int s_aviDumpFile;
@@ -91,6 +100,18 @@ static char *s_aviDumpFileName;
 static void S_PrevBackgroundTrack( void );
 static void S_NextBackgroundTrack( void );
 static void S_PauseBackgroundTrack( void );
+
+// highfrequency attenuation parameters
+// 340/0.15 (speed of sound/width of head) gives us 2267hz
+// but this sounds little too muffled so lets compromise
+#define HQ_HF_FREQUENCY 	3300.0
+#define HQ_HF_DAMP		0.25
+// 340/0.15 for ear delay, lets round it nice and aim for 20 samples/44100
+#define HQ_EAR_DELAY	2205
+
+static float s_lpf_cw;
+
+#define ENABLE_PLAY
 
 /*
 ===============================================================================
@@ -139,7 +160,7 @@ void S_SoundList( void )
 		{
 			size = sc->length*sc->width*sc->channels;
 			total += size;
-			if( sc->loopstart >= 0 )
+			if( sc->loopstart < sc->length )
 				Com_Printf( "L" );
 			else
 				Com_Printf( " " );
@@ -203,6 +224,8 @@ qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose )
 	s_testsound = trap_Cvar_Get( "s_testsound", "0", 0 );
 	s_swapstereo = trap_Cvar_Get( "s_swapstereo", "0", CVAR_ARCHIVE );
 	s_vorbis = trap_Cvar_Get( "s_vorbis", "1", CVAR_ARCHIVE );
+	s_pseudoAcoustics = trap_Cvar_Get( "s_pseudoAcoustics", "1", CVAR_ARCHIVE );
+	s_separationDelay = trap_Cvar_Get( "s_separationDelay", "1.0", CVAR_ARCHIVE );
 
 #ifdef ENABLE_PLAY
 	trap_Cmd_AddCommand( "play", S_Play );
@@ -219,6 +242,11 @@ qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose )
 	s_bgTrack = s_bgTrackHead = NULL;
 	s_bgTrackPaused = qfalse;
 
+	s_registration_sequence = 1;
+	s_registering = qfalse;
+
+	S_LockBackgroundTrack( qfalse );
+
 	if( !SNDDMA_Init( hwnd, verbose ) )
 		return qfalse;
 
@@ -227,6 +255,9 @@ qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose )
 	S_InitScaletable();
 
 	S_SetAttenuationModel( S_DEFAULT_ATTENUATION_MODEL, S_DEFAULT_ATTENUATION_MAXDISTANCE, S_DEFAULT_ATTENUATION_REFDISTANCE );
+
+	// highfrequency attenuation filter
+	s_lpf_cw = S_LowpassCW( HQ_HF_FREQUENCY, dma.speed );
 
 	num_sfx = 0;
 	num_loopsfx = 0;
@@ -267,10 +298,15 @@ void S_Shutdown( qboolean verbose )
 	trap_Cmd_RemoveCommand( "music" );
 	trap_Cmd_RemoveCommand( "stopsound" );
 	trap_Cmd_RemoveCommand( "stopmusic" );
+	trap_Cmd_RemoveCommand( "prevmusic" );
+	trap_Cmd_RemoveCommand( "nextmusic" );
+	trap_Cmd_RemoveCommand( "pausemusic" );
 	trap_Cmd_RemoveCommand( "soundlist" );
 	trap_Cmd_RemoveCommand( "soundinfo" );
 
 	S_MemFreePool( &soundpool );
+
+	s_registering = qfalse;
 
 	num_sfx = 0;
 	num_loopsfx = 0;
@@ -327,8 +363,22 @@ static sfx_t *S_FindName( const char *name, qboolean create )
 	sfx = &known_sfx[i];
 	memset( sfx, 0, sizeof( *sfx ) );
 	Q_strncpyz( sfx->name, name, sizeof( sfx->name ) );
+	sfx->isUrl = trap_FS_IsUrl( name );
+	sfx->registration_sequence = s_registration_sequence;
 
 	return sfx;
+}
+
+/*
+* S_BeginRegistration
+*/
+void S_BeginRegistration (void)
+{
+	s_registration_sequence++;
+	if( !s_registration_sequence ) {
+		s_registration_sequence = 1;
+	}
+	s_registering = qtrue;
 }
 
 /*
@@ -341,7 +391,10 @@ sfx_t *S_RegisterSound( const char *name )
 	assert( name );
 
 	sfx = S_FindName( name, qtrue );
-	S_LoadSound( sfx );
+	sfx->registration_sequence = s_registration_sequence;
+	if( !s_registering ) {
+		S_LoadSound( sfx );
+	}
 
 	return sfx;
 }
@@ -357,10 +410,12 @@ void S_FreeSounds( void )
 	// free all sounds
 	for( i = 0, sfx = known_sfx; i < num_sfx; i++, sfx++ )
 	{
-		if( !sfx->name[0] )
+		if( !sfx->name[0] ) {
 			continue;
-		if( sfx->cache )
+		}
+		if( sfx->cache ) {
 			S_Free( sfx->cache );
+		}
 		memset( sfx, 0, sizeof( *sfx ) );
 	}
 
@@ -368,24 +423,42 @@ void S_FreeSounds( void )
 }
 
 /*
-* S_SoundsInMemory
+* S_EndRegistration
 */
-void S_SoundsInMemory( void )
+void S_EndRegistration( void )
 {
 	int i, size;
 	sfx_t *sfx;
 
+	s_registering = qfalse;
+
 	// free any sounds not from this registration sequence
-	for( i = 0, sfx = known_sfx; i < num_sfx; i++, sfx++ )
-	{
-		if( !sfx->name[0] )
+	for( i = 0, sfx = known_sfx; i < num_sfx; i++, sfx++ ) {
+		if( !sfx->name[0] ) {
 			continue;
+		}
+		if( sfx->registration_sequence != s_registration_sequence ) {
+			// we don't need this sound
+			if( sfx->cache ) {
+				S_Free( sfx->cache );
+			}
+			memset( sfx, 0, sizeof( *sfx ) );
+			continue;
+		}
 
 		// make sure it is paged in
-		if( sfx->cache )
-		{
+		if( sfx->cache ) {
 			size = sfx->cache->length * sfx->cache->width;
 			trap_PageInMemory( (qbyte *)sfx->cache, size );
+		}
+	}
+
+	for( i = 0, sfx = known_sfx; i < num_sfx; i++, sfx++ ) {
+		if( !sfx->name[0] ) {
+			continue;
+		}
+		if( !sfx->cache ) {
+			S_LoadSound( sfx );
 		}
 	}
 }
@@ -397,6 +470,7 @@ void S_ClearSoundTime( void )
 {
 	soundtime = 0;
 	paintedtime = 0;
+	s_rawend = 0;
 }
 
 //=============================================================================
@@ -432,7 +506,7 @@ channel_t *S_PickChannel( int entnum, int entchannel )
 		//if (channels[ch_idx].entnum == cl.playernum+1 && entnum != cl.playernum+1 && channels[ch_idx].sfx)
 		//	continue;
 
-		if( channels[ch_idx].end - paintedtime < life_left )
+		if( channels[ch_idx].end < life_left + paintedtime )
 		{
 			life_left = channels[ch_idx].end - paintedtime;
 			first_to_die = ch_idx;
@@ -525,6 +599,116 @@ static void S_SpatializeOrigin( vec3_t origin, float master_vol, float dist_mult
 }
 
 /*
+* S_SpatializeOriginHF
+*/
+static void S_SpatializeOriginHQ( vec3_t origin, float master_vol, float dist_mult, int *left_vol, int *right_vol,
+									int *lcoeff, int *rcoeff, unsigned int *ldelay, unsigned int *rdelay )
+{
+	vec_t dot;
+	vec_t dist;
+	vec_t lscale, rscale, scale;
+	vec3_t vec, source_vec;
+	vec_t lgainhf, rgainhf;
+
+	// calculate stereo separation and distance attenuation
+	VectorSubtract( origin, listenerOrigin, vec );
+	Matrix_TransformVector( listenerAxis, vec, source_vec );
+
+	dist = VectorNormalize( source_vec );
+
+	if( dma.channels == 1 || !dist_mult )
+	{ // no attenuation = no spatialization
+		rscale = 1.0f;
+		lscale = 1.0f;
+		lgainhf = 1.0f;
+		rgainhf = 1.0f;
+		if( ldelay && rdelay )
+			*ldelay = *rdelay = 0;
+	}
+	else
+	{
+		// legacy panning
+		// correlate some of the stereo-separation that hf dampening
+		// causes (HQ_HF_DAMP * 0.5)
+		dot = source_vec[1];
+		rscale = 0.5 * ( 1.0 + (dot * (1.0 - HQ_HF_DAMP * 0.25)) );
+		lscale = 0.5 * ( 1.0 - (dot * (1.0 - HQ_HF_DAMP * 0.25)) );
+		if( rscale < 0 )
+		{
+			rscale = 0;
+		}
+		if( lscale < 0 )
+		{
+			lscale = 0;
+		}
+
+		// pseudo acoustics, apply delay to opposite ear of where the
+		// sound originates based on the angle
+		if( ldelay && rdelay )
+		{
+			// HQ_EAR_DELAY ~ 1/(0.15/340.0)
+			float max_delay = dma.speed * s_separationDelay->value / HQ_EAR_DELAY;
+			if( dot < 0.0 )
+			{
+				// delay right ear (sound from left side)
+				*rdelay = (int)(max_delay * -dot);
+				*ldelay = 0;
+			}
+			else
+			{
+				// delay left ear (sound from right side)
+				*ldelay = (int)(max_delay * dot);
+				*rdelay = 0;
+			}
+		}
+
+		// pseudo acoustics, apply high-frequency damping based on
+		// the angle, separately for both ears and then for
+		// sound source behind the listener
+		rgainhf = lgainhf = 1.0;
+
+		// right ear, left ear
+		if( dot < 0  )
+		{
+			rgainhf = 1.0 + dot * HQ_HF_DAMP * 0.5;
+		}
+		else if( dot > 0 )
+		{
+			lgainhf = 1.0 - dot * HQ_HF_DAMP * 0.5;
+		}
+
+		// behind head for both ears
+		dot = source_vec[0];
+		if( dot < 0.0 )
+		{
+			float g = 1.0 + dot * HQ_HF_DAMP;
+			rgainhf *= g;
+			lgainhf *= g;
+		}
+	}
+
+	dist = S_GainForAttenuation( dist, dist_mult );
+
+	// add in distance effect
+	scale = dist * rscale;
+	*right_vol = (int) ( master_vol * scale );
+	if( *right_vol < 0 )
+		*right_vol = 0;
+
+	scale = dist * lscale;
+	*left_vol = (int) ( master_vol * scale );
+	if( *left_vol < 0 )
+		*left_vol = 0;
+
+	// highfrequency coefficients
+	if( lcoeff && rcoeff )
+	{
+		*lcoeff = (int)(S_LowpassCoeff( lgainhf, s_lpf_cw ) * 65535.0f);
+		*rcoeff = (int)(S_LowpassCoeff( rgainhf, s_lpf_cw ) * 65535.0f);
+	}
+}
+
+/*
 * S_Spatialize
 */
 void S_Spatialize( channel_t *ch )
@@ -536,7 +720,17 @@ void S_Spatialize( channel_t *ch )
 	else
 		trap_GetEntitySpatilization( ch->entnum, origin, velocity );
 
-	S_SpatializeOrigin( origin, ch->master_vol, ch->dist_mult, &ch->leftvol, &ch->rightvol );
+	if( s_pseudoAcoustics->value )
+	{
+		S_SpatializeOriginHQ( origin, ch->master_vol, ch->dist_mult, &ch->leftvol, &ch->rightvol,
+							&ch->lpf_lcoeff, &ch->lpf_rcoeff, &ch->ldelay, &ch->rdelay );
+	}
+	else
+	{
+		S_SpatializeOrigin( origin, ch->master_vol, ch->dist_mult, &ch->leftvol, &ch->rightvol );
+		ch->lpf_lcoeff = ch->lpf_rcoeff = 0.0f;
+		ch->ldelay = ch->rdelay = 0;
+	}
 }
 
 
@@ -854,10 +1048,12 @@ static void S_AddLoopSounds( void )
 
 //=============================================================================
 
+#define S_RAW_SAMPLES_PRECISION_BITS 14
+
 /*
 * S_RawSamples
 */
-void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *data, qboolean music )
+void S_RawSamples( unsigned int samples, unsigned int rate, unsigned short width, unsigned short channels, const qbyte *data, qboolean music )
 {
 	int snd_vol;
 	unsigned src, dst;
@@ -870,7 +1066,7 @@ void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *
 	if( s_rawend < paintedtime )
 		s_rawend = paintedtime;
 
-	fracstep = ( (unsigned)rate << 8 ) / (unsigned)dma.speed;
+	fracstep = ( (double) rate / (double) dma.speed ) * (double)(1 << S_RAW_SAMPLES_PRECISION_BITS);
 	samplefrac = 0;
 
 	if( width == 2 )
@@ -879,7 +1075,7 @@ void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *
 
 		if( channels == 2 )
 		{
-			for( src = 0; src < (unsigned)samples; samplefrac += fracstep, src = ( samplefrac >> 8 ) )
+			for( src = 0; src < samples; samplefrac += fracstep, src = ( samplefrac >> S_RAW_SAMPLES_PRECISION_BITS ) )
 			{
 				dst = s_rawend++ & ( MAX_RAW_SAMPLES - 1 );
 				s_rawsamples[dst].left = in[src*2] * snd_vol;
@@ -888,7 +1084,7 @@ void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *
 		}
 		else
 		{
-			for( src = 0; src < (unsigned)samples; samplefrac += fracstep, src = ( samplefrac >> 8 ) )
+			for( src = 0; src < samples; samplefrac += fracstep, src = ( samplefrac >> S_RAW_SAMPLES_PRECISION_BITS ) )
 			{
 				dst = s_rawend++ & ( MAX_RAW_SAMPLES - 1 );
 				s_rawsamples[dst].left = s_rawsamples[dst].right = in[src] * snd_vol;
@@ -901,7 +1097,7 @@ void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *
 		{
 			char *in = (char *)data;
 
-			for( src = 0; src < (unsigned)samples; samplefrac += fracstep, src = ( samplefrac >> 8 ) )
+			for( src = 0; src < samples; samplefrac += fracstep, src = ( samplefrac >> S_RAW_SAMPLES_PRECISION_BITS ) )
 			{
 				dst = s_rawend++ & ( MAX_RAW_SAMPLES - 1 );
 				s_rawsamples[dst].left = in[src*2] << 8 * snd_vol;
@@ -910,13 +1106,21 @@ void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *
 		}
 		else
 		{
-			for( src = 0; src < (unsigned)samples; samplefrac += fracstep, src = ( samplefrac >> 8 ) )
+			for( src = 0; src < samples; samplefrac += fracstep, src = ( samplefrac >> S_RAW_SAMPLES_PRECISION_BITS ) )
 			{
 				dst = s_rawend++ & ( MAX_RAW_SAMPLES - 1 );
 				s_rawsamples[dst].left = s_rawsamples[dst].right = ( data[src] - 128 ) << 8 * snd_vol;
 			}
 		}
 	}
+}
+
+/*
+* S_GetRawSamplesTime
+*/
+unsigned int S_GetRawSamplesTime( void )
+{
+	return (double)paintedtime * 1000.0 / dma.speed;
 }
 
 //=============================================================================
@@ -963,7 +1167,8 @@ static int S_BackgroundTrack_GetWavinfo( const char *name, wavinfo_t *info )
 	last_chunk = 0;
 	memset( info, 0, sizeof( wavinfo_t ) );
 
-	if( trap_FS_FOpenFile( name, &file, FS_READ ) == -1 )
+	trap_FS_FOpenFile( name, &file, FS_READ );
+	if( !file )
 		return 0;
 
 	// find "RIFF" chunk
@@ -1027,6 +1232,20 @@ static int S_BackgroundTrack_GetWavinfo( const char *name, wavinfo_t *info )
 	return file;
 }
 
+/*
+* S_BackgroundTrack_OpenWav
+*/
+static qboolean S_BackgroundTrack_OpenWav( struct bgTrack_s *track, qboolean *delay )
+{
+	if( delay )
+		*delay = qfalse;
+	if( track->isUrl )
+		return qfalse;
+
+	track->file = S_BackgroundTrack_GetWavinfo( track->filename, &track->info );
+	return (track->file != 0);
+}
+
 // =================================
 
 /*
@@ -1040,6 +1259,7 @@ static bgTrack_t *S_AllocTrack( const char *filename )
 	track->ignore = qfalse;
 	track->filename = (char *)((qbyte *)track + sizeof( *track ));
 	strcpy( track->filename, filename );
+	track->isUrl = trap_FS_IsUrl( track->filename );
 	track->anext = s_bgTrackHead;
 	s_bgTrackHead = track;
 
@@ -1051,7 +1271,7 @@ static bgTrack_t *S_AllocTrack( const char *filename )
 */
 static qboolean S_ValidMusicFile( bgTrack_t *track )
 {
-	return (track->file && track->info.samples);
+	return (track->file && (!track->isUrl || !trap_FS_Eof( track->file )));
 }
 
 /*
@@ -1079,21 +1299,48 @@ static qboolean S_OpenMusicTrack( bgTrack_t *track )
 	if( track->ignore )
 		return qfalse;
 
+mark0:
+	s_bgTrackBuffering = qfalse;
+
 	if( !track->file )
 	{
-		track->read = NULL;
-		track->seek = NULL;
-		track->close = NULL;
+		qboolean opened, delay = qfalse;
 
-		if( !SNDOGG_OpenTrack( filename, track ) )
-			track->file = S_BackgroundTrack_GetWavinfo( filename, &track->info );
+		memset( &track->info, 0, sizeof( track->info ) );
+
+		// try ogg
+		track->open = SNDOGG_OpenTrack;
+		opened = track->open( track, &delay );
+
+		// try wav
+		if( !opened )
+		{
+			track->open = S_BackgroundTrack_OpenWav;
+			opened = track->open( track, &delay );
+		}
+
+		if( opened && delay )
+		{
+			// let the background track buffer for a while
+			Com_Printf( "S_OpenMusicTrack: buffering %s...\n", track->filename );
+			s_bgTrackBuffering = qtrue;
+		}
 	}
 	else
 	{
+		int seek;
+
 		if( track->seek )
-			track->seek( track, 0 );
+			seek = track->seek( track, 0 );
 		else
-			trap_FS_Seek( track->file, track->info.dataofs, FS_SEEK_SET );
+			seek = trap_FS_Seek( track->file, track->info.dataofs, FS_SEEK_SET );
+
+		// if seeking failed for whatever reason (stream?), try reopening again
+		if( seek )
+		{
+			S_CloseMusicTrack( track );
+			goto mark0;
+		}
 	}
 
 	if( !S_ValidMusicFile( track ) )
@@ -1165,9 +1412,7 @@ typedef struct playlistItem_s
 } playlistItem_t;
 
 /*
-================
-R_SortPlaylistItems
-================
+* R_SortPlaylistItems
 */
 static int R_PlaylistItemCmp( const playlistItem_t *i1, const playlistItem_t *i2 )
 {
@@ -1224,26 +1469,33 @@ static qboolean S_ReadPlaylistFile( const char *filename, qboolean shuffle )
 		entry = Q_trim( entry );
 
 		// special M3U entry or comment
-		if( *entry == '#' )
+		if( !*entry || *entry == '#' )
 			continue;
 
-		// append the entry name to playlist path
-		s = strlen( filename ) + 1 + strlen( entry ) + 1;
-		if( s > tmpname_size )
+		if( trap_FS_IsUrl( entry ) )
 		{
-			if( tmpname )
-				S_Free( tmpname );
-			tmpname_size = s;
-			tmpname = S_Malloc( tmpname_size );
+			items[numItems].track = S_AllocTrack( entry );
 		}
+		else
+		{
+			// append the entry name to playlist path
+			s = strlen( filename ) + 1 + strlen( entry ) + 1;
+			if( s > tmpname_size )
+			{
+				if( tmpname )
+					S_Free( tmpname );
+				tmpname_size = s;
+				tmpname = S_Malloc( tmpname_size );
+			}
 
-		Q_strncpyz( tmpname, filename, tmpname_size );
-		COM_StripFilename( tmpname );
-		Q_strncatz( tmpname, "/", tmpname_size );
-		Q_strncatz( tmpname, entry, tmpname_size );
-		COM_SanitizeFilePath( tmpname );
+			Q_strncpyz( tmpname, filename, tmpname_size );
+			COM_StripFilename( tmpname );
+			Q_strncatz( tmpname, "/", tmpname_size );
+			Q_strncatz( tmpname, entry, tmpname_size );
+			COM_SanitizeFilePath( tmpname );
 
-		items[numItems].track = S_AllocTrack( tmpname );
+			items[numItems].track = S_AllocTrack( tmpname );
+		}
 
 		if( ++numItems == MAX_PLAYLIST_ITEMS )
 			break;
@@ -1299,7 +1551,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop )
 	s_bgTrackPaused = qfalse;
 
 	ext = COM_FileExtension( intro );
-	if( ext && !Q_stricmp( ext, ".m3u") )
+	if( ext && !Q_stricmp( ext, ".m3u" ) )
 	{
 		// mode bits:
 		// 1 - shuffle
@@ -1332,26 +1584,36 @@ void S_StartBackgroundTrack( const char *intro, const char *loop )
 
 start_playback:
 	// this effectively precaches the first 15 scheduled tracks in the playlist
-	for( count = 0, t = s_bgTrack; count < 15 && t; count++ )
+	for( count = 0, t = s_bgTrack; count < 15 && t && t != s_bgTrack; count++ )
 	{
-		S_OpenMusicTrack( t );
-
-		if( t->next == t || t->next == s_bgTrack )
-			break; // break on an endless loop or full cycle
-		if( !t->ignore && ( mode & 2 ) )
+		if( !t->isUrl )
 		{
-			// no point in precaching the whole playlist when we're only going
-			// to loop one single track
-			break;
+			S_OpenMusicTrack( t );
+
+			if( t->next == t || t->next == s_bgTrack )
+				break; // break on an endless loop or full cycle
+			if( !t->ignore && ( mode & 2 ) )
+			{
+				// no point in precaching the whole playlist when we're only going
+				// to loop one single track
+				break;
+			}
 		}
 		t = t->next;
 	}
 
 	// start playback with the first valid track
-	memset( &f, 0, sizeof( f ) );
-	f.next = s_bgTrack;
+	if( count > 1 )
+	{
+		memset( &f, 0, sizeof( f ) );
+		f.next = s_bgTrack;
+		s_bgTrack = S_NextMusicTrack( &f );
+	}
+	else if( s_bgTrack )
+	{
+		S_OpenMusicTrack( s_bgTrack );
+	}
 
-	s_bgTrack = S_NextMusicTrack( &f );
 	if( !s_bgTrack || s_bgTrack->ignore )
 	{
 		S_StopBackgroundTrack();
@@ -1384,7 +1646,9 @@ void S_StopBackgroundTrack( void )
 
 	s_bgTrack = NULL;
 	s_bgTrackHead = NULL;
-	
+
+	s_bgTrackBuffering = qfalse;
+
 	s_bgTrackPaused = qfalse;
 }
 
@@ -1431,7 +1695,33 @@ static void S_NextBackgroundTrack( void )
 */
 static void S_PauseBackgroundTrack( void )
 {
+	if( !s_bgTrack ) {
+		return;
+	}
+
+	// in case of a streaming URL, reset the stream
+	if( s_bgTrack->isUrl ) {
+		if( s_bgTrackPaused ) {
+			S_OpenMusicTrack( s_bgTrack );
+		}
+		else {
+			S_CloseMusicTrack( s_bgTrack );
+		}
+	}
+
 	s_bgTrackPaused = !s_bgTrackPaused;
+}
+
+/*
+* S_LockBackgroundTrack
+*/
+void S_LockBackgroundTrack( qboolean lock )
+{
+	if( !s_bgTrack || !s_bgTrack->isUrl ) {
+		s_bgTrackLocked = lock;
+	} else {
+		s_bgTrackLocked = qfalse;
+	}
 }
 
 //=============================================================================
@@ -1467,10 +1757,35 @@ static void S_UpdateBackgroundTrack( void )
 	float scale;
 	qbyte data[MAX_RAW_SAMPLES*4];
 
-	if( !s_bgTrack || !s_musicvolume->value )
+	if( !s_bgTrack )
 		return;
-	if( s_bgTrackPaused )
+	if( !s_musicvolume->value && !s_bgTrack->isUrl )
 		return;
+	if( s_bgTrackPaused || s_bgTrackLocked )
+		return;
+
+	if( s_bgTrackBuffering )
+	{
+		if( trap_FS_Eof( s_bgTrack->file ) ) {
+		}
+		else {
+			if( trap_FS_Tell( s_bgTrack->file ) < BACKGROUND_TRACK_BUFFERING_SIZE )
+				return;
+			s_bgTrack->open( s_bgTrack, NULL );
+		}
+		// in case we delayed openening to let the stream cache for a while,
+		// start actually reading from it now
+		s_bgTrackBuffering = qfalse;
+	}
+
+	if( !s_bgTrack->info.channels || ! s_bgTrack->info.width )
+	{
+		// hopefully this is correct
+		S_CloseMusicTrack( s_bgTrack );
+		s_bgTrack->ignore = qtrue;
+		S_AdvanceBackgroundTrack( 1 );
+		return;
+	}
 
 	if( s_rawend < paintedtime )
 		s_rawend = paintedtime;
@@ -1489,6 +1804,8 @@ static void S_UpdateBackgroundTrack( void )
 		total = 0;
 		while( total < maxRead )
 		{
+			int seek;
+
 			if( s_bgTrack->read )
 				read = s_bgTrack->read( s_bgTrack, data + total, maxRead - total );
 			else
@@ -1506,9 +1823,16 @@ static void S_UpdateBackgroundTrack( void )
 				}
 
 				if( s_bgTrack->seek )
-					s_bgTrack->seek( s_bgTrack, s_bgTrack->info.dataofs );
+					seek = s_bgTrack->seek( s_bgTrack, s_bgTrack->info.dataofs );
 				else
-					trap_FS_Seek( s_bgTrack->file, s_bgTrack->info.dataofs, FS_SEEK_SET );
+					seek = trap_FS_Seek( s_bgTrack->file, s_bgTrack->info.dataofs, FS_SEEK_SET );
+				if( seek )
+				{
+					// if the seek have failed we're going to loop here forever unless
+					// we stop now
+					S_StopBackgroundTrack();
+					return;
+				}
 			}
 
 			total += read;
@@ -1524,10 +1848,10 @@ static void S_UpdateBackgroundTrack( void )
 */
 static void GetSoundtime( void )
 {
-	int samplepos;
-	static int buffers;
-	static int oldsamplepos;
-	int fullsamples;
+	unsigned int samplepos;
+	static unsigned int buffers;
+	static unsigned int oldsamplepos;
+	unsigned int fullsamples;
 
 	fullsamples = dma.samples / dma.channels;
 
@@ -1558,7 +1882,7 @@ static void GetSoundtime( void )
 static void S_Update_( qboolean avidump )
 {
 	unsigned endtime;
-	int samps;
+	unsigned samps;
 
 	SNDDMA_BeginPainting();
 
@@ -1600,7 +1924,6 @@ void S_Update( const vec3_t origin, const vec3_t velocity, const vec3_t forward,
 	int i;
 	int total;
 	channel_t *ch;
-	channel_t *combine;
 
 	// rebuild scale tables if volume is modified
 	if( s_volume->modified )
@@ -1611,8 +1934,6 @@ void S_Update( const vec3_t origin, const vec3_t velocity, const vec3_t forward,
 	VectorCopy( forward, listenerAxis[FORWARD] );
 	VectorCopy( right, listenerAxis[RIGHT] );
 	VectorCopy( up, listenerAxis[UP] );
-
-	combine = NULL;
 
 	// update spatialization for dynamic sounds
 	ch = channels;

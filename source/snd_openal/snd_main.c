@@ -25,10 +25,10 @@ struct mempool_s *soundpool;
 cvar_t *s_volume;
 cvar_t *s_musicvolume;
 cvar_t *s_openAL_device;
-cvar_t *s_stereo2mono;
 
 static cvar_t *s_doppler;
 static cvar_t *s_sound_velocity;
+cvar_t *s_stereo2mono;
 
 int s_attenuation_model = 0;
 float s_attenuation_maxdistance = 0;
@@ -173,6 +173,24 @@ ALuint S_SoundFormat( int width, int channels )
 
 	Com_Printf( "Unknown sound format: %i channels, %i bits.\n", channels, width * 8 );
 	return AL_FORMAT_MONO16;
+}
+
+/*
+* S_GetBufferLength
+*/
+ALfloat S_GetBufferLength( ALuint buffer )
+{
+    ALint size, bits, channels, freq;
+
+    qalGetBufferi( buffer, AL_SIZE, &size );
+    qalGetBufferi( buffer, AL_BITS, &bits );
+    qalGetBufferi( buffer, AL_FREQUENCY, &freq );
+    qalGetBufferi( buffer, AL_CHANNELS, &channels );
+
+	if( qalGetError() != AL_NO_ERROR ) {
+        return 0;
+	}
+    return (ALfloat)((ALuint)size/(bits/8)/channels) / (ALfloat)freq;
 }
 
 /*
@@ -386,7 +404,7 @@ qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose )
 	s_volume = trap_Cvar_Get( "s_volume", "0.8", CVAR_ARCHIVE );
 	s_musicvolume = trap_Cvar_Get( "s_musicvolume", "0.5", CVAR_ARCHIVE );
 	s_doppler = trap_Cvar_Get( "s_doppler", "1.0", CVAR_ARCHIVE );
-	s_sound_velocity = trap_Cvar_Get( "s_sound_velocity", "2200", CVAR_DEVELOPER );
+	s_sound_velocity = trap_Cvar_Get( "s_sound_velocity", "10976", CVAR_DEVELOPER );
 	s_stereo2mono = trap_Cvar_Get ( "s_stereo2mono", "0", CVAR_ARCHIVE );
 
 	qalDopplerFactor( s_doppler->value );
@@ -397,6 +415,8 @@ qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose )
 	s_doppler->modified = qfalse;
 
 	S_SetAttenuationModel( S_DEFAULT_ATTENUATION_MODEL, S_DEFAULT_ATTENUATION_MAXDISTANCE, S_DEFAULT_ATTENUATION_REFDISTANCE );
+
+	S_LockBackgroundTrack( qfalse );
 
 	if( !S_InitDecoders( verbose ) )
 	{
@@ -461,6 +481,9 @@ void S_Shutdown( qboolean verbose )
 #endif
 	trap_Cmd_RemoveCommand( "music" );
 	trap_Cmd_RemoveCommand( "stopmusic" );
+	trap_Cmd_RemoveCommand( "prevmusic" );
+	trap_Cmd_RemoveCommand( "nextmusic" );
+	trap_Cmd_RemoveCommand( "pausemusic" );
 	trap_Cmd_RemoveCommand( "soundlist" );
 	trap_Cmd_RemoveCommand( "s_devices" );
 
@@ -578,6 +601,8 @@ void S_StopAllSounds( void )
 */
 void S_Activate( qboolean activate )
 {
+	S_LockBackgroundTrack( !activate );
+
 	// TODO: Actually stop playing sounds while not active?
 	if( activate )
 		qalListenerf( AL_GAIN, 1 );

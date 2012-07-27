@@ -27,6 +27,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static sfx_t knownSfx[MAX_SFX];
 static qboolean buffers_inited = qfalse;
 
+static int s_registration_sequence = 1;
+static qboolean s_registering;
+
 /*
 * Local helper functions
 */
@@ -241,6 +244,8 @@ qboolean S_InitBuffers( void )
 	memset( knownSfx, 0, sizeof( knownSfx ) );
 
 	buffers_inited = qtrue;
+	s_registration_sequence = 1;
+	s_registering = qfalse;
 	return qtrue;
 }
 
@@ -254,8 +259,9 @@ void S_ShutdownBuffers( void )
 	for( i = 0; i < MAX_SFX; i++ )
 		buffer_unload( &knownSfx[i] );
 
-	memset( knownSfx, 0, sizeof( knownSfx ) );
+	s_registering = qfalse;
 
+	memset( knownSfx, 0, sizeof( knownSfx ) );
 	buffers_inited = qfalse;
 }
 
@@ -313,12 +319,47 @@ sfx_t *S_RegisterSound( const char *name )
 		if( !buffer_load( sfx ) )
 		{
 			sfx->filename[0] = '\0';
+			sfx->registration_sequence = 0;
+			sfx->used = 0;
 			return NULL;
 		}
 	}
 
 	sfx->used = trap_Milliseconds();
+	sfx->registration_sequence = s_registration_sequence;
 	return sfx;
+}
+
+void S_BeginRegistration( void )
+{
+	s_registration_sequence++;
+	if( !s_registration_sequence ) {
+		s_registration_sequence = 1;
+	}
+	s_registering = qtrue;
+}
+
+void S_EndRegistration( void )
+{
+	int i;
+
+	s_registering = qfalse;
+
+	if( !buffers_inited )
+		return;
+
+	for( i = 0; i < MAX_SFX; i++ ) {
+		if( knownSfx[i].filename[0] == '\0' ) {
+			continue;
+		}
+		if( knownSfx[i].registration_sequence == s_registration_sequence ) {
+			if ( !knownSfx[i].inMemory ) {
+				buffer_load( &knownSfx[i] );
+			}
+			continue;
+		}
+		buffer_unload( &knownSfx[i] );
+	}
 }
 
 void S_FreeSounds()
@@ -329,15 +370,4 @@ void S_FreeSounds()
 
 void S_Clear()
 {
-}
-
-void S_SoundsInMemory()
-{
-	int i;
-
-	for( i = 0; i < MAX_SFX; i++ )
-	{
-		if( knownSfx[i].filename[0] != '\0' && !knownSfx[i].inMemory )
-			buffer_load( &knownSfx[i] );
-	}
 }

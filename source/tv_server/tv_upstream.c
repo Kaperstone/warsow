@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -32,11 +32,11 @@
 // for jumping over upstream handling when it's disconnected
 jmp_buf upstream_abortframe;
 
-//=================
-//TV_UpstreamForText
-// Finds relay upstream matching given text
-// Text can be either number, name or address
-//=================
+/*
+* TV_UpstreamForText
+* Finds relay upstream matching given text
+* Text can be either number, name or address
+*/
 qboolean TV_UpstreamForText( const char *text, upstream_t **upstream )
 {
 	int i;
@@ -60,7 +60,7 @@ qboolean TV_UpstreamForText( const char *text, upstream_t **upstream )
 
 	// by number
 	if( !strcmp( text, va( "%i", atoi( text ) ) ) && atoi( text ) > 0 && atoi( text ) <= tvs.numupstreams &&
-	    tvs.upstreams[atoi( text )-1] )
+		tvs.upstreams[atoi( text )-1] )
 	{
 		*upstream = tvs.upstreams[atoi( text )-1];
 		return qtrue;
@@ -109,9 +109,9 @@ qboolean TV_UpstreamForText( const char *text, upstream_t **upstream )
 	return qfalse;
 }
 
-//==================
-//TV_Upstream_Userinfo
-//==================
+/*
+* TV_Upstream_Userinfo
+*/
 char *TV_Upstream_Userinfo( upstream_t *upstream )
 {
 	char *name;
@@ -136,9 +136,9 @@ char *TV_Upstream_Userinfo( upstream_t *upstream )
 	return userinfo;
 }
 
-//==================
-//TV_Upstream_Netchan_Transmit
-//==================
+/*
+* TV_Upstream_Netchan_Transmit
+*/
 static void TV_Upstream_Netchan_Transmit( upstream_t *upstream, msg_t *msg )
 {
 	//int zerror;
@@ -148,19 +148,19 @@ static void TV_Upstream_Netchan_Transmit( upstream_t *upstream, msg_t *msg )
 
 	// do not enable client compression until I fix the compression+fragmentation rare case bug
 	/*if( cl_compresspackets->integer ) {
-	    zerror = Netchan_CompressMessage( msg );
-	    if( zerror < 0 ) {  // it's compression error, just send uncompressed
-	   	Com_DPrintf( "TV_Upstream_Netchan_Transmit (ignoring compression): Compression error %i\n", zerror );
-	    }
-	   }*/
+	zerror = Netchan_CompressMessage( msg );
+	if( zerror < 0 ) {  // it's compression error, just send uncompressed
+	Com_DPrintf( "TV_Upstream_Netchan_Transmit (ignoring compression): Compression error %i\n", zerror );
+	}
+	}*/
 
 	Netchan_Transmit( &upstream->netchan, msg );
 	upstream->lastPacketSentTime = tvs.realtime;
 }
 
-//=================
-// TV_Upstream_ProcessPacket
-//=================
+/*
+* TV_Upstream_ProcessPacket
+*/
 static qboolean TV_Upstream_ProcessPacket( netchan_t *netchan, msg_t *msg )
 {
 	int sequence, sequence_ack;
@@ -186,9 +186,9 @@ static qboolean TV_Upstream_ProcessPacket( netchan_t *netchan, msg_t *msg )
 	return qtrue;
 }
 
-//==================
-//TV_Upstream_WriteUcmdToMessage
-//==================
+/*
+* TV_Upstream_WriteUcmdToMessage
+*/
 static void TV_Upstream_WriteUcmdToMessage( upstream_t *upstream, msg_t *msg )
 {
 	usercmd_t cmd, nullcmd;
@@ -206,16 +206,16 @@ static void TV_Upstream_WriteUcmdToMessage( upstream_t *upstream, msg_t *msg )
 	MSG_WriteDeltaUsercmd( msg, &nullcmd, &cmd );
 }
 
-//==================
-//TV_Upstream_SendMessagesToServer
-//==================
+/*
+* TV_Upstream_SendMessagesToServer
+*/
 static void TV_Upstream_SendMessagesToServer( upstream_t *upstream, qboolean sendNow )
 {
 	msg_t message;
 	qbyte messageData[MAX_MSGLEN];
 	qboolean ucmd = qfalse;
 
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 		return;
 	if( upstream->state == CA_DISCONNECTED || upstream->state == CA_CONNECTING )
 		return;
@@ -263,9 +263,9 @@ static void TV_Upstream_SendMessagesToServer( upstream_t *upstream, qboolean sen
 	}
 }
 
-//==================
-//TV_Upstream_CheckForResend
-//==================
+/*
+* TV_Upstream_CheckForResend
+*/
 static void TV_Upstream_CheckForResend( upstream_t *upstream )
 {
 	if( upstream->state != CA_CONNECTING )
@@ -325,9 +325,9 @@ static void TV_Upstream_CheckForResend( upstream_t *upstream )
 	}
 }
 
-//==================
-//TV_Upstream_SavePacket
-//==================
+/*
+* TV_Upstream_SavePacket
+*/
 void TV_Upstream_SavePacket( upstream_t *upstream, msg_t *msg, int timeBias )
 {
 	packet_t *packet;
@@ -370,9 +370,9 @@ void TV_Upstream_SavePacket( upstream_t *upstream, msg_t *msg, int timeBias )
 	upstream->packetqueue_head = packet;
 }
 
-//==================
-//TV_Upstream_FreePackets
-//==================
+/*
+* TV_Upstream_FreePackets
+*/
 static void TV_Upstream_FreePackets( upstream_t *upstream )
 {
 	packet_t *stop, *iter;
@@ -410,10 +410,10 @@ static void TV_Upstream_FreePackets( upstream_t *upstream )
 	}
 }
 
-//==================
-//TV_Upstream_ReadDemoMessage
-//Read a packet from the demo file and send it to the messages parser
-//==================
+/*
+* TV_Upstream_ReadDemoMessage
+* Read a packet from the demo file and send it to the messages parser
+*/
 static void TV_Upstream_ReadDemoMessage( upstream_t *upstream, int timeBias )
 {
 	static qbyte msgbuf[MAX_MSGLEN];
@@ -421,15 +421,15 @@ static void TV_Upstream_ReadDemoMessage( upstream_t *upstream, int timeBias )
 	qboolean init = qtrue;
 	int read;
 
-	if( !upstream->demofilehandle )
+	if( !upstream->demo.filehandle )
 	{
 		TV_Upstream_Error( upstream, "No demo file handle" );
 		return;
 	}
 
-	if( upstream->demofilelen <= 0 )
+	if( upstream->demo.filelen <= 0 )
 	{
-		TV_Upstream_StartDemo( upstream, upstream->servername, upstream->demorandom );
+		TV_Upstream_StartDemo( upstream, upstream->servername, upstream->demo.random );
 		return;
 	}
 
@@ -439,23 +439,23 @@ static void TV_Upstream_ReadDemoMessage( upstream_t *upstream, int timeBias )
 		init = qfalse;
 	}
 
-	read = SNAP_ReadDemoMessage( upstream->demofilehandle, &demomsg );
+	read = SNAP_ReadDemoMessage( upstream->demo.filehandle, &demomsg );
 	if( read == -1 )
 	{
-		TV_Upstream_StartDemo( upstream, upstream->servername, upstream->demorandom );
+		TV_Upstream_StartDemo( upstream, upstream->servername, upstream->demo.random );
 		return;
 	}
 
-	upstream->demofilelen -= read;
+	upstream->demo.filelen -= read;
 
 	TV_Upstream_SavePacket( upstream, &demomsg, timeBias );
 	TV_Upstream_ParseServerMessage( upstream, &demomsg );
 }
 
-//==================
-//TV_Upstream_ReadDemoPackets
-//See if it's time to read a new demo packet
-//==================
+/*
+* TV_Upstream_ReadDemoPackets
+* See if it's time to read a new demo packet
+*/
 static void TV_Upstream_ReadDemoPackets( upstream_t *upstream )
 {
 	unsigned int timeBias;
@@ -495,9 +495,9 @@ static void TV_Upstream_ReadDemoPackets( upstream_t *upstream )
 	upstream->lastPacketReceivedTime = tvs.realtime;
 }
 
-//==================
-//TV_Upstream_ReadPackets
-//==================
+/*
+* TV_Upstream_ReadPackets
+*/
 static void TV_Upstream_ReadPackets( upstream_t *upstream )
 {
 	msg_t msg;
@@ -552,7 +552,7 @@ static void TV_Upstream_ReadPackets( upstream_t *upstream )
 
 	// check timeout
 	if( upstream->state >= CA_HANDSHAKE &&
-	    upstream->lastPacketReceivedTime + tv_timeout->value * 1000 < tvs.realtime )
+		upstream->lastPacketReceivedTime + tv_timeout->value * 1000 < tvs.realtime )
 	{
 		if( ++upstream->timeoutcount > 5 )  // timeoutcount saves debugger
 			TV_Upstream_Error( upstream, "Upstream timed out" );
@@ -563,22 +563,22 @@ static void TV_Upstream_ReadPackets( upstream_t *upstream )
 	}
 }
 
-//==================
-//TV_Upstream_SendConnectPacket
-// We have gotten a challenge from the server, so try and connect
-//==================
+/*
+* TV_Upstream_SendConnectPacket
+* We have gotten a challenge from the server, so try and connect
+*/
 void TV_Upstream_SendConnectPacket( upstream_t *upstream )
 {
 	upstream->userinfo_modified = qfalse;
 
 	Netchan_OutOfBandPrint( upstream->socket, &upstream->serveraddress, "connect %i %i %i \"%s\" %i\n",
-	                        APP_PROTOCOL_VERSION, Netchan_GamePort(), upstream->challenge, TV_Upstream_Userinfo( upstream ), 1 );
+		APP_PROTOCOL_VERSION, Netchan_GamePort(), upstream->challenge, TV_Upstream_Userinfo( upstream ), 1 );
 }
 
-//=================
-//TV_Upstream_Error
-// Must only be called from inside TV_Upstream_Run
-//=================
+/*
+* TV_Upstream_Error
+* Must only be called from inside TV_Upstream_Run
+*/
 void TV_Upstream_Error( upstream_t *upstream, const char *format, ... )
 {
 	va_list	argptr;
@@ -595,9 +595,9 @@ void TV_Upstream_Error( upstream_t *upstream, const char *format, ... )
 	longjmp( upstream_abortframe, -1 );
 }
 
-//=================
-//TV_Upstream_Disconnect
-//=================
+/*
+* TV_Upstream_Disconnect
+*/
 void TV_Upstream_Disconnect( upstream_t *upstream, const char *format, ... )
 {
 	va_list	argptr;
@@ -614,29 +614,29 @@ void TV_Upstream_Disconnect( upstream_t *upstream, const char *format, ... )
 
 	if( upstream->state > CA_CONNECTING )
 	{
-		TV_Upstream_AddReliableCommand( upstream, "disconnect" );
-		TV_Upstream_SendMessagesToServer( upstream, qtrue );
-		TV_Upstream_AddReliableCommand( upstream, "disconnect" );
-		TV_Upstream_SendMessagesToServer( upstream, qtrue );
-		TV_Upstream_AddReliableCommand( upstream, "disconnect" );
-		TV_Upstream_SendMessagesToServer( upstream, qtrue );
+		int i;
+
+		for( i = 0; i < 3; i++ ) {
+			TV_Upstream_AddReliableCommand( upstream, "disconnect" );
+			TV_Upstream_SendMessagesToServer( upstream, qtrue );
+		}
 	}
 
 	if( upstream->individual_socket )
 		NET_CloseSocket( upstream->socket );
 
-	if( upstream->demorecording )
+	if( upstream->demo.recording )
 		TV_Upstream_StopDemoRecord( upstream, qfalse, qfalse );
 
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 		TV_Upstream_StopDemo( upstream );
 
 	upstream->state = CA_DISCONNECTED;
 }
 
-//=================
-//TV_Upstream_Shutdown
-//=================
+/*
+* TV_Upstream_Shutdown
+*/
 void TV_Upstream_Shutdown( upstream_t *upstream, const char *format, ... )
 {
 	va_list	argptr;
@@ -709,9 +709,9 @@ void TV_Upstream_Shutdown( upstream_t *upstream, const char *format, ... )
 }
 
 
-//==================
-//TV_Upstream_ClearState
-//==================
+/*
+* TV_Upstream_ClearState
+*/
 void TV_Upstream_ClearState( upstream_t *upstream )
 {
 	upstream->lastExecutedServerCommand = 0;
@@ -729,9 +729,9 @@ void TV_Upstream_ClearState( upstream_t *upstream )
 	upstream->serverFrame = 0;
 }
 
-//==================
-//TV_Upstream_AddReliableCommand
-//==================
+/*
+* TV_Upstream_AddReliableCommand
+*/
 void TV_Upstream_AddReliableCommand( upstream_t *upstream, const char *cmd )
 {
 	int index;
@@ -751,10 +751,10 @@ void TV_Upstream_AddReliableCommand( upstream_t *upstream, const char *cmd )
 	Q_strncpyz( upstream->reliableCommands[index], cmd, sizeof( upstream->reliableCommands[index] ) );
 }
 
-//==================
-//TV_Upstream_UpdateReliableCommandsToServer
-// Add the pending commands to the message
-//==================
+/*
+* TV_Upstream_UpdateReliableCommandsToServer
+* Add the pending commands to the message
+*/
 void TV_Upstream_UpdateReliableCommandsToServer( upstream_t *upstream, msg_t *msg )
 {
 	unsigned int i;
@@ -776,9 +776,9 @@ void TV_Upstream_UpdateReliableCommandsToServer( upstream_t *upstream, msg_t *ms
 		upstream->reliableAcknowledge = upstream->reliableSent;
 }
 
-//================
-//TV_Upstream_Run
-//================
+/*
+* TV_Upstream_Run
+*/
 void TV_Upstream_Run( upstream_t *upstream, int msec )
 {
 	if( setjmp( upstream_abortframe ) )  // disconnect while running
@@ -786,7 +786,7 @@ void TV_Upstream_Run( upstream_t *upstream, int msec )
 
 	if( upstream->state > CA_DISCONNECTED )
 	{
-		if( upstream->demoplaying )
+		if( upstream->demo.playing )
 		{
 			TV_Upstream_ReadDemoPackets( upstream );
 			if( upstream->state == CA_ACTIVE )
@@ -822,9 +822,9 @@ void TV_Upstream_Run( upstream_t *upstream, int msec )
 		TV_Upstream_Shutdown( upstream, "Relay was shutdown" );
 }
 
-//==================
-//TV_Upstream_SetName
-//==================
+/*
+* TV_Upstream_SetName
+*/
 void TV_Upstream_SetName( upstream_t *upstream, const char *name )
 {
 	const char *customname = upstream->customname;
@@ -860,14 +860,46 @@ void TV_Upstream_SetName( upstream_t *upstream, const char *name )
 		TV_Relay_NameNotify( &upstream->relay, NULL );
 }
 
-//==================
-//TV_Upstream_Connect
-//==================
+/*
+* TV_Upstream_SetAudioTrack
+*/
+void TV_Upstream_SetAudioTrack( upstream_t *upstream, const char *track )
+{
+	char *oldtrack;
+
+	oldtrack = upstream->audiotrack;
+	if( !oldtrack ) {
+		oldtrack = "";
+	}
+
+	if( !Q_stricmp( oldtrack, track ) ) {
+		// no change
+		return;
+	}
+
+	if( upstream->audiotrack ) {
+		Mem_Free( upstream->audiotrack );
+	}
+
+	if( !track[0] ) {
+		// no track override
+		upstream->audiotrack = NULL;
+	}
+	else {
+		upstream->audiotrack = TV_Upstream_CopyString( upstream, track );
+	}
+
+	TV_Relay_SetAudioTrack( &upstream->relay, upstream->audiotrack );
+}
+
+/*
+* TV_Upstream_Connect
+*/
 void TV_Upstream_Connect( upstream_t *upstream, const char *servername, const char *password, socket_type_t type, netadr_t *address )
 {
 	netadr_t socketaddress;
 
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 		return;
 
 	assert( upstream && upstream->state <= CA_DISCONNECTED );
@@ -941,9 +973,9 @@ void TV_Upstream_Connect( upstream_t *upstream, const char *servername, const ch
 	upstream->precacheDone = qfalse;
 }
 
-//==================
-//TV_Upstream_Reconnect_f
-//==================
+/*
+* TV_Upstream_Reconnect_f
+*/
 void TV_Upstream_Reconnect_f( upstream_t *upstream )
 {
 	char *servername, *password;
@@ -960,21 +992,21 @@ void TV_Upstream_Reconnect_f( upstream_t *upstream )
 
 	if( upstream->state > CA_CONNECTING )
 	{
-		TV_Upstream_AddReliableCommand( upstream, "disconnect" );
-		TV_Upstream_SendMessagesToServer( upstream, qtrue );
-		TV_Upstream_AddReliableCommand( upstream, "disconnect" );
-		TV_Upstream_SendMessagesToServer( upstream, qtrue );
-		TV_Upstream_AddReliableCommand( upstream, "disconnect" );
-		TV_Upstream_SendMessagesToServer( upstream, qtrue );
+		int i;
+
+		for( i = 0; i < 3; i++ ) {
+			TV_Upstream_AddReliableCommand( upstream, "disconnect" );
+			TV_Upstream_SendMessagesToServer( upstream, qtrue );
+		}
 	}
 
 	if( upstream->individual_socket )
 		NET_CloseSocket( upstream->socket );
 
-	if( upstream->demorecording )
+	if( upstream->demo.recording )
 		TV_Upstream_StopDemoRecord( upstream, qfalse, qfalse );
 
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 		TV_Upstream_StopDemo( upstream );
 
 	if( upstream->servername )
@@ -1006,9 +1038,9 @@ void TV_Upstream_Reconnect_f( upstream_t *upstream )
 	Mem_TempFree( password );
 }
 
-//================
-//TV_Upstream_New
-//================
+/*
+* TV_Upstream_New
+*/
 upstream_t *TV_Upstream_New( const char *servername, const char *customname, int delay )
 {
 	int i;

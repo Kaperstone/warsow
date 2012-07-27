@@ -594,7 +594,7 @@ static edict_t *G_Fire_Lasergun( vec3_t origin, vec3_t angles, firedef_t *firede
 */
 static edict_t *G_Fire_WeakBolt( vec3_t origin, vec3_t angles, firedef_t *firedef, edict_t *owner, int seed )
 {
-	int speed, maxknockback, minknockback, stun, mod;
+	int speed, maxknockback, minknockback, stun;
 	float maxdamage, mindamage;
 	int timeDelta;
 
@@ -607,7 +607,6 @@ static edict_t *G_Fire_WeakBolt( vec3_t origin, vec3_t angles, firedef_t *firede
 	if( firedef->spread )
 		G_LocalSpread( angles, firedef->spread, seed );
 
-	mod = ( firedef->fire_mode == FIRE_MODE_STRONG ) ? MOD_ELECTROBOLT_S : MOD_ELECTROBOLT_W;
 	speed = firedef->speed;
 	maxdamage = firedef->damage;
 	mindamage = firedef->mindamage;
@@ -621,14 +620,14 @@ static edict_t *G_Fire_WeakBolt( vec3_t origin, vec3_t angles, firedef_t *firede
 		maxdamage *= QUAD_DAMAGE_SCALE;
 		maxknockback *= QUAD_KNOCKBACK_SCALE;
 	}
+
 #ifdef ELECTROBOLT_TEST
 	W_Fire_Electrobolt_Combined( owner, origin, angles, maxdamage, mindamage,
-		maxknockback, minknockback, stun, firedef->timeout, mod, timeDelta );
-
+		maxknockback, minknockback, stun, firedef->timeout, MOD_ELECTROBOLT_W, timeDelta );
 	return NULL;
 #else
 	return W_Fire_Electrobolt_Weak( owner, origin, angles, speed, maxdamage, minknockback, maxknockback, stun,
-		firedef->timeout, mod, timeDelta );
+		firedef->timeout, MOD_ELECTROBOLT_W, timeDelta );
 #endif
 }
 
@@ -637,7 +636,7 @@ static edict_t *G_Fire_WeakBolt( vec3_t origin, vec3_t angles, firedef_t *firede
 */
 static edict_t *G_Fire_StrongBolt( vec3_t origin, vec3_t angles, firedef_t *firedef, edict_t *owner, int seed )
 {
-	int minDamageRange, stun, mod;
+	int minDamageRange, stun;
 	float maxdamage, mindamage, maxknockback, minknockback;
 	int timeDelta;
 
@@ -648,7 +647,6 @@ static edict_t *G_Fire_StrongBolt( vec3_t origin, vec3_t angles, firedef_t *fire
 	if( firedef->spread )
 		G_LocalSpread( angles, firedef->spread, seed );
 
-	mod = ( firedef->fire_mode == FIRE_MODE_STRONG ) ? MOD_ELECTROBOLT_S : MOD_ELECTROBOLT_W;
 	minDamageRange = firedef->timeout;
 	maxdamage = firedef->damage;
 	mindamage = firedef->mindamage;
@@ -662,14 +660,22 @@ static edict_t *G_Fire_StrongBolt( vec3_t origin, vec3_t angles, firedef_t *fire
 		maxdamage *= QUAD_DAMAGE_SCALE;
 		maxknockback *= QUAD_KNOCKBACK_SCALE;
 	}
-#ifdef ELECTROBOLT_TEST
+
 	W_Fire_Electrobolt_FullInstant( owner, origin, angles, maxdamage, mindamage,
-		maxknockback, minknockback, stun, ELECTROBOLT_RANGE, minDamageRange, mod, timeDelta );
-#else
-	W_Fire_Electrobolt_Combined( owner, origin, angles, maxdamage, mindamage,
-		maxknockback, minknockback, stun, range, mod, timeDelta );
-#endif
+		maxknockback, minknockback, stun, ELECTROBOLT_RANGE, minDamageRange, MOD_ELECTROBOLT_S, timeDelta );
+
 	return NULL;
+}
+
+/*
+* G_Fire_Electrobolt
+*/
+static edict_t *G_Fire_Electrobolt( vec3_t origin, vec3_t angles, firedef_t *firedef, edict_t *owner, int seed )
+{
+	if( firedef->fire_mode == FIRE_MODE_STRONG ) {
+		return G_Fire_StrongBolt( origin, angles, firedef, owner, seed );
+	}
+	return G_Fire_WeakBolt( origin, angles, firedef, owner, seed );
 }
 
 /*
@@ -781,7 +787,7 @@ void G_FireWeapon( edict_t *ent, int parm )
 		break;
 
 	case WEAP_ELECTROBOLT:
-		projectile = G_Fire_StrongBolt( origin, angles, firedef, ent, ucmdSeed );
+		projectile = G_Fire_Electrobolt( origin, angles, firedef, ent, ucmdSeed );
 		break;
 
 	case WEAP_INSTAGUN:

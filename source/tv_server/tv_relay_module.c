@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -46,7 +46,7 @@ EXTERN_API_FUNC void *GetTVModuleAPI( void * );
 //======================================================================
 
 static inline int TV_Module_CM_TransformedPointContents( relay_t *relay, vec3_t p, struct cmodel_s *cmodel,
-                                                         vec3_t origin, vec3_t angles )
+														vec3_t origin, vec3_t angles )
 {
 	if( !relay )
 	{
@@ -58,7 +58,7 @@ static inline int TV_Module_CM_TransformedPointContents( relay_t *relay, vec3_t 
 }
 
 static inline void TV_Module_CM_TransformedBoxTrace( relay_t *relay, trace_t *tr, vec3_t start, vec3_t end,
-                                                     vec3_t mins, vec3_t maxs, struct cmodel_s *cmodel, int brushmask, vec3_t origin, vec3_t angles )
+													vec3_t mins, vec3_t maxs, struct cmodel_s *cmodel, int brushmask, vec3_t origin, vec3_t angles )
 {
 	if( !relay )
 	{
@@ -92,7 +92,7 @@ static inline struct cmodel_s *TV_Module_CM_InlineModel( relay_t *relay, int num
 }
 
 static inline void TV_Module_CM_InlineModelBounds( relay_t *relay, struct cmodel_s *cmodel, vec3_t mins,
-                                                   vec3_t maxs )
+												  vec3_t maxs )
 {
 	if( !relay )
 	{
@@ -114,6 +114,17 @@ static inline struct cmodel_s *TV_Module_CM_ModelForBBox( relay_t *relay, vec3_t
 	return CM_ModelForBBox( relay->cms, mins, maxs );
 }
 
+static inline struct cmodel_s *TV_Module_CM_OctagonModelForBBox( relay_t *relay, vec3_t mins, vec3_t maxs )
+{
+	if( !relay )
+	{
+		Com_Printf( "Error: TV_Module_CM_ModelForBbox: Relay not set\n" );
+		return NULL;
+	}
+
+	return CM_OctagonModelForBBox( relay->cms, mins, maxs );
+}
+
 static inline qboolean TV_Module_CM_AreasConnected( relay_t *relay, int area1, int area2 )
 {
 	if( !relay )
@@ -126,7 +137,7 @@ static inline qboolean TV_Module_CM_AreasConnected( relay_t *relay, int area1, i
 }
 
 static inline int TV_Module_CM_BoxLeafnums( relay_t *relay, vec3_t mins, vec3_t maxs, int *list, int listsize,
-                                            int *topnode )
+										   int *topnode )
 {
 	if( !relay )
 	{
@@ -163,10 +174,8 @@ static inline int TV_Module_CM_LeafArea( relay_t *relay, int leafnum )
 
 
 /*
-   ===============
-   TV_Module_DropClient
-   ===============
- */
+* TV_Module_DropClient
+*/
 static void TV_Module_DropClient( relay_t *relay, int numClient, int type, const char *message )
 {
 	client_t *client;
@@ -191,10 +200,10 @@ static void TV_Module_DropClient( relay_t *relay, int numClient, int type, const
 		TV_Downstream_DropClient( client, type, "" );
 }
 
-//===============
-//TV_Module_GetClientState
-// Game code asks for the state of this client
-//===============
+/*
+* TV_Module_GetClientState
+* Game code asks for the state of this client
+*/
 static int TV_Module_GetClientState( relay_t *relay, int numClient )
 {
 	client_t *client;
@@ -217,13 +226,11 @@ static int TV_Module_GetClientState( relay_t *relay, int numClient )
 }
 
 /*
-   ===============
-   TV_Module_GameCmd
-
-   Sends the server command to clients.
-   if numClient is -1 the command will be sent to all connected clients
-   ===============
- */
+* TV_Module_GameCmd
+* 
+* Sends the server command to clients.
+* if numClient is -1 the command will be sent to all connected clients
+*/
 static void TV_Module_GameCmd( relay_t *relay, int numClient, const char *cmd )
 {
 	int i;
@@ -265,12 +272,10 @@ static void TV_Module_GameCmd( relay_t *relay, int numClient, const char *cmd )
 }
 
 /*
-   ===============
-   TV_Module_Print
-
-   Debug print to server console
-   ===============
- */
+* TV_Module_Print
+* 
+* Debug print to server console
+*/
 static void TV_Module_Print( const char *msg )
 {
 	//if( !msg )
@@ -280,10 +285,8 @@ static void TV_Module_Print( const char *msg )
 }
 
 /*
-   ===============
-   TV_Module_Error
-   ===============
- */
+* TV_Module_Error
+*/
 static void TV_Module_Error( const char *msg )
 {
 	if( msg )
@@ -293,10 +296,8 @@ static void TV_Module_Error( const char *msg )
 }
 
 /*
-   ===============
-   TV_Module_RelayError
-   ===============
- */
+* TV_Module_RelayError
+*/
 static void TV_Module_RelayError( relay_t *relay, const char *msg )
 {
 	if( !relay )
@@ -309,32 +310,26 @@ static void TV_Module_RelayError( relay_t *relay, const char *msg )
 }
 
 /*
-   ===============
-   TV_Module_MemAlloc
-   ===============
- */
+* TV_Module_MemAlloc
+*/
 static void *TV_Module_MemAlloc( relay_t *relay, size_t size, const char *filename, int fileline )
 {
 	return _Mem_Alloc( relay->module_mempool, size, MEMPOOL_GAMEPROGS, 0, filename, fileline );
 }
 
 /*
-   ===============
-   TV_Module_MemFree
-   ===============
- */
+* TV_Module_MemFree
+*/
 static void TV_Module_MemFree( void *data, const char *filename, int fileline )
 {
 	_Mem_Free( data, MEMPOOL_GAMEPROGS, 0, filename, fileline );
 }
 
 /*
-   =================
-   TV_Module_LocateEntities
-   =================
- */
+* TV_Module_LocateEntities
+*/
 static void TV_Module_LocateEntities( relay_t *relay, struct edict_s *edicts, int edict_size, int num_edicts,
-                                      int max_edicts )
+									 int max_edicts )
 {
 	if( !relay )
 	{
@@ -353,12 +348,10 @@ static void TV_Module_LocateEntities( relay_t *relay, struct edict_s *edicts, in
 }
 
 /*
-   =================
-   TV_Module_LocateLocalEntities
-   =================
- */
+* TV_Module_LocateLocalEntities
+*/
 static void TV_Module_LocateLocalEntities( relay_t *relay, struct edict_s *edicts, int edict_size, int num_edicts,
-                                           int max_edicts )
+										  int max_edicts )
 {
 	int i;
 
@@ -386,10 +379,8 @@ static void TV_Module_LocateLocalEntities( relay_t *relay, struct edict_s *edict
 }
 
 /*
-   =================
-   TV_Module_ExecuteClientThinks
-   =================
- */
+* TV_Module_ExecuteClientThinks
+*/
 static void TV_Module_ExecuteClientThinks( relay_t *relay, int clientNum )
 {
 	client_t *client;
@@ -412,10 +403,8 @@ static void TV_Module_ExecuteClientThinks( relay_t *relay, int clientNum )
 }
 
 /*
-   ===============
-   TV_Module_ConfigString
-   ===============
- */
+* TV_Module_ConfigString
+*/
 static void TV_Module_ConfigString( relay_t *relay, int index, const char *val )
 {
 	size_t len;
@@ -471,10 +460,8 @@ static void TV_Module_ConfigString( relay_t *relay, int index, const char *val )
 //==============================================
 
 /*
-   ===============
-   TV_ReleaseModule
-   ===============
- */
+* TV_ReleaseModule
+*/
 void TV_ReleaseModule( const char *game )
 {
 	tv_module_t *iter, *prev;
@@ -504,10 +491,8 @@ void TV_ReleaseModule( const char *game )
 }
 
 /*
-   ===============
-   TV_GetModule
-   ===============
- */
+* TV_GetModule
+*/
 tv_module_t *TV_GetModule( const char *game )
 {
 	int apiversion;
@@ -545,6 +530,7 @@ tv_module_t *TV_GetModule( const char *game )
 	iter->import.CM_InlineModel = TV_Module_CM_InlineModel;
 	iter->import.CM_InlineModelBounds = TV_Module_CM_InlineModelBounds;
 	iter->import.CM_ModelForBBox = TV_Module_CM_ModelForBBox;
+	iter->import.CM_OctagonModelForBBox = TV_Module_CM_OctagonModelForBBox;
 	iter->import.CM_AreasConnected = TV_Module_CM_AreasConnected;
 	iter->import.CM_BoxLeafnums = TV_Module_CM_BoxLeafnums;
 	iter->import.CM_LeafCluster = TV_Module_CM_LeafCluster;
@@ -601,7 +587,7 @@ tv_module_t *TV_GetModule( const char *game )
 	iter->import.LocateLocalEntities = TV_Module_LocateLocalEntities;
 
 	iter->export = (tv_module_export_t *)Com_LoadGameLibrary( "tv", "GetTVModuleAPI", &iter->handle, &iter->import,
-	                                                          builtinAPIfunc, qfalse, NULL );
+		builtinAPIfunc, qfalse, NULL );
 	if( !iter->export )
 	{
 		Mem_Free( iter );
@@ -623,9 +609,7 @@ tv_module_t *TV_GetModule( const char *game )
 }
 
 /*
-===============
-TV_Relay_FreeModule
-===============
+* TV_Relay_FreeModule
 */
 static void TV_Relay_FreeModule( relay_t *relay )
 {
@@ -636,13 +620,11 @@ static void TV_Relay_FreeModule( relay_t *relay )
 }
 
 /*
-   ===============
-   TV_Relay_ShutdownModule
-
-   Called when either the entire server is being killed, or
-   it is changing to a different game directory.
-   ===============
- */
+* TV_Relay_ShutdownModule
+* 
+* Called when either the entire server is being killed, or
+* it is changing to a different game directory.
+*/
 void TV_Relay_ShutdownModule( relay_t *relay )
 {
 	if( !relay->module_export )
@@ -657,12 +639,10 @@ void TV_Relay_ShutdownModule( relay_t *relay )
 }
 
 /*
-   ===============
-   TV_Relay_InitModule
-
-   Init the game subsystem for a new map
-   ===============
- */
+* TV_Relay_InitModule
+* 
+* Init the game subsystem for a new map
+*/
 void TV_Relay_InitModule( relay_t *relay )
 {
 	tv_module_t *module;

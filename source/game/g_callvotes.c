@@ -68,17 +68,17 @@ typedef struct
 	callvotedata_t vote;
 } callvotestate_t;
 
-callvotestate_t callvoteState;
+static callvotestate_t callvoteState;
 
-callvotetype_t *callvotesHeadNode = NULL;
+static callvotetype_t *callvotesHeadNode = NULL;
 
 //==============================================
 //		Vote specifics
 //==============================================
 
-//====================
-// map
-//====================
+/*
+* map
+*/
 
 static void G_VoteMapExtraHelp( edict_t *ent )
 {
@@ -222,9 +222,9 @@ static char *G_VoteMapCurrent( void )
 }
 
 
-//====================
-// restart
-//====================
+/*
+* restart
+*/
 
 static void G_VoteRestartPassed( callvotedata_t *vote )
 {
@@ -232,9 +232,9 @@ static void G_VoteRestartPassed( callvotedata_t *vote )
 }
 
 
-//====================
-// nextmap
-//====================
+/*
+* nextmap
+*/
 
 static void G_VoteNextMapPassed( callvotedata_t *vote )
 {
@@ -243,9 +243,9 @@ static void G_VoteNextMapPassed( callvotedata_t *vote )
 }
 
 
-//====================
-// scorelimit
-//====================
+/*
+* scorelimit
+*/
 
 static qboolean G_VoteScorelimitValidate( callvotedata_t *vote, qboolean first )
 {
@@ -279,9 +279,9 @@ static char *G_VoteScorelimitCurrent( void )
 	return va( "%i", g_scorelimit->integer );
 }
 
-//====================
-// timelimit
-//====================
+/*
+* timelimit
+*/
 
 static qboolean G_VoteTimelimitValidate( callvotedata_t *vote, qboolean first )
 {
@@ -313,9 +313,9 @@ static char *G_VoteTimelimitCurrent( void )
 }
 
 
-//====================
-// gametype
-//====================
+/*
+* gametype
+*/
 
 static void G_VoteGametypeExtraHelp( edict_t *ent )
 {
@@ -416,9 +416,9 @@ static char *G_VoteGametypeCurrent( void )
 }
 
 
-//====================
-// warmup_timelimit
-//====================
+/*
+* warmup_timelimit
+*/
 
 static qboolean G_VoteWarmupTimelimitValidate( callvotedata_t *vote, qboolean first )
 {
@@ -451,9 +451,9 @@ static char *G_VoteWarmupTimelimitCurrent( void )
 }
 
 
-//====================
-// extended_time
-//====================
+/*
+* extended_time
+*/
 
 static qboolean G_VoteExtendedTimeValidate( callvotedata_t *vote, qboolean first )
 {
@@ -485,9 +485,9 @@ static char *G_VoteExtendedTimeCurrent( void )
 	return va( "%i", g_match_extendedtime->integer );
 }
 
-//====================
-// allready
-//====================
+/*
+* allready
+*/
 
 static qboolean G_VoteAllreadyValidate( callvotedata_t *vote, qboolean first )
 {
@@ -536,9 +536,9 @@ static void G_VoteAllreadyPassed( callvotedata_t *vote )
 	}
 }
 
-//====================
-// maxteamplayers
-//====================
+/*
+* maxteamplayers
+*/
 
 static qboolean G_VoteMaxTeamplayersValidate( callvotedata_t *vote, qboolean first )
 {
@@ -577,9 +577,9 @@ static char *G_VoteMaxTeamplayersCurrent( void )
 	return va( "%i", g_teams_maxplayers->integer );
 }
 
-//====================
-// lock
-//====================
+/*
+* lock
+*/
 
 static qboolean G_VoteLockValidate( callvotedata_t *vote, qboolean first )
 {
@@ -631,9 +631,9 @@ static void G_VoteLockPassed( callvotedata_t *vote )
 	}
 }
 
-//====================
-// unlock
-//====================
+/*
+* unlock
+*/
 
 static qboolean G_VoteUnlockValidate( callvotedata_t *vote, qboolean first )
 {
@@ -685,9 +685,9 @@ static void G_VoteUnlockPassed( callvotedata_t *vote )
 	}
 }
 
-//====================
-// remove
-//====================
+/*
+* remove
+*/
 
 static void G_VoteRemoveExtraHelp( edict_t *ent )
 {
@@ -801,9 +801,9 @@ static void G_VoteRemovePassed( callvotedata_t *vote )
 }
 
 
-//====================
-// kick
-//====================
+/*
+* kick
+*/
 
 static void G_VoteKickExtraHelp( edict_t *ent )
 {
@@ -895,9 +895,9 @@ static void G_VoteKickPassed( callvotedata_t *vote )
 }
 
 
-//====================
-// kickban
-//====================
+/*
+* kickban
+*/
 
 static void G_VoteKickBanExtraHelp( edict_t *ent )
 {
@@ -995,9 +995,9 @@ static void G_VoteKickBanPassed( callvotedata_t *vote )
 	trap_DropClient( ent, DROP_TYPE_NORECONNECT, "Kicked" );
 }
 
-//====================
-// mute
-//====================
+/*
+* mute
+*/
 
 static void G_VoteMuteExtraHelp( edict_t *ent )
 {
@@ -1093,9 +1093,9 @@ static void G_VoteVMutePassed( callvotedata_t *vote )
 	ent->r.client->muted |= 2;
 }
 
-//====================
-// unmute
-//====================
+/*
+* unmute
+*/
 
 static void G_VoteUnmuteExtraHelp( edict_t *ent )
 {
@@ -1191,9 +1191,9 @@ static void G_VoteVUnmutePassed( callvotedata_t *vote )
 	ent->r.client->muted &= ~2;
 }
 
-//====================
-// addbots
-//====================
+/*
+* addbots
+*/
 
 static qboolean G_VoteNumBotsValidate( callvotedata_t *vote, qboolean first )
 {
@@ -1234,9 +1234,9 @@ static char *G_VoteNumBotsCurrent( void )
 	return va( "%i", g_numbots->integer );
 }
 
-//====================
-// allow_teamdamage
-//====================
+/*
+* allow_teamdamage
+*/
 
 static qboolean G_VoteAllowTeamDamageValidate( callvotedata_t *vote, qboolean first )
 {
@@ -1273,9 +1273,9 @@ static char *G_VoteAllowTeamDamageCurrent( void )
 		return "0";
 }
 
-//====================
-// instajump
-//====================
+/*
+* instajump
+*/
 
 static qboolean G_VoteAllowInstajumpValidate( callvotedata_t *vote, qboolean first )
 {
@@ -1314,9 +1314,9 @@ static char *G_VoteAllowInstajumpCurrent( void )
 		return "0";
 }
 
-//====================
-// instashield
-//====================
+/*
+* instashield
+*/
 
 static qboolean G_VoteAllowInstashieldValidate( callvotedata_t *vote, qboolean first )
 {
@@ -1369,9 +1369,9 @@ static char *G_VoteAllowInstashieldCurrent( void )
 		return "0";
 }
 
-//====================
-// allow_falldamage
-//====================
+/*
+* allow_falldamage
+*/
 
 static qboolean G_VoteAllowFallDamageValidate( callvotedata_t *vote, qboolean first )
 {
@@ -1408,9 +1408,9 @@ static char *G_VoteAllowFallDamageCurrent( void )
 		return "0";
 }
 
-//====================
-// allow_selfdamage
-//====================
+/*
+* allow_selfdamage
+*/
 
 static qboolean G_VoteAllowSelfDamageValidate( callvotedata_t *vote, qboolean first )
 {
@@ -1447,9 +1447,9 @@ static char *G_VoteAllowSelfDamageCurrent( void )
 		return "0";
 }
 
-//====================
-// timeout
-//====================
+/*
+* timeout
+*/
 static qboolean G_VoteTimeoutValidate( callvotedata_t *vote, qboolean first )
 {
 	if( GS_MatchPaused() && ( level.timeout.endtime - level.timeout.time ) >= 2 * TIMEIN_TIME )
@@ -1471,9 +1471,9 @@ static void G_VoteTimeoutPassed( callvotedata_t *vote )
 	level.timeout.endtime = level.timeout.time + TIMEOUT_TIME + FRAMETIME;
 }
 
-//====================
-// timein
-//====================
+/*
+* timein
+*/
 static qboolean G_VoteTimeinValidate( callvotedata_t *vote, qboolean first )
 {
 	if( !GS_MatchPaused() )
@@ -1497,9 +1497,9 @@ static void G_VoteTimeinPassed( callvotedata_t *vote )
 	level.timeout.endtime = level.timeout.time + TIMEIN_TIME + FRAMETIME;
 }
 
-//====================
-// challengers_queue
-//====================
+/*
+* challengers_queue
+*/
 static qboolean G_VoteChallengersValidate( callvotedata_t *vote, qboolean first )
 {
 	int challengers = atoi( vote->argv[0] );
@@ -1535,9 +1535,9 @@ static char *G_VoteChallengersCurrent( void )
 		return "0";
 }
 
-//====================
-// allow_uneven
-//====================
+/*
+* allow_uneven
+*/
 static qboolean G_VoteAllowUnevenValidate( callvotedata_t *vote, qboolean first )
 {
 	int allow_uneven = atoi( vote->argv[0] );

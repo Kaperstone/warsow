@@ -115,6 +115,7 @@ enum
 #define GAMESTAT_FLAG_CANFORCEMODELS ( 1<<12 )
 #define GAMESTAT_FLAG_CANSHOWMINIMAP ( 1<<13 )
 #define GAMESTAT_FLAG_TEAMONLYMINIMAP ( 1<<14 )
+#define GAMESTAT_FLAG_MMCOMPATIBLE ( 1<<15 )
 
 typedef struct
 {
@@ -143,6 +144,7 @@ extern gs_state_t gs;
 #define GS_CanForceModels() ( ( gs.gameState.stats[GAMESTAT_FLAGS] & GAMESTAT_FLAG_CANFORCEMODELS ) ? qtrue : qfalse )
 #define GS_CanShowMinimap() ( ( gs.gameState.stats[GAMESTAT_FLAGS] & GAMESTAT_FLAG_CANSHOWMINIMAP ) ? qtrue : qfalse )
 #define GS_TeamOnlyMinimap() ( ( gs.gameState.stats[GAMESTAT_FLAGS] & GAMESTAT_FLAG_TEAMONLYMINIMAP ) ? qtrue : qfalse )
+#define GS_MMCompatible() ( (gs.gameState.stats[GAMESTAT_FLAGS] & GAMESTAT_FLAG_MMCOMPATIBLE ) ? qtrue : qfalse )
 
 
 #define GS_MatchState() ( gs.gameState.stats[GAMESTAT_MATCHSTATE] )
@@ -366,7 +368,7 @@ enum
 #define HEALTH_TO_INT( x )    ( ( x ) < 1.0f ? (int)ceil( ( x ) ) : (int)floor( ( x )+0.5f ) )
 #define ARMOR_TO_INT( x )     ( ( x ) < 1.0f ? (int)ceil( ( x ) ) : (int)floor( ( x )+0.5f ) )
 
-#define	ARMOR_DEGRADATION 1.0 // how much armor is lost per damage point taken
+#define	ARMOR_DEGRADATION 0.66 // how much armor is lost per damage point taken
 #define ARMOR_PROTECTION 0.66 // how much damage is removed per damage point taken
 #define ARMOR_DECAY_MAX_ARMOR 0 // decay to this value ( 0 disabled )
 
@@ -451,6 +453,7 @@ typedef enum
 	POWERUP_NONE = 0,
 	POWERUP_QUAD = HEALTH_TOTAL,
 	POWERUP_SHELL,
+	POWERUP_REGEN,
 
 	POWERUP_TOTAL
 
@@ -675,9 +678,12 @@ enum
 	, STAT_TEAM_ALPHA_SCORE
 	, STAT_TEAM_BETA_SCORE
 
-	// the stats below this point are set by the gametype scripts
+	, STAT_LAST_KILLER
 
-	, STAT_PROGRESS_SELF
+	// the stats below this point are set by the gametype scripts
+	, GS_GAMETYPE_STATS_START = 32
+
+	, STAT_PROGRESS_SELF = GS_GAMETYPE_STATS_START
 	, STAT_PROGRESS_OTHER
 	, STAT_PROGRESS_ALPHA
 	, STAT_PROGRESS_BETA
@@ -696,13 +702,14 @@ enum
 	, STAT_MESSAGE_SELF
 	, STAT_MESSAGE_OTHER
 	, STAT_MESSAGE_ALPHA
-	, STAT_MESSAGE_BETA // 31
+	, STAT_MESSAGE_BETA
 
-	, MAX_STATS = PS_MAX_STATS //32
+	, GS_GAMETYPE_STATS_END = PS_MAX_STATS
+
+	, MAX_STATS = PS_MAX_STATS //64
 };
 
-#define GS_GAMETYPE_STATS_START STAT_PROGRESS_SELF
-#define ISGAMETYPESTAT( x ) ( ( x >= GS_GAMETYPE_STATS_START ) && ( x < MAX_STATS ) )
+#define ISGAMETYPESTAT( x ) ( ( x >= GS_GAMETYPE_STATS_START ) && ( x < GS_GAMETYPE_STATS_END ) )
 
 #ifdef __GNUC__
 static const char *gs_keyicon_names[] __attribute__( ( unused ) ) =
@@ -1006,6 +1013,7 @@ enum
 	ET_DECAL,
 	ET_ITEM_TIMER,	// for specs only
 	ET_PARTICLES,
+	ET_SPAWN_INDICATOR,
 
 	// eventual entities: types below this will get event treatment
 	ET_EVENT = EVENT_ENTITIES_START,
@@ -1027,6 +1035,9 @@ enum
 #define EF_EXPIRING_QUAD			512
 #define EF_EXPIRING_SHELL			1024
 #define EF_GODMODE					2048
+#define EF_REGEN					4096
+#define EF_EXPIRING_REGEN			8192
+
 // oh, this is so nasty... (reuse effect bits for different entity types)
 #define EF_NOPORTALENTS				EF_CARRIER
 #define EF_PLAYER_STUNNED			EF_ROTATE_AND_BOB

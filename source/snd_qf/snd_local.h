@@ -41,17 +41,19 @@ typedef struct
 
 typedef struct
 {
-	int length;
-	int loopstart;
-	int speed;              // not needed, because converted on load?
-	int channels;
-	int width;
+	unsigned int length;
+	unsigned int loopstart;
+	unsigned int speed;              // not needed, because converted on load?
+	unsigned short channels;
+	unsigned short width;
 	qbyte data[1];          // variable sized
 } sfxcache_t;
 
 typedef struct sfx_s
 {
 	char name[MAX_QPATH];
+	int registration_sequence;
+	qboolean isUrl;
 	sfxcache_t *cache;
 } sfx_t;
 
@@ -81,12 +83,12 @@ typedef struct playsound_s
 
 typedef struct
 {
-	int channels;
-	int samples;                    // mono samples in buffer
-	int submission_chunk;           // don't mix less than this #
-	int samplepos;                  // in mono samples
-	int samplebits;
-	int speed;
+	unsigned short channels;
+	unsigned int samples;                    // mono samples in buffer
+	unsigned int submission_chunk;           // don't mix less than this #
+	unsigned int samplepos;                  // in mono samples
+	unsigned int samplebits;
+	unsigned int speed;
 	qbyte *buffer;
 } dma_t;
 
@@ -96,8 +98,8 @@ typedef struct
 	sfx_t *sfx;             // sfx number
 	int leftvol;            // 0-255 volume
 	int rightvol;           // 0-255 volume
-	int end;                // end time in global paintsamples
-	int pos;                // sample position in sfx
+	unsigned int end;       // end time in global paintsamples
+	unsigned int pos;       // sample position in sfx
 	int entnum;             // to allow overriding a specific sound
 	int entchannel;         //
 	vec3_t origin;          // only use if fixed_origin is set
@@ -105,13 +107,18 @@ typedef struct
 	int master_vol;         // 0-255 master volume
 	qboolean fixed_origin;  // use origin instead of fetching entnum's origin
 	qboolean autosound;     // from an entity->sound, cleared each frame
+	int	lpf_lcoeff;			// lowpass filters coefficient (0-0xffff) for both ears
+	int lpf_rcoeff;
+	int lpf_history[4];		// lowpass IIR chain 2-pole, 2-chan = 4 samples
+	unsigned int ldelay;	// invidual ear delay offset for both channels
+	unsigned int rdelay;
 } channel_t;
 
 typedef struct
 {
 	int rate;
-	int width;
-	int channels;
+	short width;
+	short channels;
 	int loopstart;
 	int samples;
 	int dataofs;            // chunk starts this many bytes from file start
@@ -123,8 +130,10 @@ typedef struct bgTrack_s
 	qboolean ignore;
 	int file;
 	wavinfo_t info;
+	qboolean isUrl;
 
 	void *vorbisFile;
+	qboolean ( *open )( struct bgTrack_s *track, qboolean *delay );
 	int ( *read )( struct bgTrack_s *track, void *ptr, size_t size );
 	int ( *seek )( struct bgTrack_s *track, int pos );
 	void ( *close )( struct bgTrack_s *track );
@@ -143,7 +152,9 @@ void S_Error( const char *format, ... );
 qboolean S_Init( void *hwnd, int maxEntities, qboolean verbose );
 void S_Shutdown( qboolean verbose );
 
-void S_SoundsInMemory( void );
+void S_BeginRegistration( void );
+void S_EndRegistration( void );
+
 void S_FreeSounds( void );
 void S_StopAllSounds( void );
 
@@ -171,12 +182,13 @@ void S_StartLocalSound( const char *s );
 void S_AddLoopSound( struct sfx_s *sfx, int entnum, float fvol, float attenuation );
 
 // cinema
-void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *data, qboolean music );
+void S_RawSamples( unsigned int samples, unsigned int rate, unsigned short width, unsigned short channels, const qbyte *data, qboolean music );
+unsigned int S_GetRawSamplesTime( void );
 
 // music
 void S_StartBackgroundTrack( const char *intro, const char *loop );
 void S_StopBackgroundTrack( void );
-
+void S_LockBackgroundTrack( qboolean lock );
 
 /*
 ====================================================================
@@ -201,16 +213,16 @@ void	SNDDMA_Submit( void );
 
 void	SNDOGG_Init( qboolean verbose );
 void	SNDOGG_Shutdown( qboolean verbose );
-qboolean SNDOGG_OpenTrack( const char *name, bgTrack_t *track );
+qboolean SNDOGG_OpenTrack( bgTrack_t *track, qboolean *delay );
 sfxcache_t *SNDOGG_Load( sfx_t *s );
 
 //====================================================================
 
-#define	MAX_CHANNELS		32
+#define	MAX_CHANNELS		128
 extern channel_t channels[MAX_CHANNELS];
 
-extern int paintedtime;
-extern int s_rawend;
+extern unsigned int paintedtime;
+extern unsigned int s_rawend;
 extern dma_t dma;
 extern playsound_t s_pendingplays;
 
@@ -228,6 +240,7 @@ extern cvar_t *s_mixahead;
 extern cvar_t *s_testsound;
 extern cvar_t *s_swapstereo;
 extern cvar_t *s_vorbis;
+extern cvar_t *s_pseudoAcoustics;
 
 extern struct mempool_s *soundpool;
 
@@ -241,7 +254,7 @@ extern struct mempool_s *soundpool;
 #define S_Free( data ) S_MemFree( data )
 
 wavinfo_t GetWavinfo( const char *name, qbyte *wav, int wavlength );
-void ResampleSfx( sfxcache_t *sc, qbyte *data, char *name );
+unsigned int ResampleSfx( unsigned int numsamples, unsigned int speed, unsigned short channels, unsigned short width, const qbyte *data, qbyte *outdata, char *name );
 
 void S_InitScaletable( void );
 
@@ -249,7 +262,7 @@ sfxcache_t *S_LoadSound( sfx_t *s );
 
 void S_IssuePlaysound( playsound_t *ps );
 
-int S_PaintChannels( int endtime, int dumpfile );
+int S_PaintChannels( unsigned int endtime, int dumpfile );
 
 // picks a channel based on priorities, empty slots, number of channels
 channel_t *S_PickChannel( int entnum, int entchannel );
@@ -260,3 +273,32 @@ void S_Spatialize( channel_t *ch );
 void S_BeginAviDemo( void );
 void S_StopAviDemo( void );
 
+//====================================================================
+
+// Lowpass code ripped from OpenAL software implementation
+static inline float S_LowpassCoeff(float gain, float cw )
+{
+	float a = 0.0;
+	float g = gain;
+
+	g = max( g, 0.01 );
+	if( g < 0.9999f )
+		a = (1.0 - g*cw - sqrt(2.0*g*(1.0-cw) - g*g*(1.0-cw*cw))) / (1.0 - g);
+
+	return a;
+}
+
+static inline float S_LowpassCW(float freq, float samplerate)
+{
+	return cos( 2.0 * M_PI * freq / samplerate );
+}
+
+static inline int S_Lowpass2pole( int sample, int *history, int coeff )
+{
+	int output = sample;
+	output += (( history[0] - output ) * coeff) >> 16;
+	history[0] = output;
+	output += (( history[1] - output ) * coeff) >> 16;
+	history[1] = output;
+	return output;
+}

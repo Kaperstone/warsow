@@ -155,6 +155,11 @@ static inline int trap_FS_GetFileList( const char *dir, const char *extension, c
 	return SOUND_IMPORT.FS_GetFileList( dir, extension, buf, bufsize, start, end );
 }
 
+static inline qboolean trap_FS_IsUrl( const char *url )
+{
+	return SOUND_IMPORT.FS_IsUrl( url );
+}
+
 // misc
 static inline unsigned int trap_Milliseconds( void )
 {

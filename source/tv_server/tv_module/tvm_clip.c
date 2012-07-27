@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 //
 // tvm_clip.c - entity contact detection. (high level object sorting to reduce interaction tests)
@@ -94,7 +94,7 @@ void GClip_LinkEntity( tvm_relay_t *relay, edict_t *ent )
 
 	// set the abs box
 	if( ent->s.solid == SOLID_BMODEL &&
-	   ( ent->s.angles[0] || ent->s.angles[1] || ent->s.angles[2] ) )
+		( ent->s.angles[0] || ent->s.angles[1] || ent->s.angles[2] ) )
 	{ // expand for rotation
 		float radius;
 
@@ -141,7 +141,7 @@ void GClip_LinkEntity( tvm_relay_t *relay, edict_t *ent )
 				if( ent->r.areanum2 > -1 && ent->r.areanum2 != area )
 				{
 					TVM_Printf( "Object touching 3 areas at %f %f %f\n", ent->r.absmin[0], ent->r.absmin[1],
-					            ent->r.absmin[2] );
+						ent->r.absmin[2] );
 				}
 				ent->r.areanum2 = area;
 			}

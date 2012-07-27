@@ -30,6 +30,8 @@ static src_t *src = NULL;
 static ALuint source;
 static ALuint buffers[MUSIC_BUFFERS];
 
+static qboolean queued_buffers;
+
 static qbyte decode_buffer[MUSIC_BUFFER_SIZE];
 
 // =================================
@@ -37,7 +39,11 @@ static qbyte decode_buffer[MUSIC_BUFFER_SIZE];
 static bgTrack_t *s_bgTrack;
 static bgTrack_t *s_bgTrackHead;
 
-static qboolean s_bgTrackPaused = qfalse;
+#define BACKGROUND_TRACK_BUFFERING_SIZE		MUSIC_BUFFER_SIZE*4+4000
+
+static qboolean s_bgTrackPaused = qfalse;  // the track is manually paused
+static qboolean s_bgTrackLocked = qfalse;  // the track is blocked by the game (e.g. the window's minimized)
+static qboolean s_bgTrackBuffering = qfalse;
 
 /*
 * S_AllocTrack
@@ -51,6 +57,7 @@ static bgTrack_t *S_AllocTrack( const char *filename )
 	track->ignore = qfalse;
 	track->filename = (char *)((qbyte *)track + sizeof( *track ));
 	strcpy( track->filename, filename );
+	track->isUrl = trap_FS_IsUrl( filename );
 	track->anext = s_bgTrackHead;
 	s_bgTrackHead = track;
 
@@ -62,7 +69,7 @@ static bgTrack_t *S_AllocTrack( const char *filename )
 */
 static qboolean S_ValidMusicFile( bgTrack_t *track )
 {
-	return (track->stream != NULL);
+	return (track->stream != NULL) && ( !track->isUrl || !S_EoStream( track->stream ) );
 }
 
 /*
@@ -87,10 +94,30 @@ static qboolean S_OpenMusicTrack( bgTrack_t *track )
 	if( track->ignore )
 		return qfalse;
 
+mark0:
+	s_bgTrackBuffering = qfalse;
+
 	if( !track->stream )
-		track->stream = S_OpenStream( filename );
+	{
+		qboolean delay = qfalse;
+
+		track->stream = S_OpenStream( filename, &delay );
+		if( track->stream && delay )
+		{
+			// let the background track buffer for a while
+			Com_Printf( "S_OpenMusicTrack: buffering %s...\n", track->filename );
+			s_bgTrackBuffering = qtrue;
+		}
+	}
 	else
-		S_ResetStream( track->stream );
+	{
+		if( !S_ResetStream( track->stream ) )
+		{
+			// if seeking failed for whatever reason (stream?), try reopening again
+			S_CloseMusicTrack( track );
+			goto mark0;
+		}
+	}
 
 	if( !S_ValidMusicFile( track ) )
 	{
@@ -161,9 +188,7 @@ typedef struct playlistItem_s
 } playlistItem_t;
 
 /*
-================
-R_SortPlaylistItems
-================
+* R_SortPlaylistItems
 */
 static int R_PlaylistItemCmp( const playlistItem_t *i1, const playlistItem_t *i2 )
 {
@@ -220,26 +245,33 @@ static qboolean S_ReadPlaylistFile( const char *filename, qboolean shuffle )
 		entry = Q_trim( entry );
 
 		// special M3U entry or comment
-		if( *entry == '#' )
+		if( !*entry || *entry == '#' )
 			continue;
 
-		// append the entry name to playlist path
-		s = strlen( filename ) + 1 + strlen( entry ) + 1;
-		if( s > tmpname_size )
+		if( trap_FS_IsUrl( entry ) )
 		{
-			if( tmpname )
-				S_Free( tmpname );
-			tmpname_size = s;
-			tmpname = S_Malloc( tmpname_size );
+			items[numItems].track = S_AllocTrack( entry );
 		}
+		else
+		{
+			// append the entry name to playlist path
+			s = strlen( filename ) + 1 + strlen( entry ) + 1;
+			if( s > tmpname_size )
+			{
+				if( tmpname )
+					S_Free( tmpname );
+				tmpname_size = s;
+				tmpname = S_Malloc( tmpname_size );
+			}
 
-		Q_strncpyz( tmpname, filename, tmpname_size );
-		COM_StripFilename( tmpname );
-		Q_strncatz( tmpname, "/", tmpname_size );
-		Q_strncatz( tmpname, entry, tmpname_size );
-		COM_SanitizeFilePath( tmpname );
+			Q_strncpyz( tmpname, filename, tmpname_size );
+			COM_StripFilename( tmpname );
+			Q_strncatz( tmpname, "/", tmpname_size );
+			Q_strncatz( tmpname, entry, tmpname_size );
+			COM_SanitizeFilePath( tmpname );
 
-		items[numItems].track = S_AllocTrack( tmpname );
+			items[numItems].track = S_AllocTrack( tmpname );
+		}
 
 		if( ++numItems == MAX_PLAYLIST_ITEMS )
 			break;
@@ -288,7 +320,8 @@ static qboolean S_AdvanceBackgroundTrack( int n )
 
 	if( track && track != s_bgTrack )
 	{
-		//S_CloseMusicTrack( s_bgTrack );
+		if( s_bgTrack->isUrl )
+			S_CloseMusicTrack( s_bgTrack );
 		s_bgTrack = track;
 		return qtrue;
 	}
@@ -333,11 +366,19 @@ static qboolean music_process( ALuint b )
 	int l = 0;
 	ALuint format;
 	ALenum error;
-	snd_stream_t *music_stream = s_bgTrack->stream;
+	snd_stream_t *music_stream;
 
 start:
+	if( s_bgTrackBuffering )
+		return qtrue;
+
 	music_stream = s_bgTrack->stream;
-	l = S_ReadStream( music_stream, MUSIC_BUFFER_SIZE, decode_buffer, qfalse );
+	if( music_stream ) {
+		l = S_ReadStream( music_stream, MUSIC_BUFFER_SIZE, decode_buffer );
+	}
+	else {
+		l = 0;
+	}
 
 	if( !l )
 	{
@@ -351,12 +392,17 @@ start:
 		}
 		else
 		{
+			// we've advanced to the next track, close this one
 			S_CloseMusicTrack( cur );
 			goto start;
 		}
 
-		// the following call sets the read pointer to proper offset
-		S_ResetStream( music_stream );
+		if( !S_ResetStream( music_stream ) )
+		{
+			// if failed, close the track?
+			return qfalse;
+		}
+
 		goto start;
 	}
 
@@ -374,27 +420,70 @@ start:
 
 void S_UpdateMusic( void )
 {
-	int processed;
+	int i, processed;
 	ALint state;
 	ALenum error;
 	ALuint b;
+	int num_processed_buffers;
+	ALuint processed_buffers[MUSIC_BUFFERS];
 
 	if( !s_bgTrack )
 		return;
-
-	if( s_bgTrackPaused )
+	if( !s_musicvolume->value && !s_bgTrack->isUrl )
+		return;
+	if( s_bgTrackPaused || s_bgTrackLocked )
 		return;
 
-	qalGetSourcei( source, AL_BUFFERS_PROCESSED, &processed );
-	while( processed-- )
+	if( s_bgTrackBuffering )
 	{
-		qalSourceUnqueueBuffers( source, 1, &b );
+		if( S_EoStream( s_bgTrack->stream ) ) {
+			// we should now advance to the next track
+			S_CloseMusicTrack( s_bgTrack );
+		}
+		else {
+			if( S_FTellSteam( s_bgTrack->stream ) < BACKGROUND_TRACK_BUFFERING_SIZE )
+				return;
+
+			// in case we delayed openening to let the stream be cached for a while,
+			// start actually reading from it now
+			if( !S_ContOpenStream( s_bgTrack->stream ) ) {
+				// let music_process do the dirty job of advancing to the next track
+				S_CloseMusicTrack( s_bgTrack );
+				s_bgTrack->ignore = qtrue;
+			}
+		}
+		s_bgTrackBuffering = qfalse;
+	}
+
+	if( !queued_buffers )
+	{
+		// if we haven't queued any buffers yet, do it now
+		num_processed_buffers = MUSIC_BUFFERS;
+		memcpy( processed_buffers, buffers, sizeof( buffers ) );
+	}
+	else
+	{
+		num_processed_buffers = 0;
+
+		processed = 0;
+		qalGetSourcei( source, AL_BUFFERS_PROCESSED, &processed );
+		while( processed-- )
+		{
+			qalSourceUnqueueBuffers( source, 1, &b );
+			processed_buffers[num_processed_buffers++] = b;
+		}
+	}
+
+	for( i = 0; i < num_processed_buffers; i++ )
+	{
+		b = processed_buffers[i];
 		if( !music_process( b ) )
 		{
 			Com_Printf( "Error processing music data\n" );
 			S_StopBackgroundTrack();
 			return;
 		}
+
 		qalSourceQueueBuffers( source, 1, &b );
 		if( ( error = qalGetError() ) != AL_NO_ERROR )
 		{
@@ -406,8 +495,11 @@ void S_UpdateMusic( void )
 
 	// If it's not still playing, give it a kick
 	qalGetSourcei( source, AL_SOURCE_STATE, &state );
-	if( state == AL_STOPPED )
+	if( !queued_buffers || state != AL_PLAYING )
+	{
+		queued_buffers = qtrue;
 		qalSourcePlay( source );
+	}
 
 	if( s_musicvolume->modified )
 		qalSourcef( source, AL_GAIN, s_musicvolume->value );
@@ -419,7 +511,6 @@ void S_UpdateMusic( void )
 
 void S_StartBackgroundTrack( const char *intro, const char *loop )
 {
-	int i;
 	int count;
 	const char *ext;
 	bgTrack_t *t, f;
@@ -436,7 +527,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop )
 	s_bgTrackPaused = qfalse;
 
 	ext = COM_FileExtension( intro );
-	if( ext && !Q_stricmp( ext, ".m3u") )
+	if( ext && !Q_stricmp( ext, ".m3u" ) )
 	{
 		// mode bits:
 		// 1 - shuffle
@@ -467,26 +558,37 @@ void S_StartBackgroundTrack( const char *intro, const char *loop )
 
 start_playback:
 	// this effectively precaches the first 15 scheduled tracks in the playlist
-	for( count = 0, t = s_bgTrack; count < 15 && t; count++ )
+	for( count = 0, t = s_bgTrack; count < 15 && t && t != s_bgTrack; count++ )
 	{
-		S_OpenMusicTrack( t );
-
-		if( t->next == t || t->next == s_bgTrack )
-			break; // break on an endless loop or full cycle
-		if( !t->ignore && ( mode & 2 ) )
+		if( !t->isUrl )
 		{
-			// no point in precaching the whole playlist when we're only going
-			// to loop one single track
-			break;
+			S_OpenMusicTrack( t );
+
+			if( t->next == t || t->next == s_bgTrack )
+				break; // break on an endless loop or full cycle
+			if( !t->ignore && ( mode & 2 ) )
+			{
+				// no point in precaching the whole playlist when we're only going
+				// to loop one single track
+				break;
+			}
 		}
 		t = t->next;
 	}
 
 	// start playback with the first valid track
-	memset( &f, 0, sizeof( f ) );
-	f.next = s_bgTrack;
+	if( count > 1 )
+	{
+		memset( &f, 0, sizeof( f ) );
+		f.next = s_bgTrack;
 
-	s_bgTrack = S_NextMusicTrack( &f );
+		s_bgTrack = S_NextMusicTrack( &f );
+	}
+	else
+	{
+		S_OpenMusicTrack( s_bgTrack );
+	}
+
 	if( !s_bgTrack || s_bgTrack->ignore )
 	{
 		S_StopBackgroundTrack();
@@ -503,6 +605,7 @@ start_playback:
 	if( !src )
 	{
 		Com_Printf( "Error couldn't get source for music\n" );
+		S_StopBackgroundTrack();
 		return;
 	}
 
@@ -510,46 +613,27 @@ start_playback:
 	if( ( error = qalGetError() ) != AL_NO_ERROR )
 	{
 		Com_Printf( "Error couldn't generate music buffers (%s)\n", S_ErrorMessage( error ) );
-		music_source_free();
+		S_StopBackgroundTrack();
 		return;
 	}
 
-	// Queue the buffers up
-	for( i = 0; i < MUSIC_BUFFERS; i++ )
-	{
-		if( !music_process( buffers[i] ) )
-		{
-			Com_Printf( "Error processing music data\n" );
-			qalDeleteBuffers( MUSIC_BUFFERS, buffers );
-			music_source_free();
-			return;
-		}
-	}
-
-	qalSourceQueueBuffers( source, MUSIC_BUFFERS, buffers );
-	if( ( error = qalGetError() ) != AL_NO_ERROR )
-	{
-		Com_Printf( "Couldn't queue music data (%s)\n", S_ErrorMessage( error ) );
-		qalDeleteBuffers( MUSIC_BUFFERS, buffers );
-		music_source_free();
-		return;
-	}
-
-	qalSourcePlay( source );
+	queued_buffers = qfalse;
 }
 
 void S_StopBackgroundTrack( void )
 {
 	bgTrack_t *next;
 
-	if( s_bgTrack )
-	{
+	if( source )
 		qalSourceStop( source );
-		qalSourceUnqueueBuffers( source, MUSIC_BUFFERS, buffers );
-		qalDeleteBuffers( MUSIC_BUFFERS, buffers );
-	}
+
+	qalSourceUnqueueBuffers( source, MUSIC_BUFFERS, buffers );
+	qalDeleteBuffers( MUSIC_BUFFERS, buffers );
+	queued_buffers = qfalse;
 
 	music_source_free();
+
+	qalGetError();
 
 	while( s_bgTrackHead )
 	{
@@ -563,6 +647,8 @@ void S_StopBackgroundTrack( void )
 
 	s_bgTrack = NULL;
 	s_bgTrackHead = NULL;
+
+	s_bgTrackBuffering = qfalse;
 	
 	s_bgTrackPaused = qfalse;
 }
@@ -588,5 +674,31 @@ void S_NextBackgroundTrack( void )
 */
 void S_PauseBackgroundTrack( void )
 {
+	if( !s_bgTrack ) {
+		return;
+	}
+
+	// in case of a streaming URL, reset the stream
+	if( s_bgTrack->isUrl ) {
+		if( s_bgTrackPaused ) {
+			S_OpenMusicTrack( s_bgTrack );
+		}
+		else {
+			S_CloseMusicTrack( s_bgTrack );
+		}
+	}
+
 	s_bgTrackPaused = !s_bgTrackPaused;
+}
+
+/*
+* S_LockBackgroundTrack
+*/
+void S_LockBackgroundTrack( qboolean lock )
+{
+	if( s_bgTrack && !s_bgTrack->isUrl ) {
+		s_bgTrackLocked = lock;
+	} else {
+		s_bgTrackLocked = qfalse;
+	}
 }

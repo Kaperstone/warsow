@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -28,9 +28,9 @@
 #include "tv_relay_client.h"
 #include "tv_downstream_clcmd.h"
 
-//================
-//TV_Relay_ParseFrame
-//================
+/*
+* TV_Relay_ParseFrame
+*/
 static void TV_Relay_ParseFrame( relay_t *relay, msg_t *msg )
 {
 	snapshot_t *snap;
@@ -84,10 +84,8 @@ static void TV_Relay_ParseFrame( relay_t *relay, msg_t *msg )
 }
 
 /*
-   ==================
-   TV_Relay_ParseServerData
-   ==================
- */
+* TV_Relay_ParseServerData
+*/
 static void TV_Relay_ParseServerData( relay_t *relay, msg_t *msg )
 {
 	int i, numpure;
@@ -140,18 +138,16 @@ static void TV_Relay_ParseServerData( relay_t *relay, msg_t *msg )
 }
 
 /*
-   ==================
-   TV_Relay_ParseBaseline
-   ==================
- */
+* TV_Relay_ParseBaseline
+*/
 static void TV_Relay_ParseBaseline( relay_t *relay, msg_t *msg )
 {
 	SNAP_ParseBaseline( msg, relay->baselines );
 }
 
-//================
-//TV_Relay_ParseServerMessage
-//================
+/*
+* TV_Relay_ParseServerMessage
+*/
 void TV_Relay_ParseServerMessage( relay_t *relay, msg_t *msg )
 {
 	int cmd;
@@ -167,9 +163,9 @@ void TV_Relay_ParseServerMessage( relay_t *relay, msg_t *msg )
 
 		cmd = MSG_ReadByte( msg );
 		/*if( cmd == -1 )
-		    Com_Printf( "%3i:CMD %i %s\n", msg->readcount-1, cmd, "EOF" );
-		   else
-		    Com_Printf( "%3i:CMD %i %s\n", msg->readcount-1, cmd, !svc_strings[cmd] ? "bad" : svc_strings[cmd] );*/
+		Com_Printf( "%3i:CMD %i %s\n", msg->readcount-1, cmd, "EOF" );
+		else
+		Com_Printf( "%3i:CMD %i %s\n", msg->readcount-1, cmd, !svc_strings[cmd] ? "bad" : svc_strings[cmd] );*/
 
 		if( cmd == -1 )
 			break;
@@ -202,7 +198,7 @@ void TV_Relay_ParseServerMessage( relay_t *relay, msg_t *msg )
 			break;
 
 		case svc_serverdata:
-			if( relay->upstream->demoplaying )
+			if( relay->upstream->demo.playing )
 				TV_Relay_ReconnectClients( relay );
 
 			if( relay->state == CA_HANDSHAKE )
@@ -236,9 +232,12 @@ void TV_Relay_ParseServerMessage( relay_t *relay, msg_t *msg )
 			break;
 
 		case svc_demoinfo:
-			MSG_ReadLong( msg );
-			MSG_ReadLong( msg );
-			MSG_ReadLong( msg );
+			{
+				int length;
+				
+				length = MSG_ReadLong( msg );
+				MSG_SkipData( msg, length );
+			}
 			break;
 
 		case svc_playerinfo:

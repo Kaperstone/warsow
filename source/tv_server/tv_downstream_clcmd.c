@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -30,10 +30,8 @@
 #include "tv_cmds.h"
 
 /*
-   ================
-   TV_Downstream_SendChannelList
-   ================
- */
+* TV_Downstream_SendChannelList
+*/
 void TV_Downstream_SendChannelList( client_t *client )
 {
 	int i;
@@ -47,13 +45,11 @@ void TV_Downstream_SendChannelList( client_t *client )
 }
 
 /*
-   ================
-   TV_Downstream_DelayNew
-
-   new command is delayed, because of a connect attempt while relay
-   wasn't ready
-   ================
- */
+* TV_Downstream_DelayNew
+* 
+* new command is delayed, because of a connect attempt while relay
+* wasn't ready
+*/
 static void TV_Relay_DelayNew( client_t *client )
 {
 	assert( client );
@@ -63,12 +59,12 @@ static void TV_Relay_DelayNew( client_t *client )
 	client->clientCommandExecuted--;
 }
 
-//================
-//TV_Downstream_New_f
-//
-//Sends the first message from the server to a connected client.
-//This will be sent on the initial upstream and upon each server load.
-//================
+/*
+* TV_Downstream_New_f
+* 
+* Sends the first message from the server to a connected client.
+* This will be sent on the initial upstream and upon each server load.
+*/
 void TV_Downstream_New_f( client_t *client )
 {
 	int playernum, numpure;
@@ -165,9 +161,9 @@ void TV_Downstream_New_f( client_t *client )
 	client->state = CS_CONNECTING;
 }
 
-//==================
-//TV_Downstream_Configstrings_f
-//==================
+/*
+* TV_Downstream_Configstrings_f
+*/
 static void TV_Downstream_Configstrings_f( client_t *client )
 {
 	int start;
@@ -205,6 +201,7 @@ static void TV_Downstream_Configstrings_f( client_t *client )
 	if( !client->relay )
 	{
 		TV_Downstream_SendServerCommand( client, "cs %i \"%s\"", CS_TVSERVER, "1" );
+		TV_Downstream_SendServerCommand( client, "cs %i \"%s\"", CS_AUDIOTRACK, tv_lobbymusic->string );
 		TV_Downstream_SendServerCommand( client, "cmd baselines %i 0", tvs.lobby.spawncount );
 		return;
 	}
@@ -217,7 +214,7 @@ static void TV_Downstream_Configstrings_f( client_t *client )
 
 	// write a packet full of data
 	while( start < MAX_CONFIGSTRINGS &&
-	       client->reliableSequence - client->reliableAcknowledge < MAX_RELIABLE_COMMANDS - 8 )
+		client->reliableSequence - client->reliableAcknowledge < MAX_RELIABLE_COMMANDS - 8 )
 	{
 		//		if( start == CS_HOSTNAME )
 		//			Com_Printf( "cs %s\n", client->relay->configstrings[start] );
@@ -240,9 +237,9 @@ static void TV_Downstream_Configstrings_f( client_t *client )
 	}
 }
 
-//==================
-//TV_Downstream_Baselines_f
-//==================
+/*
+* TV_Downstream_Baselines_f
+*/
 static void TV_Downstream_Baselines_f( client_t *client )
 {
 	int start;
@@ -306,9 +303,9 @@ static void TV_Downstream_Baselines_f( client_t *client )
 	TV_Downstream_SendMessageToClient( client, &message );
 }
 
-//==================
-//TV_Downstream_Begin_f
-//==================
+/*
+* TV_Downstream_Begin_f
+*/
 static void TV_Downstream_Begin_f( client_t *client )
 {
 	if( client->state != CS_CONNECTED )
@@ -336,18 +333,18 @@ static void TV_Downstream_Begin_f( client_t *client )
 	//TV_Downstream_SendChannelList( client );
 }
 
-//=================
-//TV_Downstream_Disconnect_f
-//The client is going to disconnect, so remove the upstream immediately
-//=================
+/*
+* TV_Downstream_Disconnect_f
+* The client is going to disconnect, so remove the upstream immediately
+*/
 static void TV_Downstream_Disconnect_f( client_t *client )
 {
 	TV_Downstream_DropClient( client, DROP_TYPE_GENERAL, "User disconnected" );
 }
 
-//==================
-//TV_Downstream_UserinfoCommand_f
-//==================
+/*
+* TV_Downstream_UserinfoCommand_f
+*/
 static void TV_Downstream_UserinfoCommand_f( client_t *client )
 {
 	char *info;
@@ -364,18 +361,18 @@ static void TV_Downstream_UserinfoCommand_f( client_t *client )
 	TV_Downstream_UserinfoChanged( client );
 }
 
-//==================
-//TV_Downstream_NoDelta_f
-//==================
+/*
+* TV_Downstream_NoDelta_f
+*/
 static void TV_Downstream_NoDelta_f( client_t *client )
 {
 	client->nodelta = qtrue;
 	client->nodelta_frame = 0;
 }
 
-//==================
-//TV_Downstream_Multiview_f
-//==================
+/*
+* TV_Downstream_Multiview_f
+*/
 static void TV_Downstream_Multiview_f( client_t *client )
 {
 	qboolean mv;
@@ -393,9 +390,9 @@ static void TV_Downstream_Multiview_f( client_t *client )
 	tvs.nummvclients = tvs.nummvclients + (mv ? 1 : -1);
 }
 
-//==================
-//TV_Downstream_Watch_f
-//==================
+/*
+* TV_Downstream_Watch_f
+*/
 static void TV_Downstream_Watch_f( client_t *client )
 {
 	upstream_t *upstream;
@@ -415,9 +412,9 @@ static void TV_Downstream_Watch_f( client_t *client )
 		Com_Printf( "%s" S_COLOR_WHITE " now watches %s" S_COLOR_WHITE " (%i)\n", client->name, upstream ? upstream->name : "lobby", upstream ? upstream->number + 1 : 0 );
 }
 
-//==================
-//TV_Downstream_Channels_f
-//==================
+/*
+* TV_Downstream_Channels_f
+*/
 static void TV_Downstream_Channels_f( client_t *client )
 {
 	int i;
@@ -434,10 +431,10 @@ static void TV_Downstream_Channels_f( client_t *client )
 	}
 }
 
-//==================
-//TV_Downstream_DenyDownload
-//Helper function for generating initdownload packets for denying download
-//==================
+/*
+* TV_Downstream_DenyDownload
+* Helper function for generating initdownload packets for denying download
+*/
 static void TV_Downstream_DenyDownload( client_t *client, const char *reason )
 {
 	msg_t message;
@@ -454,10 +451,10 @@ static void TV_Downstream_DenyDownload( client_t *client, const char *reason )
 	TV_Downstream_SendMessageToClient( client, &message );
 }
 
-//==================
-//TV_Downstream_BeginDownload_f
-//Responds to reliable download packet with reliable initdownload packet
-//==================
+/*
+* TV_Downstream_BeginDownload_f
+* Responds to reliable download packet with reliable initdownload packet
+*/
 static void TV_Downstream_BeginDownload_f( client_t *client )
 {
 	TV_Downstream_DenyDownload( client, "Downloading is not allowed on this server" );
@@ -508,7 +505,7 @@ static qboolean CheckFlood( client_t *client )
 			i = MAX_FLOOD_MESSAGES + i;
 
 		if( client->flood.when[i] && client->flood.when[i] <= tvs.realtime &&
-		   ( tvs.realtime < client->flood.when[i] + tv_floodprotection_seconds->integer * 1000 ) )
+			( tvs.realtime < client->flood.when[i] + tv_floodprotection_seconds->integer * 1000 ) )
 		{
 			client->flood.locktill = tvs.realtime + tv_floodprotection_penalty->value * 1000;
 			TV_Downstream_Msg( client, NULL, NULL, qfalse, "Flood protection: You can't talk for %d seconds.\n", tv_floodprotection_penalty->integer );
@@ -522,9 +519,9 @@ static qboolean CheckFlood( client_t *client )
 	return qfalse;
 }
 
-//==================
-//TV_Cmd_Say_f
-//==================
+/*
+* TV_Cmd_Say_f
+*/
 void TV_Cmd_Say_f( client_t *client, qboolean arg0 )
 {
 	char *p;
@@ -565,17 +562,17 @@ void TV_Cmd_Say_f( client_t *client, qboolean arg0 )
 	TV_Downstream_Msg( NULL, client->relay, client, qtrue, "%s", text );
 }
 
-//==================
-//TV_Cmd_SayCmd_f
-//==================
+/*
+* TV_Cmd_SayCmd_f
+*/
 void TV_Cmd_SayCmd_f( client_t *client )
 {
 	TV_Cmd_Say_f( client, qfalse );
 }
 
-//=================
-//TV_Cmd_Spectators_f
-//=================
+/*
+* TV_Cmd_Spectators_f
+*/
 static void TV_Cmd_Spectators_f( client_t *client )
 {
 	int i;
@@ -663,9 +660,9 @@ static ucmd_t ucmds[] =
 	{ NULL, NULL }
 };
 
-//==================
-//TV_Downstream_ExecuteUserCommand
-//==================
+/*
+* TV_Downstream_ExecuteUserCommand
+*/
 void TV_Downstream_ExecuteUserCommand( client_t *client, char *s )
 {
 	ucmd_t *u;

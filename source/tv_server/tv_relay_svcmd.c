@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -29,21 +29,11 @@
 #include "tv_downstream.h"
 
 /*
-   ==================
-   TV_Relay_ParseConfigstringCommand_f
-   ==================
- */
-static void TV_Relay_ParseConfigstringCommand_f( relay_t *relay )
+* TV_Relay_UpdateConfigString
+*/
+static qboolean TV_Relay_UpdateConfigString( relay_t *relay, int index, const char *val )
 {
-	int index;
 	size_t len;
-	char *val;
-
-	if( Cmd_Argc() != 3 )
-		return;
-
-	index = atoi( Cmd_Argv( 1 ) );
-	val = Cmd_Argv( 2 );
 
 	if( index < 0 || index >= MAX_CONFIGSTRINGS )
 		TV_Relay_Error( relay, "configstring > MAX_CONFIGSTRINGS" );
@@ -59,52 +49,85 @@ static void TV_Relay_ParseConfigstringCommand_f( relay_t *relay )
 	if( !COM_ValidateConfigstring( val ) )
 	{
 		Com_Printf( "Warning: Configstring %i invalid: %s\n", index, val );
-		return;
+		return qfalse;
 	}
 
 	// game module can prohibit changing this configstring
 	if( relay->state == CA_ACTIVE && !relay->module_export->ConfigString( relay->module, index, val ) )
-		return;
+		return qfalse;
 
 	// ignore if no changes
 	if( !strncmp( relay->configstrings[index], val, len ) && relay->configstrings[index][len] == '\0' )
-		return;
+		return qfalse;
 
 	Q_strncpyz( relay->configstrings[index], val, sizeof( relay->configstrings[index] ) );
-
-	if( relay->state == CA_ACTIVE )
-	{
-		// We have to manually broadcast this one.
-		client_t *client;
-		int i;
-		for( i = 0, client = tvs.clients; i < tv_maxclients->integer; i++, client++ )
-		{
-			if( client->state < CS_CONNECTED )
-				continue;
-			if( client->relay != relay )
-				continue;
-			TV_Downstream_SendServerCommand( client, "cs %i \"%s\"", index, val );
-		}
-	}
-
-#if 0
-	if( ( index == CS_HOSTNAME || index == CS_MATCHNAME ) 
-		|| ( ( index == CS_MAPNAME || index == CS_GAMETYPENAME ) && val[0] != '\0' ) ) {
-		TV_Relay_NameNotify( relay, NULL );
-	}
-#else
-	if( ( index == CS_HOSTNAME ) 
-		|| ( ( index == CS_MAPNAME ) && val[0] != '\0' ) ) {
-		TV_Relay_NameNotify( relay, NULL );
-	}
-#endif
+	return qtrue;
 }
 
 /*
-   =================
-   TV_Relay_Precache_f
-   =================
- */
+* TV_Relay_ForwardConfigstrings
+*/
+static void TV_Relay_ForwardConfigstrings( relay_t *relay, const char *relay_cs )
+{
+	int i;
+	client_t *client;
+
+	if( relay->state != CA_ACTIVE ) {
+		return;
+	}
+
+	// We have to manually broadcast this one.
+	for( i = 0, client = tvs.clients; i < tv_maxclients->integer; i++, client++ ) {
+		if( client->state < CS_CONNECTED )
+			continue;
+		if( client->relay != relay )
+			continue;
+		TV_Downstream_SendServerCommand( client, "cs %s", relay_cs );
+	}
+}
+
+/*
+* TV_Relay_ParseConfigstringCommand_f
+*/
+static void TV_Relay_ParseConfigstringCommand_f( relay_t *relay )
+{
+	int argc, i;
+	int index;
+	char *val;
+	char relay_cs[MAX_STRING_CHARS];
+
+	if( Cmd_Argc() < 3 )
+		return;
+
+	relay_cs[0] = '\0';
+
+	// loop through key/value pairs
+	argc = Cmd_Argc();
+	for( i = 1; i < argc - 1; i += 2 )
+	{
+		index = atoi( Cmd_Argv( i ) );
+		val = Cmd_Argv( i + 1 );
+
+		if( !TV_Relay_UpdateConfigString( relay, index, val ) ) {
+			// update failed
+			continue;
+		}
+
+		// append updated configstring
+		Q_strncatz( relay_cs, va( "%i \"%s\"", index, val ), sizeof( relay_cs ) );
+
+		if( ( index == CS_HOSTNAME )
+			|| ( ( index == CS_MAPNAME ) && val[0] != '\0' ) ) {
+				TV_Relay_NameNotify( relay, NULL );
+		}
+	}
+
+	TV_Relay_ForwardConfigstrings( relay, relay_cs );
+}
+
+/*
+* TV_Relay_Precache_f
+*/
 static void TV_Relay_Precache_f( relay_t *relay )
 {
 	int i;
@@ -122,34 +145,28 @@ static void TV_Relay_Precache_f( relay_t *relay )
 }
 
 /*
-   =================
-   TV_Relay_Multiview_f
-   =================
- */
+* TV_Relay_Multiview_f
+*/
 static void TV_Relay_Multiview_f( relay_t *relay )
 {
 	relay->multiview = ( atoi( Cmd_Argv( 1 ) ) != 0 );
 }
 
 /*
-   =================
-   TV_Relay_ServerReconnect_f
-
-   The server is changing levels
-   =================
- */
+* TV_Relay_ServerReconnect_f
+* 
+* The server is changing levels
+*/
 static void TV_Relay_ServerReconnect_f( relay_t *relay )
 {
 	TV_Relay_ReconnectClients( relay );
 }
 
 /*
-   =================
-   TV_Relay_ServerDisconnect_f
-
-   The server is changing levels
-   =================
- */
+* TV_Relay_ServerDisconnect_f
+* 
+* The server is changing levels
+*/
 static void TV_Relay_ServerDisconnect_f( relay_t *relay )
 {
 	int type;
@@ -186,10 +203,8 @@ static svcmd_t svcmds[] =
 };
 
 /*
-   ==================
-   TV_Relay_ParseServerCommand
-   ==================
- */
+* TV_Relay_ParseServerCommand
+*/
 void TV_Relay_ParseServerCommand( relay_t *relay, msg_t *msg )
 {
 	const char *s;

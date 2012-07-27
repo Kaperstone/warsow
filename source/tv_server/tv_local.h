@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #ifndef __TV_LOCAL_H
 #define __TV_LOCAL_H
@@ -83,7 +83,7 @@ typedef struct
 	qbyte *data;            // file being downloaded
 	int size;               // total bytes (can't use EOF because of paks)
 	unsigned int timeout;   // so we can free the file being downloaded
-	                        // if client omits sending success or failure message
+	// if client omits sending success or failure message
 } client_download_t;
 
 typedef struct
@@ -116,7 +116,7 @@ typedef struct
 	const netadr_t *address;
 } flush_params_t;
 
-void TV_FlushRedirect( int sv_redirected, char *outputbuf, flush_params_t *extra );
+void TV_FlushRedirect( int sv_redirected, char *outputbuf, const void *extra );
 
 typedef struct
 {
@@ -249,6 +249,7 @@ extern cvar_t *tv_compresspackets;
 extern cvar_t *tv_reconnectlimit;
 extern cvar_t *tv_public;
 extern cvar_t *tv_autorecord;
+extern cvar_t *tv_lobbymusic;
 
 extern cvar_t *tv_masterservers;
 

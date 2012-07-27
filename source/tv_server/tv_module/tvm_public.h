@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #ifndef __TVM_PUBLIC_H
 #define __TVM_PUBLIC_H
@@ -117,15 +117,13 @@ typedef struct
 
 	unsigned int ( *Milliseconds )( void );
 
-	/*qboolean	(*inPVS)( vec3_t p1, vec3_t p2 );
-	   qboolean	(*inPHS)( vec3_t p1, vec3_t p2 );*/
-
 	struct cmodel_s	*( *CM_InlineModel )( relay_t *relay, int num );
 	int ( *CM_TransformedPointContents )( relay_t *relay, vec3_t p, struct cmodel_s *cmodel, vec3_t origin, vec3_t angles );
 	void ( *CM_RoundUpToHullSize )( relay_t *relay, vec3_t mins, vec3_t maxs, struct cmodel_s *cmodel );
 	void ( *CM_TransformedBoxTrace )( relay_t *relay, trace_t *tr, vec3_t start, vec3_t end, vec3_t mins, vec3_t maxs, struct cmodel_s *cmodel, int brushmask, vec3_t origin, vec3_t angles );
 	void ( *CM_InlineModelBounds )( relay_t *relay, struct cmodel_s *cmodel, vec3_t mins, vec3_t maxs );
 	struct cmodel_s	*( *CM_ModelForBBox )( relay_t *relay, vec3_t mins, vec3_t maxs );
+	struct cmodel_s	*( *CM_OctagonModelForBBox )( relay_t *relay, vec3_t mins, vec3_t maxs );
 	qboolean ( *CM_AreasConnected )( relay_t *relay, int area1, int area2 );
 	int ( *CM_BoxLeafnums )( relay_t *relay, vec3_t mins, vec3_t maxs, int *list, int listsize, int *topnode );
 	int ( *CM_LeafCluster )( relay_t *relay, int leafnum );
@@ -214,6 +212,7 @@ typedef struct
 
 	// each new level entered will cause a call to SpawnEntities
 	void ( *SpawnEntities )( tvm_relay_t *relay, const char *mapname, const char *entstring, int entstrlen );
+	void ( *SetAudoTrack )( tvm_relay_t *relay, const char *track );
 
 	qboolean ( *CanConnect )( tvm_relay_t *relay, char *userinfo );
 	void ( *ClientConnect )( tvm_relay_t *relay, edict_t *ent, char *userinfo );

@@ -48,6 +48,7 @@ int playerbox_gib_viewheight = 8;
 #define PM_SPECIAL_CROUCH_INHIBIT 400
 #define PM_AIRCONTROL_BOUNCE_DELAY 200
 #define PM_OVERBOUNCE		1.01f
+#define PM_FORWARD_ACCEL_TIMEDELAY 0 // delay before the forward acceleration kicks in
 
 //===============================================================
 
@@ -200,12 +201,12 @@ static void PlayerTouchWall( int nbTestDir, float maxZnormal, vec3_t *normal )
 //  walking up a step should kill some velocity
 //
 
-//==================
-//PM_SlideMove
-//
-//Returns a new origin, velocity, and contact entity
-//Does not modify any world state?
-//==================
+/*
+* PM_SlideMove
+* 
+* Returns a new origin, velocity, and contact entity
+* Does not modify any world state?
+*/
 
 #define	MAX_CLIP_PLANES	5
 
@@ -365,12 +366,12 @@ static int PM_SlideMove( void )
 	return blockedmask;
 }
 
-//==================
-//PM_StepSlideMove
-//
-//Each intersection will try to step over the obstruction instead of
-//sliding along it.
-//==================
+/*
+* PM_StepSlideMove
+* 
+* Each intersection will try to step over the obstruction instead of
+* sliding along it.
+*/
 static void PM_StepSlideMove( void )
 {
 	vec3_t start_o, start_v;
@@ -438,11 +439,11 @@ static void PM_StepSlideMove( void )
 	pml.velocity[2] = down_v[2];
 }
 
-//==================
-//PM_Friction -- Modified for wsw
-//
-//Handles both ground friction and water friction
-//==================
+/*
+* PM_Friction -- Modified for wsw
+* 
+* Handles both ground friction and water friction
+*/
 static void PM_Friction( void )
 {
 	float *vel;
@@ -492,11 +493,11 @@ static void PM_Friction( void )
 	}
 }
 
-//==============
-//PM_Accelerate
-//
-//Handles user intended acceleration
-//==============
+/*
+* PM_Accelerate
+* 
+* Handles user intended acceleration
+*/
 static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 {
 	int i;
@@ -629,9 +630,9 @@ static void PM_AirAccelerate( vec3_t wishdir, float wishspeed, float accel )
 #endif
 
 
-//=============
-//PM_AddCurrents
-//=============
+/*
+* PM_AddCurrents
+*/
 static void PM_AddCurrents( vec3_t wishvel )
 {
 	//
@@ -657,10 +658,10 @@ static void PM_AddCurrents( vec3_t wishvel )
 	}
 }
 
-//===================
-//PM_WaterMove
-//
-//===================
+/*
+* PM_WaterMove
+* 
+*/
 static void PM_WaterMove( void )
 {
 	int i;
@@ -694,10 +695,10 @@ static void PM_WaterMove( void )
 	PM_StepSlideMove();
 }
 
-//===================
-//PM_Move -- Kurim
-//
-//===================
+/*
+* PM_Move -- Kurim
+* 
+*/
 static void PM_Move( void )
 {
 	int i;
@@ -797,8 +798,9 @@ static void PM_Move( void )
 		else
 			accel = pm_airaccelerate;
 
+		// ch : remove knockback test here
 		if( ( pm->playerState->pmove.pm_flags & PMF_WALLJUMPING )
-			|| ( pm->playerState->pmove.stats[PM_STAT_KNOCKBACK] > 0 ) )
+			/* || ( pm->playerState->pmove.stats[PM_STAT_KNOCKBACK] > 0 ) */ )
 			accel = 0; // no stopmove while walljumping
 
 		if( ( smove > 0 || smove < 0 ) && !fmove && ( pm->playerState->pmove.stats[PM_STAT_KNOCKBACK] <= 0 ) )
@@ -817,7 +819,7 @@ static void PM_Move( void )
 		pml.velocity[2] -= pm->playerState->pmove.gravity * pml.frametime;
 		PM_StepSlideMove();
 	}
-	else // air movement
+	else // air movement (old school)
 	{
 		qboolean inhibit = qfalse;
 		qboolean accelerating, decelerating;
@@ -833,11 +835,15 @@ static void PM_Move( void )
 			( pm->playerState->pmove.stats[PM_STAT_DASHTIME] >= ( PM_DASHJUMP_TIMEDELAY - PM_AIRCONTROL_BOUNCE_DELAY ) ) )
 			inhibit = qtrue;
 
-		if( !( pm->playerState->pmove.stats[PM_STAT_FEATURES] & PMFEAT_FWDBUNNY ) )
+		if( !( pm->playerState->pmove.stats[PM_STAT_FEATURES] & PMFEAT_FWDBUNNY ) ||
+			pm->playerState->pmove.stats[PM_STAT_FWDTIME] > 0 )
 			inhibit = qtrue;
 
+		// ch : remove this because of the knockback 'bug'?
+		/*
 		if( pm->playerState->pmove.stats[PM_STAT_KNOCKBACK] > 0 )
 			inhibit = qtrue;
+		*/
 
 		// (aka +fwdbunny) pressing forward or backward but not pressing strafe and not dashing
 		if( accelerating && !inhibit && !smove && fmove )
@@ -855,8 +861,9 @@ static void PM_Move( void )
 			else
 				accel = pm_airaccelerate;
 
+			// ch : knockback out
 			if( pm->playerState->pmove.pm_flags & PMF_WALLJUMPING 
-				|| ( pm->playerState->pmove.stats[PM_STAT_KNOCKBACK] > 0 ) )
+			/*	|| ( pm->playerState->pmove.stats[PM_STAT_KNOCKBACK] > 0 ) */ )
 			{
 				accel = 0; // no stop-move while wall-jumping
 				aircontrol = qfalse;
@@ -891,9 +898,9 @@ static void PM_Move( void )
 }
 
 
-//=============
-//PM_CategorizePosition
-//=============
+/*
+* PM_CategorizePosition
+*/
 static void PM_CategorizePosition( void )
 {
 	vec3_t point;
@@ -997,9 +1004,9 @@ static void PM_ClearStun( void )
 	pm->playerState->pmove.stats[PM_STAT_STUN] = 0;
 }
 
-//=============
-//PM_CheckJump
-//=============
+/*
+* PM_CheckJump
+*/
 static void PM_CheckJump( void )
 {
 	if( pml.upPush < 10 )
@@ -1061,9 +1068,9 @@ static void PM_CheckJump( void )
 	PM_ClearWallJump();
 }
 
-//=============
-//PM_CheckDash -- by Kurim
-//=============
+/*
+* PM_CheckDash -- by Kurim
+*/
 static void PM_CheckDash( void )
 {
 	float actual_velocity;
@@ -1100,6 +1107,7 @@ static void PM_CheckDash( void )
 		else
 			upspeed = pm_dashupspeed + pml.velocity[2];
 
+		// ch : we should do explicit forwardPush here, and ignore sidePush ?
 		VectorMA( vec3_origin, pml.forwardPush, pml.flatforward, dashdir );
 		VectorMA( dashdir, pml.sidePush, pml.right, dashdir );
 		dashdir[2] = 0.0;
@@ -1145,9 +1153,9 @@ static void PM_CheckDash( void )
 		pm->playerState->pmove.pm_flags &= ~PMF_DASHING;
 }
 
-//=================
-//PM_CheckWallJump -- By Kurim
-//=================
+/*
+* PM_CheckWallJump -- By Kurim
+*/
 static void PM_CheckWallJump( void )
 {
 	vec3_t normal;
@@ -1268,9 +1276,9 @@ static void PM_CheckWallJump( void )
 		pm->playerState->pmove.pm_flags &= ~PMF_WALLJUMPING;
 }
 
-//=============
-//PM_CheckSpecialMovement
-//=============
+/*
+* PM_CheckSpecialMovement
+*/
 static void PM_CheckSpecialMovement( void )
 {
 	vec3_t spot;
@@ -1310,9 +1318,9 @@ static void PM_CheckSpecialMovement( void )
 	pm->playerState->pmove.pm_time = 255;
 }
 
-//===============
-//PM_FlyMove
-//===============
+/*
+* PM_FlyMove
+*/
 static void PM_FlyMove( qboolean doclip )
 {
 	float speed, drop, friction, control, newspeed;
@@ -1431,11 +1439,11 @@ static void PM_CheckZoom( void )
 	}
 }
 
-//==============
-//PM_AdjustBBox
-//
-//Sets mins, maxs, and pm->viewheight
-//==============
+/*
+* PM_AdjustBBox
+* 
+* Sets mins, maxs, and pm->viewheight
+*/
 static void PM_AdjustBBox( void )
 {
 	float crouchFrac;
@@ -1533,9 +1541,9 @@ static void PM_AdjustBBox( void )
 	pm->playerState->viewheight = playerbox_stand_viewheight;
 }
 
-//==============
-//PM_AdjustViewheight
-//==============
+/*
+* PM_AdjustViewheight
+*/
 void PM_AdjustViewheight( void )
 {
 	float height;
@@ -1576,12 +1584,12 @@ static qboolean PM_GoodPosition( int snaptorigin[3] )
 	return !trace.allsolid;
 }
 
-//================
-//PM_SnapPosition
-//
-//On exit, the origin will have a value that is pre-quantized to the (1.0/16.0)
-//precision of the network channel and in a valid position.
-//================
+/*
+* PM_SnapPosition
+* 
+* On exit, the origin will have a value that is pre-quantized to the (1.0/16.0)
+* precision of the network channel and in a valid position.
+*/
 static void PM_SnapPosition( void )
 {
 	int sign[3];
@@ -1632,10 +1640,10 @@ static void PM_SnapPosition( void )
 }
 
 
-//================
-//PM_InitialSnapPosition
-//
-//================
+/*
+* PM_InitialSnapPosition
+* 
+*/
 static void PM_InitialSnapPosition( void )
 {
 	int x, y, z;
@@ -1679,10 +1687,10 @@ static void PM_UpdateDeltaAngles( void )
 		pm->playerState->pmove.delta_angles[i] = ANGLE2SHORT( pm->playerState->viewangles[i] ) - pm->cmd.angles[i];
 }
 
-//================
-//PM_ApplyMouseAnglesClamp
-//
-//================
+/*
+* PM_ApplyMouseAnglesClamp
+* 
+*/
 #if defined ( _WIN32 ) && ( _MSC_VER >= 1400 )
 #pragma warning( push )
 #pragma warning( disable : 4310 )   // cast truncates constant value
@@ -1723,11 +1731,11 @@ static void PM_ApplyMouseAnglesClamp( void )
 #pragma warning( pop )
 #endif
 
-//================
-//Pmove
-//
-//Can be called by either the server or the client
-//================
+/*
+* Pmove
+* 
+* Can be called by either the server or the client
+*/
 void Pmove( pmove_t *pmove )
 {
 	float fallvelocity, falldelta, damage;
@@ -1862,6 +1870,11 @@ void Pmove( pmove_t *pmove )
 			pm->playerState->pmove.stats[PM_STAT_STUN] -= pm->cmd.msec;
 		else if( pm->playerState->pmove.stats[PM_STAT_STUN] < 0 )
 			pm->playerState->pmove.stats[PM_STAT_STUN] = 0;
+
+		if( pm->playerState->pmove.stats[PM_STAT_FWDTIME] > 0 )
+			pm->playerState->pmove.stats[PM_STAT_FWDTIME] -= pm->cmd.msec;
+		else if( pm->playerState->pmove.stats[PM_STAT_FWDTIME] < 0 )
+			pm->playerState->pmove.stats[PM_STAT_FWDTIME] = 0;
 	}
 
 	pml.forwardPush = pm->cmd.forwardfrac * SPEEDKEY;
@@ -1874,6 +1887,12 @@ void Pmove( pmove_t *pmove )
 		pml.sidePush = 0;
 		pml.upPush = 0;
 		pm->cmd.buttons = 0;
+	}
+
+	// in order the forward accelt to kick in, one has to keep +fwd pressed 
+	// for some time without strafing
+	if( pml.forwardPush <= 0 || pml.sidePush ) {
+		pm->playerState->pmove.stats[PM_STAT_FWDTIME] = PM_FORWARD_ACCEL_TIMEDELAY;
 	}
 
 	if( pm->snapinitial )

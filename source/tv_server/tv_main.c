@@ -46,6 +46,7 @@ cvar_t *tv_tcp;
 #endif
 cvar_t *tv_public;
 cvar_t *tv_autorecord;
+cvar_t *tv_lobbymusic;
 
 cvar_t *tv_timeout;
 cvar_t *tv_zombietime;
@@ -62,11 +63,11 @@ cvar_t *tv_floodprotection_messages;
 cvar_t *tv_floodprotection_seconds;
 cvar_t *tv_floodprotection_penalty;
 
-//===============
-//TV_Init
-//
-//Only called at plat.exe startup, not for each game
-//===============
+/*
+* TV_Init
+* 
+* Only called at plat.exe startup, not for each game
+*/
 void TV_Init( void )
 {
 	netadr_t address;
@@ -109,6 +110,7 @@ void TV_Init( void )
 	tv_public = Cvar_Get( "tv_public", "1", CVAR_ARCHIVE | CVAR_SERVERINFO );
 	tv_rcon_password = Cvar_Get( "tv_rcon_password", "", 0 );
 	tv_autorecord = Cvar_Get( "tv_autorecord", "", CVAR_ARCHIVE );
+	tv_lobbymusic = Cvar_Get( "tv_lobbymusic", "", CVAR_ARCHIVE );
 
 	tv_masterservers = Cvar_Get( "tv_masterservers", DEFAULT_MASTER_SERVERS_IPS, CVAR_LATCH );
 
@@ -144,7 +146,7 @@ void TV_Init( void )
 		if( !NET_OpenSocket( &tvs.socket_udp, SOCKET_UDP, &address, qtrue ) )
 		{
 			Com_Printf( "Error: Couldn't open UDP socket: %s\n", NET_ErrorString() );
-			Cvar_ForceSet( "tv_udp", "0" );
+			Cvar_ForceSet( tv_udp->name, "0" );
 		}
 	}
 
@@ -158,7 +160,7 @@ void TV_Init( void )
 		if( !NET_OpenSocket( &tvs.socket_udp6, SOCKET_UDP, &address, qtrue ) )
 		{
 			Com_Printf( "Error: Couldn't open UDP6 socket: %s\n", NET_ErrorString() );
-			Cvar_ForceSet( "tv_udp6", "0" );
+			Cvar_ForceSet( tv_udp6->name, "0" );
 		}
 	}
 
@@ -168,14 +170,14 @@ void TV_Init( void )
 		if( !NET_OpenSocket( &tvs.socket_tcp, SOCKET_TCP, &address, qtrue ) )
 		{
 			Com_Printf( "Error: Couldn't open TCP socket: %s\n", NET_ErrorString() );
-			Cvar_ForceSet( "tv_tcp", "0" );
+			Cvar_ForceSet( tv_tcp->name, "0" );
 		}
 		else
 		{
 			if( !NET_Listen( &tvs.socket_tcp ) )
 			{
 				Com_Printf( "Error: Couldn't listen to TCP socket: %s\n", NET_ErrorString() );
-				Cvar_ForceSet( "tv_tcp", "0" );
+				Cvar_ForceSet( tv_tcp->name, "0" );
 			}
 		}
 	}
@@ -184,9 +186,9 @@ void TV_Init( void )
 	TV_Downstream_InitMaster();
 }
 
-//==================
-//TV_Frame
-//==================
+/*
+* TV_Frame
+*/
 void TV_Frame( int realmsec, int gamemsec )
 {
 	int i;
@@ -219,10 +221,10 @@ void TV_Frame( int realmsec, int gamemsec )
 	Sys_Sleep( 5 );
 }
 
-//================
-//TV_Shutdown
-//================
-void TV_Shutdown( char *finalmsg )
+/*
+* TV_Shutdown
+*/
+void TV_Shutdown( const char *finalmsg )
 {
 	int i;
 
@@ -240,31 +242,31 @@ void TV_Shutdown( char *finalmsg )
 	TV_RemoveCommands();
 }
 
-//================
-//TV_ShutdownGame
-//
-//ERR_DROP thrown, we will upgrade it to ERR_FATAL
-//================
-void TV_ShutdownGame( char *finalmsg, qboolean reconnect )
+/*
+* TV_ShutdownGame
+* 
+* ERR_DROP thrown, we will upgrade it to ERR_FATAL
+*/
+void TV_ShutdownGame( const char *finalmsg, qboolean reconnect )
 {
 	Com_Error( ERR_FATAL, "%s", finalmsg );
 }
 
-//======================
-// Just some renaming so we can call the functions above TV not SV
-//======================
+/*
+* Just some renaming so we can call the functions above TV not SV
+*/
 
 void SV_Init( void )
 {
 	TV_Init();
 }
 
-void SV_Shutdown( char *finalmsg )
+void SV_Shutdown( const char *finalmsg )
 {
 	TV_Shutdown( finalmsg );
 }
 
-void SV_ShutdownGame( char *finalmsg, qboolean reconnect )
+void SV_ShutdownGame( const char *finalmsg, qboolean reconnect )
 {
 }
 
@@ -280,11 +282,13 @@ void SV_Frame( int realmsec, int gamemsec )
 //=============================================================================
 
 char tv_outputbuf[TV_OUTPUTBUF_LENGTH];
-void TV_FlushRedirect( int tv_redirected, char *outputbuf, flush_params_t *extra )
+void TV_FlushRedirect( int tv_redirected, char *outputbuf, const void *extra )
 {
+	const flush_params_t *params = ( flush_params_t * )extra;
+
 	if( tv_redirected == RD_PACKET )
 	{
-		Netchan_OutOfBandPrint( extra->socket, extra->address, "print\n%s", outputbuf );
+		Netchan_OutOfBandPrint( params->socket, params->address, "print\n%s", outputbuf );
 	}
 }
 

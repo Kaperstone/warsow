@@ -23,13 +23,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 sound_import_t SOUND_IMPORT;
 
 /*
-=================
-GetCGameAPI
-
-Returns a pointer to the structure with all entry points
-=================
+* GetCGameAPI
+* 
+* Returns a pointer to the structure with all entry points
 */
-sound_export_t *GetSoundAPI( sound_import_t *import )
+QF_DLL_EXPORT sound_export_t *GetSoundAPI( sound_import_t *import )
 {
 	static sound_export_t globals;
 
@@ -40,8 +38,9 @@ sound_export_t *GetSoundAPI( sound_import_t *import )
 	globals.Init = S_Init;
 	globals.Shutdown = S_Shutdown;
 
-	globals.SoundsInMemory = S_SoundsInMemory;
-	globals.FreeSounds = S_FreeSounds;
+	globals.BeginRegistration = S_BeginRegistration;
+	globals.EndRegistration = S_EndRegistration;
+
 	globals.StopAllSounds = S_StopAllSounds;
 
 	globals.Clear = S_Clear;
@@ -61,6 +60,7 @@ sound_export_t *GetSoundAPI( sound_import_t *import )
 	globals.AddLoopSound = S_AddLoopSound;
 
 	globals.RawSamples = S_RawSamples;
+	globals.GetRawSamplesTime = S_GetRawSamplesTime;
 
 	globals.StartBackgroundTrack = S_StartBackgroundTrack;
 	globals.StopBackgroundTrack = S_StopBackgroundTrack;

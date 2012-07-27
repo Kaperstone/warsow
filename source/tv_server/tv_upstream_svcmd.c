@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -25,23 +25,13 @@
 #include "tv_upstream_demos.h"
 
 /*
-   ==================
-   TV_Upstream_ParseConfigstringCommand_f
-   ==================
- */
-static void TV_Upstream_ParseConfigstringCommand_f( upstream_t *upstream )
+* TV_Upstream_ParseConfigstringCommand_f
+*/
+static void TV_Upstream_HandleConfigstring( upstream_t *upstream, int index, const char *val )
 {
-	int index;
-	char *val;
 	char hostname[MAX_CONFIGSTRING_CHARS];
 	msg_t msg;
 	qbyte msgbuf[MAX_MSGLEN];
-
-	if( Cmd_Argc() != 3 )
-		return;
-
-	index = atoi( Cmd_Argv( 1 ) );
-	val = Cmd_Argv( 2 );
 
 	if( !val || !val[0] )
 		return;
@@ -62,7 +52,7 @@ static void TV_Upstream_ParseConfigstringCommand_f( upstream_t *upstream )
 	if( index != CS_HOSTNAME )
 		return;
 
-	if( !upstream->demoplaying )
+	if( !upstream->demo.playing )
 	{
 		TV_Upstream_SetName( upstream, val );
 		return;
@@ -75,7 +65,7 @@ static void TV_Upstream_ParseConfigstringCommand_f( upstream_t *upstream )
 		size_t temp_size;
 		const char *filebase;
 
-		filebase = COM_FileBase( upstream->demofilename );
+		filebase = COM_FileBase( upstream->demo.filename );
 		temp_size = strlen( filebase ) + strlen( APP_DEMO_EXTENSION_STR ) + 1;
 		temp = Mem_TempMalloc( temp_size );
 		Q_strncpyz( temp, filebase, temp_size );
@@ -106,10 +96,29 @@ static void TV_Upstream_ParseConfigstringCommand_f( upstream_t *upstream )
 }
 
 /*
-   ==================
-   TV_Upstream_ForwardToServer_f
-   ==================
- */
+* TV_Upstream_ParseConfigstringCommand_f
+*/
+static void TV_Upstream_ParseConfigstringCommand_f( upstream_t *upstream )
+{
+	int i, argc, index;
+	char *val;
+
+	if( Cmd_Argc() < 3 )
+		return;
+
+	argc = Cmd_Argc();
+	for( i = 1; i < argc-1; i += 2 )
+	{
+		index = atoi( Cmd_Argv( 1 ) );
+		val = Cmd_Argv( 2 );
+
+		TV_Upstream_HandleConfigstring( upstream, index, val );
+	}
+}
+
+/*
+* TV_Upstream_ForwardToServer_f
+*/
 static void TV_Upstream_ForwardToServer_f( upstream_t *upstream )
 {
 	if( upstream->state != CA_CONNECTED && upstream->state != CA_ACTIVE )
@@ -125,10 +134,8 @@ static void TV_Upstream_ForwardToServer_f( upstream_t *upstream )
 
 
 /*
-   =================
-   TV_Upstream_Precache_f
-   =================
- */
+* TV_Upstream_Precache_f
+*/
 static void TV_Upstream_Precache_f( upstream_t *upstream )
 {
 	upstream->precacheDone = qtrue;
@@ -141,10 +148,8 @@ static void TV_Upstream_Precache_f( upstream_t *upstream )
 }
 
 /*
-   =================
-   TV_Upstream_Multiview_f
-   =================
- */
+* TV_Upstream_Multiview_f
+*/
 static void TV_Upstream_Multiview_f( upstream_t *upstream )
 {
 	upstream->multiview = ( atoi( Cmd_Argv( 1 ) ) != 0 );
@@ -155,20 +160,18 @@ static void TV_Upstream_Multiview_f( upstream_t *upstream )
 */
 static void TV_Upstream_Changing_f( upstream_t *upstream )
 {
-	if( upstream->demorecording )
-		TV_Upstream_StopDemoRecord( upstream, upstream->demoautorecording, qfalse );
+	if( upstream->demo.recording )
+		TV_Upstream_StopDemoRecord( upstream, upstream->demo.autorecording, qfalse );
 }
 
 /*
-   =================
-   TV_Upstream_ServerReconnect_f
-
-   The server is changing levels
-   =================
- */
+* TV_Upstream_ServerReconnect_f
+* 
+* The server is changing levels
+*/
 static void TV_Upstream_ServerReconnect_f( upstream_t *upstream )
 {
-	if( upstream->demoplaying )
+	if( upstream->demo.playing )
 		return;
 
 	if( upstream->state < CA_CONNECTED )
@@ -177,8 +180,8 @@ static void TV_Upstream_ServerReconnect_f( upstream_t *upstream )
 		return;
 	}
 
-	if( upstream->demorecording )
-		TV_Upstream_StopDemoRecord( upstream, upstream->demoautorecording, qfalse );
+	if( upstream->demo.recording )
+		TV_Upstream_StopDemoRecord( upstream, upstream->demo.autorecording, qfalse );
 
 	Com_Printf( "%s: reconnecting...\n", NET_AddressToString( &upstream->serveraddress ) );
 
@@ -194,12 +197,10 @@ static void TV_Upstream_ServerReconnect_f( upstream_t *upstream )
 }
 
 /*
-   =================
-   TV_Upstream_ServerDisconnect_f
-
-   The server is changing levels
-   =================
- */
+* TV_Upstream_ServerDisconnect_f
+* 
+* The server is changing levels
+*/
 static void TV_Upstream_ServerDisconnect_f( upstream_t *upstream )
 {
 	int type;
@@ -236,10 +237,8 @@ static svcmd_t svcmds[] =
 };
 
 /*
-   ==================
-   TV_Upstream_ParseServerCommand
-   ==================
- */
+* TV_Upstream_ParseServerCommand
+*/
 void TV_Upstream_ParseServerCommand( upstream_t *upstream, msg_t *msg )
 {
 	const char *s;

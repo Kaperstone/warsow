@@ -135,9 +135,7 @@ static OBJTYPE OpenALLib = NULL;
 static qboolean alinit_fail = qfalse;
 
 /*
-=================
-GPA
-=================
+* GPA
 */
 static void *GPA( char *str )
 {
@@ -158,9 +156,7 @@ static void *GPA( char *str )
 }
 
 /*
-=================
-QAL_Init
-=================
+* QAL_Init
 */
 qboolean QAL_Init( const char *libname, qboolean verbose )
 {
@@ -273,9 +269,7 @@ qboolean QAL_Init( const char *libname, qboolean verbose )
 }
 
 /*
-=================
-QAL_Shutdown
-=================
+* QAL_Shutdown
 */
 void QAL_Shutdown( void )
 {

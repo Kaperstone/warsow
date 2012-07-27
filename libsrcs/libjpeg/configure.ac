@@ -1,29 +1,39 @@
-dnl IJG auto-configuration source file.
-dnl Process this file with autoconf to produce a configure script.
+# IJG auto-configuration source file.
+# Process this file with autoconf to produce a configure script.
+
 #
 # Configure script for IJG libjpeg
 #
-AC_PREREQ(2.59)
-AC_INIT(jcmaster.c)
 
-# Specify directory where m4 macros may be found.
-AC_CONFIG_MACRO_DIR([m4])
+AC_INIT([libjpeg], [8.3.0])
 
 # Directory where autotools helper scripts lives.
-AC_CONFIG_AUX_DIR([config])
+AC_CONFIG_AUX_DIR([.])
 
 # Generate configuration headers.
-AC_CONFIG_HEADERS([jconfig.h jconfig_api.h])
+AC_CONFIG_HEADERS([jconfig.h:jconfig.cfg])
+
+# Hack: disable autoheader so that it doesn't overwrite our cfg template.
+AUTOHEADER="echo autoheader ignored"
 
 # Check system type
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([libjpeg], [6b])
+# Don't require all the GNU mandated files
+AM_INIT_AUTOMAKE([-Wall -Werror ansi2knr no-dist foreign])
 
-# Add configure option --enable-maintainer-mode which enables dependency
-# checking and generation useful to package maintainers.  This is made an
-# option to avoid confusing end users.
+# Make --enable-silent-rules the default.
+# To get verbose build output you may configure
+# with --disable-silent-rules or use "make V=1".
+AM_SILENT_RULES([yes])
+
+# This is required when using the de-ANSI-fication feature.
+AM_C_PROTOTYPES
+
+# Add configure option --enable-maintainer-mode which enables
+# dependency checking and generation useful to package maintainers.
+# This is made an option to avoid confusing end users.
 AM_MAINTAINER_MODE
 
 # Check for programs
@@ -33,15 +43,35 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
-dnl
-dnl
-#
-# Tests for Windows
-#
-AC_EXEEXT
-AC_OBJEXT
-dnl
-dnl See if compiler supports prototypes.
+
+# Check if LD supports linker scripts,
+# and define automake conditional HAVE_LD_VERSION_SCRIPT if so.
+AC_ARG_ENABLE([ld-version-script],
+  AS_HELP_STRING([--enable-ld-version-script],
+    [enable linker version script (default is enabled when possible)]),
+    [have_ld_version_script=$enableval], [])
+if test -z "$have_ld_version_script"; then
+  AC_MSG_CHECKING([if LD -Wl,--version-script works])
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -Wl,--version-script=conftest.map"
+  cat > conftest.map <<EOF
+VERS_1 {
+        global: sym;
+};
+
+VERS_2 {
+        global: sym;
+} VERS_1;
+EOF
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                 [have_ld_version_script=yes], [have_ld_version_script=no])
+  rm -f conftest.map
+  LDFLAGS="$save_LDFLAGS"
+  AC_MSG_RESULT($have_ld_version_script)
+fi
+AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
+
+# See if compiler supports prototypes.
 AC_MSG_CHECKING(for function prototypes)
 AC_CACHE_VAL(ijg_cv_have_prototypes,
 [AC_TRY_COMPILE([
@@ -66,12 +96,13 @@ else
   echo "   ./configure  CC='cc -switch'"
   echo where -switch is the proper switch.
 fi
-dnl
-dnl check header files
-AC_CHECK_HEADERS(stddef.h stdlib.h)
+
+# Check header files
+AC_CHECK_HEADERS(stddef.h stdlib.h locale.h)
 AC_CHECK_HEADER(string.h, , AC_DEFINE([NEED_BSD_STRINGS],[1],[Compiler has <strings.h> rather than standard <string.h>.]))
-dnl See whether type size_t is defined in any ANSI-standard places;
-dnl if not, perhaps it is defined in <sys/types.h>.
+
+# See whether type size_t is defined in any ANSI-standard places;
+# if not, perhaps it is defined in <sys/types.h>.
 AC_MSG_CHECKING(for size_t)
 AC_TRY_COMPILE([
 #ifdef HAVE_STDDEF_H
@@ -101,8 +132,8 @@ if test "$ijg_size_t_ok" = no; then
   echo Try putting '"typedef unsigned int size_t;"' in jconfig.h.
 fi
 fi
-dnl
-dnl check compiler characteristics
+
+# Check compiler characteristics
 AC_MSG_CHECKING(for type unsigned char)
 AC_TRY_COMPILE(, [ unsigned char un_char; ],
 [AC_MSG_RESULT(yes)
@@ -137,9 +168,9 @@ void test3function (arg1, arg2)
 }
 ], [ ], AC_MSG_RESULT(yes), [AC_MSG_RESULT(no)
 AC_DEFINE([void],[char],[Define 'void' as 'char' for archaic compilers that don't understand it.])])
-
 AC_C_CONST
-dnl check for non-broken inline under various spellings
+
+# Check for non-broken inline under various spellings
 AC_MSG_CHECKING(for inline)
 ijg_cv_inline=""
 AC_TRY_COMPILE(, [} __inline__ int foo() { return 0; }
@@ -150,21 +181,23 @@ AC_TRY_COMPILE(, [} inline int foo() { return 0; }
 int bar() { return foo();], ijg_cv_inline="inline")))
 AC_MSG_RESULT($ijg_cv_inline)
 AC_DEFINE_UNQUOTED([INLINE],[$ijg_cv_inline],[How to obtain function inlining.])
-dnl we cannot check for bogus warnings, but at least we can check for errors
+
+# We cannot check for bogus warnings, but at least we can check for errors
 AC_MSG_CHECKING(for broken incomplete types)
 AC_TRY_COMPILE([ typedef struct undefined_structure * undef_struct_ptr; ], ,
 AC_MSG_RESULT(ok),
 [AC_MSG_RESULT(broken)
 AC_DEFINE([INCOMPLETE_TYPES_BROKEN],[1],[Compiler does not support pointers to unspecified structures.])])
-dnl test whether global names are unique to at least 15 chars
+
+# Test whether global names are unique to at least 15 chars
 AC_MSG_CHECKING(for short external names)
 AC_TRY_LINK([
 int possibly_duplicate_function () { return 0; }
 int possibly_dupli_function () { return 1; }
 ], [ ], AC_MSG_RESULT(ok), [AC_MSG_RESULT(short)
 AC_DEFINE([NEED_SHORT_EXTERNAL_NAMES],[1],[Linker requires that global names be unique in first 15 characters.])])
-dnl
-dnl run-time checks
+
+# Run-time checks
 AC_MSG_CHECKING(to see if char is signed)
 AC_TRY_RUN([
 #ifdef HAVE_PROTOTYPES
@@ -273,46 +306,13 @@ AC_DEFINE([NO_MKTEMP],[1],[The mktemp() function is not available.])])])
 fi
 AC_SUBST(MEMORYMGR)
 
-# Support definitons for cjpeg/djpeg
-AC_DEFINE([BMP_SUPPORTED],[1],[cjpeg/djpeg support the BMP file format.])
-AC_DEFINE([GIF_SUPPORTED],[1],[cjpeg/djpeg support the GIF file format.])
-AC_DEFINE([PPM_SUPPORTED],[1],[cjpeg/djpeg support the PBMPLUS PPM/PGM file formats.])
-dnl AC_DEFINE([RLE_SUPPORTED],[1],[cjpeg/djpeg support the Utah RLE file format.])
-AC_DEFINE([TARGA_SUPPORTED],[1],[cjpeg/djpeg support the Targa file format.])
-
-# Include PNG support in cjpeg/djpeg if appropriate.
-AC_ARG_WITH(png,
-[  --with-png              enable PNG support in cjpeg/djpeg],
-[#], [with_png="maybe"])
-
-# try to detect whether libpng is present
-OLIBS=$LIBS
-if test "x$with_png" = xmaybe ; then
-  AC_CHECK_HEADER(png.h, , [with_png="no"])
-fi
-if test "x$with_png" = xmaybe ; then
-  AC_CHECK_HEADER(zlib.h, , [with_png="no"])
-fi
-if test "x$with_png" = xmaybe ; then
-  AC_CHECK_LIB(z, deflate, , [with_png="no"])
-fi
-if test "x$with_png" = xmaybe ; then
-  AC_CHECK_LIB(png, png_create_info_struct,
-	[with_png="yes"], [with_png="no"], [-lz -lm])
-fi
-LIBS=$OLIBS
-
-if test "x$with_png" = xyes ; then
-  AC_DEFINE([PNG_SUPPORTED],[1],[Libpng is available in order to support the PNG file format.])
-  PNGLIBS='-lpng -lz -lm'
-fi
-AC_SUBST([PNGLIBS])
-
-# Extract the library version ID from jpeglib.h.
+# Extract the library version IDs from jpeglib.h.
 AC_MSG_CHECKING([libjpeg version number])
-[JPEG_LIB_VERSION=`sed -e '/^#define JPEG_LIB_VERSION/!d' -e 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/' $srcdir/jpeglib.h`]
+[JPEG_LIB_VERSION_MAJOR=`sed -e '/^#define JPEG_LIB_VERSION_MAJOR/!d' -e 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/' $srcdir/jpeglib.h`]
+[JPEG_LIB_VERSION_MINOR=`sed -e '/^#define JPEG_LIB_VERSION_MINOR/!d' -e 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/' $srcdir/jpeglib.h`]
+[JPEG_LIB_VERSION="`expr $JPEG_LIB_VERSION_MAJOR + $JPEG_LIB_VERSION_MINOR`:0:$JPEG_LIB_VERSION_MINOR"]
 AC_MSG_RESULT([$JPEG_LIB_VERSION])
 AC_SUBST([JPEG_LIB_VERSION])
 
-dnl
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tvm_local.h"
 
@@ -148,7 +148,7 @@ tvm_relay_t *TVM_InitRelay( relay_t *relay_server, unsigned int snapFrameTime, i
 		relay->edicts[i].relay = relay;
 
 	trap_LocateEntities( relay, relay->edicts, sizeof( relay->edicts[0] ), relay->numentities,
-	                     relay->maxentities );
+		relay->maxentities );
 
 	// initialize local entities
 	relay->local_maxentities = MAX_EDICTS;
@@ -169,7 +169,7 @@ tvm_relay_t *TVM_InitRelay( relay_t *relay_server, unsigned int snapFrameTime, i
 		relay->local_edicts[i].r.client = relay->local_clients + i;
 
 	trap_LocateLocalEntities( relay, relay->local_edicts, sizeof( relay->local_edicts[0] ), relay->local_numentities,
-	                          relay->local_maxclients );
+		relay->local_maxclients );
 
 	return relay;
 }

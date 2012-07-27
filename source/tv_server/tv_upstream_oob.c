@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -30,9 +30,9 @@ typedef struct
 	void ( *func )( upstream_t *upstream, msg_t *msg );
 } upstreamless_cmd_t;
 
-//=================
-//TV_Upstream_Challenge
-//=================
+/*
+* TV_Upstream_Challenge
+*/
 static void TV_Upstream_Challenge_f( upstream_t *upstream, msg_t *msg )
 {
 	assert( upstream );
@@ -46,10 +46,10 @@ static void TV_Upstream_Challenge_f( upstream_t *upstream, msg_t *msg )
 	TV_Upstream_SendConnectPacket( upstream );
 }
 
-//=================
-//TV_Upstream_ClientConnectPacket
-// ClientConnect in client code
-//=================
+/*
+* TV_Upstream_ClientConnectPacket
+* ClientConnect in client code
+*/
 static void TV_Upstream_ClientConnectPacket( upstream_t *upstream, msg_t *msg )
 {
 	if( upstream->state != CA_CONNECTING )
@@ -62,9 +62,9 @@ static void TV_Upstream_ClientConnectPacket( upstream_t *upstream, msg_t *msg )
 	Com_Printf( "%s" S_COLOR_WHITE ": Connected\n", upstream->name );
 }
 
-//=================
-//TV_Upstream_Reject
-//=================
+/*
+* TV_Upstream_Reject
+*/
 static void TV_Upstream_Reject_f( upstream_t *upstream, msg_t *msg )
 {
 	int rejecttype, rejectflag;
@@ -87,9 +87,9 @@ static void TV_Upstream_Reject_f( upstream_t *upstream, msg_t *msg )
 	TV_Upstream_Error( upstream, "Upstream refused: %s", rejectmessage );
 }
 
-//=================
-// List of commands
-//=================
+/*
+* List of commands
+*/
 static upstreamless_cmd_t upstream_upstreamless_cmds[] =
 {
 	{ "challenge", TV_Upstream_Challenge_f },
@@ -98,9 +98,9 @@ static upstreamless_cmd_t upstream_upstreamless_cmds[] =
 	{ NULL, NULL }
 };
 
-//=================
-//TV_Upstream_ConnectionlessPacket
-//=================
+/*
+* TV_Upstream_ConnectionlessPacket
+*/
 void TV_Upstream_ConnectionlessPacket( upstream_t *upstream, msg_t *msg )
 {
 	upstreamless_cmd_t *cmd;

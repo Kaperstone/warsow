@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -27,25 +27,34 @@
 #include "tv_upstream_demos.h"
 #include "tv_downstream_clcmd.h"
 
-//================
-//TV_Upstream_ParseFrame
-//================
+/*
+* TV_Upstream_ParseFrame
+*/
 static void TV_Upstream_ParseFrame( upstream_t *upstream, msg_t *msg )
 {
 	static snapshot_t snap;
 
 	SNAP_SkipFrame( msg, &snap );
 
-	if( upstream->demorecording )
+	if( upstream->demo.recording )
 	{
-		if( upstream->demowaiting && !snap.delta && snap.multipov )
+		if( upstream->demo.waiting && !snap.delta && snap.multipov )
 		{
-			upstream->demowaiting = qfalse; // we can start recording now
-			upstream->demobasetime = snap.serverTime;
+			upstream->demo.waiting = qfalse; // we can start recording now
+			upstream->demo.basetime = snap.serverTime;
+			upstream->demo.localtime = time( NULL );
+
+			// clear demo meta data, we'll write some keys later
+			upstream->demo.meta_data_realsize = SNAP_ClearDemoMeta( upstream->demo.meta_data, sizeof( upstream->demo.meta_data ) );
+
+			// write out messages to hold the startup information
+			SNAP_BeginDemoRecording( upstream->demo.filehandle, 0x10000 + upstream->servercount, 
+				upstream->snapFrameTime, upstream->levelname, upstream->reliable ? SV_BITFLAGS_RELIABLE : 0, 
+				upstream->purelist, upstream->configstrings[0], upstream->baselines, upstream->demo.basetime );
 		}
 
-		if( !upstream->demowaiting )
-			upstream->demoduration = snap.serverTime - upstream->demobasetime;
+		if( !upstream->demo.waiting )
+			upstream->demo.duration = snap.serverTime - upstream->demo.basetime;
 	}
 
 	upstream->serverTime = snap.serverTime;
@@ -57,10 +66,8 @@ static void TV_Upstream_ParseFrame( upstream_t *upstream, msg_t *msg )
 }
 
 /*
-   ==================
-   TV_Upstream_ParseServerData
-   ==================
- */
+* TV_Upstream_ParseServerData
+*/
 static void TV_Upstream_ParseServerData( upstream_t *upstream, msg_t *msg )
 {
 	int i, numpure;
@@ -111,18 +118,16 @@ static void TV_Upstream_ParseServerData( upstream_t *upstream, msg_t *msg )
 }
 
 /*
-   ==================
-   TV_Upstream_ParseBaseline
-   ==================
- */
+* TV_Upstream_ParseBaseline
+*/
 static void TV_Upstream_ParseBaseline( upstream_t *upstream, msg_t *msg )
 {
 	SNAP_ParseBaseline( msg, upstream->baselines );
 }
 
-//================
-//TV_Upstream_ParseServerMessage
-//================
+/*
+* TV_Upstream_ParseServerMessage
+*/
 void TV_Upstream_ParseServerMessage( upstream_t *upstream, msg_t *msg )
 {
 	int cmd;
@@ -203,10 +208,14 @@ void TV_Upstream_ParseServerMessage( upstream_t *upstream, msg_t *msg )
 			break;
 
 		case svc_demoinfo:
-			assert( upstream->demoplaying );
-			MSG_ReadLong( msg );
-			MSG_ReadLong( msg );
-			MSG_ReadLong( msg );
+			{
+				int length;
+
+				assert( upstream->demo.playing );
+
+				length = MSG_ReadLong( msg );
+				MSG_SkipData( msg, length );
+			}
 			break;
 
 		case svc_playerinfo:
@@ -230,6 +239,6 @@ void TV_Upstream_ParseServerMessage( upstream_t *upstream, msg_t *msg )
 	}
 
 	// if recording demos, copy the message out
-	if( upstream->demorecording && !upstream->demowaiting )
+	if( upstream->demo.recording && !upstream->demo.waiting )
 		TV_Upstream_WriteDemoMessage( upstream, msg );
 }

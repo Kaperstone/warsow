@@ -29,7 +29,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="&quot;$(SolutionDir)win32\pre-svnrev.bat&quot; qcommon\ svnrev.h"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -52,8 +52,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\qcommon,..\win32\include\msvc,..\win32\include,..\..\libsrcs\zlib"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;DEDICATED_ONLY;TV_SERVER_ONLY;_CRT_SECURE_NO_DEPRECATE;TV_MODULE_HARD_LINKED"
+				AdditionalIncludeDirectories="..\win32\include\msvc,..\win32\include,..\..\libsrcs\zlib,..\..\libsrcs\libcurl\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;DEDICATED_ONLY;TV_SERVER_ONLY;CURL_STATICLIB;_CRT_SECURE_NO_DEPRECATE;TV_MODULE_HARD_LINKED"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -120,7 +120,113 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="&quot;$(SolutionDir)win32\post-svnrev.bat&quot; qcommon\ svnrev.h"
+				CommandLine=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(ConfigurationName)\x86"
+			IntermediateDirectory="$(ConfigurationName)\x86"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine=""
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\release/tv_server.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\qcommon,..\win32\include\msvc,..\win32\include,..\..\libsrcs\zlib,..\..\libsrcs\libcurl\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;DEDICATED_ONLY;TV_SERVER_ONLY;CURL_STATICLIB;CURL_STATICLIB;_CRT_SECURE_NO_DEPRECATE;TV_MODULE_HARD_LINKED"
+				StringPooling="true"
+				ExceptionHandling="0"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				RuntimeTypeInfo="false"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=".\Release\x86\tv_server.pch"
+				AssemblerListingLocation=".\Release\x86\"
+				ObjectFile=".\Release\x86\"
+				ProgramDataBaseFileName=".\Release\x86\"
+				WarningLevel="4"
+				SuppressStartupBanner="true"
+				Detect64BitPortabilityProblems="false"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1049"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="winmm.lib ws2_32.lib zlibstat.lib libcurlstat.lib"
+				OutputFile="..\Release\x86\wswtv_server_x86.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\win32\x86\lib\release"
+				ManifestFile=".\Release\x86\$(TargetFileName).intermediate.manifest"
+				IgnoreDefaultLibraryNames=""
+				ProgramDatabaseFile=".\Release\x86\tv_server.pdb"
+				SubSystem="2"
+				LinkTimeCodeGeneration="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -223,112 +329,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="$(ConfigurationName)\x86"
-			IntermediateDirectory="$(ConfigurationName)\x86"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			WholeProgramOptimization="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine="&quot;$(SolutionDir)win32\pre-svnrev.bat&quot; qcommon\ svnrev.h"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\release/tv_server.tlb"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\qcommon,..\win32\include\msvc,..\win32\include,..\..\libsrcs\zlib"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;DEDICATED_ONLY;TV_SERVER_ONLY;CURL_STATICLIB;_CRT_SECURE_NO_DEPRECATE;TV_MODULE_HARD_LINKED"
-				StringPooling="true"
-				ExceptionHandling="0"
-				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
-				RuntimeTypeInfo="false"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\Release\x86\tv_server.pch"
-				AssemblerListingLocation=".\Release\x86\"
-				ObjectFile=".\Release\x86\"
-				ProgramDataBaseFileName=".\Release\x86\"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
-				CompileAs="1"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1049"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				LinkLibraryDependencies="false"
-				AdditionalDependencies="winmm.lib ws2_32.lib zlibstat.lib libcurlstat.lib"
-				OutputFile="..\Release\x86\wswtv_server_x86.exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\win32\x86\lib\release"
-				ManifestFile=".\Release\x86\$(TargetFileName).intermediate.manifest"
-				IgnoreDefaultLibraryNames=""
-				ProgramDatabaseFile=".\Release\x86\tv_server.pdb"
-				SubSystem="2"
-				LinkTimeCodeGeneration="1"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="&quot;$(SolutionDir)win32\post-svnrev.bat&quot; qcommon\ svnrev.h"
 			/>
 		</Configuration>
 		<Configuration
@@ -496,7 +496,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\qcommon\irc.c"
+				RelativePath="..\null\irc_null.c"
+				>
+			</File>
+			<File
+				RelativePath="..\qcommon\library.c"
 				>
 			</File>
 			<File
@@ -628,11 +632,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\win32\win_lib.c"
+				>
+			</File>
+			<File
 				RelativePath="..\win32\win_net.c"
 				>
 			</File>
 			<File
 				RelativePath="..\win32\win_sys.c"
+				>
+			</File>
+			<File
+				RelativePath="..\qcommon\wswcurl.c"
 				>
 			</File>
 			<Filter
@@ -701,11 +713,27 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\game\config.h"
+				RelativePath="..\qcommon\glob.h"
 				>
 			</File>
 			<File
-				RelativePath="..\qcommon\glob.h"
+				RelativePath="..\gameshared\q_arch.h"
+				>
+			</File>
+			<File
+				RelativePath="..\gameshared\q_collision.h"
+				>
+			</File>
+			<File
+				RelativePath="..\gameshared\q_comref.h"
+				>
+			</File>
+			<File
+				RelativePath="..\gameshared\q_cvar.h"
+				>
+			</File>
+			<File
+				RelativePath="..\gameshared\q_dynvar.h"
 				>
 			</File>
 			<File
@@ -889,14 +917,6 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
-			<File
-				RelativePath="..\qcommon\library.c"
-				>
-			</File>
-			<File
-				RelativePath="..\win32\win_lib.c"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

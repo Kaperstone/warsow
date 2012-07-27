@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "g_local.h"
 
@@ -177,9 +177,9 @@ static gsitem_t *G_ItemForEntity( edict_t *ent )
 	return NULL;
 }
 
-//=============
-//G_CanSpawnEntity
-//=============
+/*
+* G_CanSpawnEntity
+*/
 static qboolean G_CanSpawnEntity( edict_t *ent )
 {
 	gsitem_t *item;
@@ -199,7 +199,7 @@ static qboolean G_CanSpawnEntity( edict_t *ent )
 	// check for multiplayer-disabled entities for Q1 maps
 	if( G_IsQ1Map() )
 	{
-//#define SPAWNFLAG_NOT_DEATHMATCH	2048
+		//#define SPAWNFLAG_NOT_DEATHMATCH	2048
 		if( ent->spawnflags & 2048 )
 			st.gametype = "sp coop"; // single-player, coop
 	}
@@ -210,7 +210,7 @@ static qboolean G_CanSpawnEntity( edict_t *ent )
 		if( !strstr( st.gametype, gs.gametypeName ) )
 			return qfalse;
 	}
-		
+
 	if( ( item = G_ItemForEntity( ent ) ) != NULL )
 	{
 		// not pickable items aren't either spawnable
@@ -224,11 +224,11 @@ static qboolean G_CanSpawnEntity( edict_t *ent )
 	return qtrue;
 }
 
-//===============
-//G_CallSpawn
-//
-//Finds the spawn function for the entity and calls it
-//===============
+/*
+* G_CallSpawn
+* 
+* Finds the spawn function for the entity and calls it
+*/
 qboolean G_CallSpawn( edict_t *ent )
 {
 	spawn_t	*s;
@@ -258,8 +258,10 @@ qboolean G_CallSpawn( edict_t *ent )
 	}
 
 	// see if there's a spawn definition in the gametype scripts
-	if( G_asCallMapEntitySpawnScript( ent->classname, ent ) )
+	ent->scriptSpawned = G_asCallMapEntitySpawnScript( ent->classname, ent );
+	if( ent->scriptSpawned ) {
 		return qtrue; // handled by the script
+	}
 
 	if( sv_cheats->integer || developer->integer ) // mappers load their maps with devmap
 		G_Printf( "%s doesn't have a spawn function\n", ent->classname );
@@ -267,9 +269,9 @@ qboolean G_CallSpawn( edict_t *ent )
 	return qfalse;
 }
 
-//=============
-// G_GetEntitySpawnKey
-//=============
+/*
+* G_GetEntitySpawnKey
+*/
 const char *G_GetEntitySpawnKey( const char *key, edict_t *self )
 {
 	static char value[MAX_TOKEN_CHARS];
@@ -320,9 +322,9 @@ const char *G_GetEntitySpawnKey( const char *key, edict_t *self )
 	return value;
 }
 
-//=============
-//ED_NewString
-//=============
+/*
+* ED_NewString
+*/
 static char *ED_NewString( const char *string )
 {
 	char *newb, *new_p;
@@ -357,12 +359,12 @@ static char *ED_NewString( const char *string )
 	return newb;
 }
 
-//===============
-//ED_ParseField
-//
-//Takes a key/value pair and sets the binary values
-//in an edict
-//===============
+/*
+* ED_ParseField
+* 
+* Takes a key/value pair and sets the binary values
+* in an edict
+*/
 static void ED_ParseField( char *key, char *value, edict_t *ent )
 {
 	const field_t *f;
@@ -373,7 +375,8 @@ static void ED_ParseField( char *key, char *value, edict_t *ent )
 	for( f = fields; f->name; f++ )
 	{
 		if( !Q_stricmp( f->name, key ) )
-		{ // found it
+		{
+			// found it
 			if( f->flags & FFL_SPAWNTEMP )
 				b = (qbyte *)&st;
 			else
@@ -415,12 +418,12 @@ static void ED_ParseField( char *key, char *value, edict_t *ent )
 		G_Printf( "%s is not a field\n", key );
 }
 
-//====================
-//ED_ParseEdict
-//
-//Parses an edict out of the given string, returning the new position
-//ed should be a properly initialized empty edict.
-//====================
+/*
+* ED_ParseEdict
+* 
+* Parses an edict out of the given string, returning the new position
+* ed should be a properly initialized empty edict.
+*/
 static char *ED_ParseEdict( char *data, edict_t *ent )
 {
 	qboolean init;
@@ -467,14 +470,14 @@ static char *ED_ParseEdict( char *data, edict_t *ent )
 	return data;
 }
 
-//================
-//G_FindTeams
-//
-//Chain together all entities with a matching team field.
-//
-//All but the first will have the FL_TEAMSLAVE flag set.
-//All but the last will have the teamchain field set to the next one
-//================
+/*
+* G_FindTeams
+* 
+* Chain together all entities with a matching team field.
+* 
+* All but the first will have the FL_TEAMSLAVE flag set.
+* All but the last will have the teamchain field set to the next one
+*/
 static void G_FindTeams( void )
 {
 	edict_t	*e, *e2, *chain;
@@ -735,12 +738,12 @@ void G_PrecacheMedia( void )
 	trap_ConfigString( CS_LIGHTS+63, "a" );
 }
 
-//==============
-//SpawnEntities
-//
-//Creates a server's entity / program execution context by
-//parsing textual entity definitions out of an ent file.
-//==============
+/*
+* SpawnEntities
+* 
+* Creates a server's entity / program execution context by
+* parsing textual entity definitions out of an ent file.
+*/
 void G_InitLevel( char *mapname, char *entities, int entstrlen, unsigned int levelTime, unsigned int serverTime, unsigned int realTime )
 {
 	char *mapString = NULL;
@@ -824,18 +827,20 @@ void G_InitLevel( char *mapname, char *entities, int entstrlen, unsigned int lev
 	trap_ConfigString( CS_MAPNAME, level.mapname );
 	trap_ConfigString( CS_SKYBOX, "" );
 	trap_ConfigString( CS_AUDIOTRACK, "" );
-	trap_ConfigString( CS_SCORESTATNUMS, va( "%i", STAT_SCORE ) );
-	trap_ConfigString( CS_POWERUPEFFECTS, va( "%i %i %i", EF_QUAD, EF_SHELL, EF_CARRIER ) );
+	trap_ConfigString( CS_STATNUMS, va( "%i %i %i", STAT_SCORE, STAT_HEALTH, STAT_LAST_KILLER ) );
+	trap_ConfigString( CS_POWERUPEFFECTS, va( "%i %i %i %i", EF_QUAD, EF_SHELL, EF_CARRIER, EF_REGEN ) );
 	trap_ConfigString( CS_SCB_PLAYERTAB_LAYOUT, "" );
 	trap_ConfigString( CS_SCB_PLAYERTAB_TITLES, "" );
 	trap_ConfigString( CS_MATCHNAME, "" );
-	
+	trap_ConfigString( CS_MATCHSCORE, "" );
+
 	G_InitGameCommands();
 	G_MapLocations_Init();
 	G_CallVotes_Init();
 	G_SpawnQueue_Init();
 	G_Teams_Init();
 	G_Gametype_Init();
+	// ch : this would be the location to "transfer ratings"
 	G_PrecacheItems(); // set configstrings for items (gametype must be initialized)
 	G_PrecacheMedia();
 	G_PrecacheGameCommands(); // adding commands after this point won't update them to the client
@@ -975,9 +980,11 @@ static void SP_worldspawn( edict_t *ent )
 		Q_strncpyz( level.nextmap, st.nextmap, sizeof( level.nextmap ) );
 
 	// make some data visible to the server
-	/*message = trap_GetFullnameFromMapList( level.mapname );
-	   if( message && message[0] )
-	    ent->message = G_LevelCopyString( message );*/
+	/*
+	message = trap_GetFullnameFromMapList( level.mapname );
+	if( message && message[0] )
+		ent->message = G_LevelCopyString( message );
+	*/
 
 	if( ent->message && ent->message[0] )
 	{

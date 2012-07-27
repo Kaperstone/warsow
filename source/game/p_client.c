@@ -319,6 +319,8 @@ void player_die( edict_t *ent, edict_t *inflictor, edict_t *attacker, int damage
 
 	ent->r.solid = SOLID_NOT;
 
+	ent->r.client->teamstate.last_killer = attacker;
+
 	// player death
 	ent->s.angles[YAW] = ent->r.client->ps.viewangles[YAW] = LookAtKillerYAW( ent, inflictor, attacker );
 	ClientObituary( ent, inflictor, attacker );
@@ -602,7 +604,7 @@ void G_ClientRespawn( edict_t *self, qboolean ghost )
 
 	// set angles
 	self->s.angles[PITCH] = 0;
-	self->s.angles[YAW] = spawn_angles[YAW];
+	self->s.angles[YAW] = anglemod( spawn_angles[YAW] );
 	self->s.angles[ROLL] = 0;
 	VectorCopy( self->s.angles, client->ps.viewangles );
 
@@ -657,6 +659,7 @@ void G_ClientRespawn( edict_t *self, qboolean ghost )
 */
 void ClientBegin( edict_t *ent )
 {
+	memset( &ent->r.client->ucmd, 0, sizeof( ent->r.client->ucmd ) );
 	memset( &ent->r.client->level, 0, sizeof( ent->r.client->level ) );
 	ent->r.client->level.timeStamp = level.time;
 	G_Client_UpdateActivity( ent->r.client ); // activity detected
@@ -1020,6 +1023,23 @@ void ClientUserinfoChanged( edict_t *ent, char *userinfo )
 	else
 		cl->hand = bound( atoi( s ), 0, 2 );
 
+	// handicap
+	s = Info_ValueForKey( userinfo, "handicap" );
+	if( s )
+	{
+		i = atoi( s );
+
+		if( i > 90 || i < 0 )
+		{
+			G_PrintMsg( ent, "Handicap must be defined in the [0-90] range.\n" );
+			cl->handicap = 0;
+		}
+		else
+		{
+			cl->handicap = i;
+		}
+	}
+
 	s = Info_ValueForKey( userinfo, "cg_oldMovement" );
 	if( s )
 	{
@@ -1102,6 +1122,11 @@ void ClientUserinfoChanged( edict_t *ent, char *userinfo )
 		clamp( cl->ucmdTimeNudge, -MAX_UCMD_TIMENUDGE, MAX_UCMD_TIMENUDGE );
 	}
 #endif
+
+	// mm session
+	// TODO: remove the key after storing it to gclient_t !
+	s = Info_ValueForKey( userinfo, "cl_mm_session" );
+	cl->mm_session = ( s == NULL ) ? 0 : atoi( s );
 
 	if( !G_ISGHOSTING( ent ) && trap_GetClientState( PLAYERNUM( ent ) ) >= CS_SPAWNED )
 		G_Client_AssignTeamSkin( ent, userinfo );
@@ -1229,6 +1254,10 @@ void ClientDisconnect( edict_t *ent, const char *reason )
 	if( !ent->r.client || !ent->r.inuse )
 		return;
 
+	// always report in RACE mode
+	if( GS_RaceGametype() || ( ent->r.client->team != TEAM_SPECTATOR && GS_MatchState() == MATCH_STATE_PLAYTIME ) )
+		G_AddPlayerReport( ent, qfalse );
+
 	for( team = TEAM_PLAYERS; team < GS_MAX_TEAMS; team++ )
 		G_Teams_UnInvitePlayer( team, ent );
 
@@ -1284,7 +1313,7 @@ void G_PredictedEvent( int entNum, int ev, int parm )
 			damage = parm;
 
 			if( damage )
-				G_TakeDamage( ent, world, world, vec3_origin, upDir, ent->s.origin, damage, 0, 0, dflags, MOD_FALLING );
+				G_Damage( ent, world, world, vec3_origin, upDir, ent->s.origin, damage, 0, 0, dflags, MOD_FALLING );
 
 			G_AddEvent( ent, ev, damage, qtrue );
 		}
@@ -1485,6 +1514,16 @@ void ClientThink( edict_t *ent, usercmd_t *ucmd, int timeDelta )
 
 	GS_AddLaserbeamPoint( &ent->r.client->resp.trail, &ent->r.client->ps, ucmd->serverTimeStamp );
 
+	// Regeneration
+	if( ent->r.client->ps.inventory[POWERUP_REGEN] > 0 && ent->health < 200)
+	{
+		ent->health += ( game.frametime * 0.001f ) * 10.0f;
+
+		// Regen expires if health reaches 200
+		if ( ent->health >= 199.0f )
+			ent->r.client->ps.inventory[POWERUP_REGEN]--;
+	}
+
 	// fire touch functions
 	if( ent->movetype != MOVETYPE_NOCLIP )
 	{
@@ -1536,7 +1575,7 @@ void ClientThink( edict_t *ent, usercmd_t *ucmd, int timeDelta )
 			client->ps.inventory[POWERUP_SHELL] = client->resp.instashieldCharge;
 			G_Sound( ent, CHAN_AUTO, trap_SoundIndex( GS_FindItemByTag( POWERUP_SHELL )->pickup_sound ), ATTN_NORM );
 		}
-	}
+	}	
 
 	// generating plrkeys (optimized for net communication)
 	ClientMakePlrkeys( client, ucmd );

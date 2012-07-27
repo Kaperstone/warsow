@@ -27,6 +27,8 @@ static src_t *src = NULL;
 static qboolean is_playing = qfalse;
 static qboolean use_musicvolume = qfalse;
 static ALuint source;
+static ALfloat played_length = 0;
+static unsigned int systime, waittime;
 
 /*
 * Local helper functions
@@ -66,23 +68,37 @@ static void free_channel( void )
 
 void S_UpdateStream( void )
 {
-	int processed;
+	int processed = 0;
 	ALint state;
 	ALuint buffer;
+	float processed_length;
+	unsigned int prevtime, interval;
 
-	if( !src )
+	prevtime = systime;
+	systime = trap_Milliseconds();
+	interval = systime - prevtime;
+
+	if( !src ) {
+		waittime += interval;
 		return;
+	}
+
+	processed = 0;
+	processed_length = 0;
 
 	// Un-queue any processed buffers, and delete them
 	qalGetSourcei( source, AL_BUFFERS_PROCESSED, &processed );
 	if( processed )
 	{
-		while( processed-- )
+		do
 		{
 			qalSourceUnqueueBuffers( source, 1, &buffer );
+			processed_length += S_GetBufferLength( buffer );
 			qalDeleteBuffers( 1, &buffer );
-		}
+		} while( --processed );
 	}
+
+	played_length += processed_length;
 
 	// If it's stopped, release the source
 	qalGetSourcei( source, AL_SOURCE_STATE, &state );
@@ -91,6 +107,7 @@ void S_UpdateStream( void )
 		is_playing = qfalse;
 		qalSourceStop( source );
 		free_channel();
+		waittime += interval;
 		return;
 	}
 
@@ -104,6 +121,7 @@ void S_StopStream( void )
 		return;
 
 	is_playing = qfalse;
+	played_length = 0;
 	qalSourceStop( source );
 	free_channel();
 }
@@ -111,8 +129,7 @@ void S_StopStream( void )
 /*
 * Global functions (sound.h)
 */
-
-void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *data, qboolean music )
+void S_RawSamples( unsigned int samples, unsigned int rate, unsigned short width, unsigned short channels, const qbyte *data, qboolean music )
 {
 	ALuint buffer;
 	ALuint format;
@@ -121,6 +138,7 @@ void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *
 
 	use_musicvolume = music;
 	format = S_SoundFormat( width, channels );
+	systime = trap_Milliseconds();
 
 	// Create the source if necessary
 	if( !src )
@@ -160,4 +178,17 @@ void S_RawSamples( int samples, int rate, int width, int channels, const qbyte *
 		qalSourcePlay( source );
 		is_playing = qtrue;
 	}
+}
+
+/*
+* S_GetRawSamplesTime
+*/
+unsigned int S_GetRawSamplesTime( void )
+{
+	float pos = 0;
+
+	if( src && is_playing ) {
+		qalGetSourcef( source, AL_SEC_OFFSET, &pos );
+	}	
+	return (played_length + pos) * 1000 + waittime;
 }

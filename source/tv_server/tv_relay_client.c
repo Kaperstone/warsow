@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -25,9 +25,9 @@
 #include "tv_relay.h"
 #include "tv_downstream.h"
 
-//=======================
-//TV_Relay_BuildClientFrameSnap
-//=======================
+/*
+* TV_Relay_BuildClientFrameSnap
+*/
 void TV_Relay_BuildClientFrameSnap( relay_t *relay, client_t *client )
 {
 	edict_t *clent;
@@ -90,9 +90,9 @@ void TV_Relay_BuildClientFrameSnap( relay_t *relay, client_t *client )
 	client->edict = clent;
 }
 
-//=======================
-//TV_Relay_SendClientDatagram
-//=======================
+/*
+* TV_Relay_SendClientDatagram
+*/
 static qboolean TV_Relay_SendClientDatagram( relay_t *relay, client_t *client )
 {
 	qbyte msg_buf[MAX_MSGLEN];
@@ -118,9 +118,9 @@ static qboolean TV_Relay_SendClientDatagram( relay_t *relay, client_t *client )
 	return TV_Downstream_SendMessageToClient( client, &msg );
 }
 
-//=======================
-//TV_Relay_ReconnectClients
-//=======================
+/*
+* TV_Relay_ReconnectClients
+*/
 void TV_Relay_ReconnectClients( relay_t *relay )
 {
 	int i;
@@ -161,9 +161,9 @@ void TV_Relay_ReconnectClients( relay_t *relay )
 	}
 }
 
-//=======================
-//TV_Relay_SendClientMessages
-//=======================
+/*
+* TV_Relay_SendClientMessages
+*/
 void TV_Relay_SendClientMessages( relay_t *relay )
 {
 	int i;
@@ -185,15 +185,15 @@ void TV_Relay_SendClientMessages( relay_t *relay )
 			if( client->reliable )
 			{
 				TV_Downstream_DropClient( client, DROP_TYPE_GENERAL, "Error sending message: %s\n",
-				                         NET_ErrorString() );
+					NET_ErrorString() );
 			}
 		}
 	}
 }
 
-//=======================
-//TV_Relay_ClientUserinfoChanged
-//=======================
+/*
+* TV_Relay_ClientUserinfoChanged
+*/
 void TV_Relay_ClientUserinfoChanged( relay_t *relay, client_t *client )
 {
 	assert( relay );
@@ -203,9 +203,9 @@ void TV_Relay_ClientUserinfoChanged( relay_t *relay, client_t *client )
 	relay->module_export->ClientUserinfoChanged( relay->module, client->edict, client->userinfo );
 }
 
-//=======================
-//TV_Relay_ClientCommand_f
-//=======================
+/*
+* TV_Relay_ClientCommand_f
+*/
 qboolean TV_Relay_ClientCommand_f( relay_t *relay, client_t *client )
 {
 	assert( relay );
@@ -215,9 +215,9 @@ qboolean TV_Relay_ClientCommand_f( relay_t *relay, client_t *client )
 	return relay->module_export->ClientCommand( relay->module, client->edict );
 }
 
-//=======================
-//TV_Relay_ClientBegin
-//=======================
+/*
+* TV_Relay_ClientBegin
+*/
 void TV_Relay_ClientBegin( relay_t *relay, client_t *client )
 {
 	assert( relay );
@@ -227,9 +227,9 @@ void TV_Relay_ClientBegin( relay_t *relay, client_t *client )
 	relay->module_export->ClientBegin( relay->module, client->edict );
 }
 
-//=======================
-//TV_Relay_ClientDisconnect
-//=======================
+/*
+* TV_Relay_ClientDisconnect
+*/
 void TV_Relay_ClientDisconnect( relay_t *relay, client_t *client )
 {
 	assert( relay );
@@ -245,9 +245,9 @@ void TV_Relay_ClientDisconnect( relay_t *relay, client_t *client )
 	TV_Relay_UpstreamUserinfoChanged( relay );
 }
 
-//=======================
-//TV_Relay_CanConnect
-//=======================
+/*
+* TV_Relay_CanConnect
+*/
 qboolean TV_Relay_CanConnect( relay_t *relay, client_t *client, char *userinfo )
 {
 	assert( relay );
@@ -260,9 +260,9 @@ qboolean TV_Relay_CanConnect( relay_t *relay, client_t *client, char *userinfo )
 	return relay->module_export->CanConnect( relay->module, userinfo );
 }
 
-//=======================
-//TV_Relay_ClientConnect
-//=======================
+/*
+* TV_Relay_ClientConnect
+*/
 void TV_Relay_ClientConnect( relay_t *relay, client_t *client )
 {
 	int edictnum;

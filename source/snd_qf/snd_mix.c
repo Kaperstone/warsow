@@ -287,9 +287,7 @@ static void S_TransferStereo16( unsigned int *pbuf, int endtime )
 }
 
 /*
-===================
-S_ClearPaintBuffer
-===================
+* S_ClearPaintBuffer
 */
 void S_ClearPaintBuffer( void )
 {
@@ -297,9 +295,7 @@ void S_ClearPaintBuffer( void )
 }
 
 /*
-===================
-S_TransferPaintBuffer
-===================
+* S_TransferPaintBuffer
 */
 static void S_TransferPaintBuffer( int endtime )
 {
@@ -312,7 +308,7 @@ static void S_TransferPaintBuffer( int endtime )
 	unsigned int *pbuf;
 
 	pbuf = (unsigned int *)dma.buffer;
-
+/*
 	if( s_testsound->integer )
 	{
 		int i;
@@ -323,7 +319,7 @@ static void S_TransferPaintBuffer( int endtime )
 		for( i = 0; i < count; i++ )
 			paintbuffer[i].left = paintbuffer[i].right = sin( ( paintedtime+i )*0.1 )*20000*256;
 	}
-
+*/
 	if( dma.samplebits == 16 && dma.channels == 2 )
 	{ // optimized case
 		S_TransferStereo16( pbuf, endtime );
@@ -370,16 +366,13 @@ static void S_TransferPaintBuffer( int endtime )
 }
 
 /*
-===================
-S_DumpPaintBuffer
-===================
+* S_DumpPaintBuffer
 */
 static void S_DumpPaintBuffer( int endtime, int file )
 {
 	int in_idx;
 	int len, count;
 	int in_mask;
-	int step;
 	unsigned int *pbuf;
 	qbyte *raw;
 
@@ -387,7 +380,6 @@ static void S_DumpPaintBuffer( int endtime, int file )
 	count = ( endtime - paintedtime ) * dma.channels;
 	in_mask = dma.samples - 1;
 	in_idx = paintedtime * dma.channels & in_mask;
-	step = 3 - dma.channels;
 
 	len = count * dma.samplebits/8;
 	raw = S_Malloc( len );
@@ -426,17 +418,19 @@ CHANNEL MIXING
 ===============================================================================
 */
 
-static void S_PaintChannelFrom8( channel_t *ch, sfxcache_t *sc, int endtime, int offset );
-static void S_PaintChannelFrom16( channel_t *ch, sfxcache_t *sc, int endtime, int offset );
+static void S_PaintChannelFrom8( channel_t *ch, sfxcache_t *sc, unsigned int endtime, int offset );
+static void S_PaintChannelFrom16( channel_t *ch, sfxcache_t *sc, unsigned int endtime, int offset );
+static void S_PaintChannelFrom8HQ( channel_t *ch, sfxcache_t *sc, unsigned int endtime, int offset );
+static void S_PaintChannelFrom16HQ( channel_t *ch, sfxcache_t *sc, unsigned int endtime, int offset );
 
-int S_PaintChannels( int endtime, int dumpfile )
+int S_PaintChannels( unsigned int endtime, int dumpfile )
 {
-	int i;
-	int end;
-	int total;
+	unsigned int i;
+	unsigned int end;
+	unsigned int total;
 	channel_t *ch;
 	sfxcache_t *sc;
-	int ltime, count;
+	unsigned int ltime, count;
 	playsound_t *ps;
 
 	total = 0;
@@ -477,7 +471,7 @@ int S_PaintChannels( int endtime, int dumpfile )
 		{
 			// copy from the streaming sound source
 			int s;
-			int stop;
+			unsigned stop;
 
 			stop = ( end < s_rawend ) ? end : s_rawend;
 
@@ -504,13 +498,16 @@ int S_PaintChannels( int endtime, int dumpfile )
 			{
 				if( !ch->sfx || ( !ch->leftvol && !ch->rightvol ) )
 					break;
+				
+				count = 0;
 
 				// max painting is to the end of the buffer
-				count = end - ltime;
+				if( end > ltime )
+					count = end - ltime;
 
 				// might be stopped by running out of data
 				if( ch->end < end )
-					count = ch->end - ltime;
+					count = ch->end > ltime ? ch->end - ltime : 0;
 
 				sc = S_LoadSound( ch->sfx );
 				if( !sc )
@@ -518,11 +515,20 @@ int S_PaintChannels( int endtime, int dumpfile )
 
 				if( count > 0 && ch->sfx )
 				{
-					if( sc->width == 1 )
-						S_PaintChannelFrom8( ch, sc, count, ltime - paintedtime );
+					if( s_pseudoAcoustics->value )
+					{
+						if( sc->width == 1 )
+							S_PaintChannelFrom8HQ( ch, sc, count, ltime - paintedtime );
+						else
+							S_PaintChannelFrom16HQ( ch, sc, count, ltime - paintedtime );
+					}
 					else
-						S_PaintChannelFrom16( ch, sc, count, ltime - paintedtime );
-
+					{
+						if( sc->width == 1 )
+							S_PaintChannelFrom8( ch, sc, count, ltime - paintedtime );
+						else
+							S_PaintChannelFrom16( ch, sc, count, ltime - paintedtime );
+					}
 					ltime += count;
 				}
 
@@ -534,7 +540,7 @@ int S_PaintChannels( int endtime, int dumpfile )
 						ch->pos = 0;
 						ch->end = ltime + sc->length;
 					}
-					else if( sc->loopstart >= 0 )
+					else if( sc->loopstart < sc->length )
 					{
 						ch->pos = sc->loopstart;
 						ch->end = ltime + sc->length - ch->pos;
@@ -574,9 +580,10 @@ void S_InitScaletable( void )
 	}
 }
 
-static void S_PaintChannelFrom8( channel_t *ch, sfxcache_t *sc, int count, int offset )
+static void S_PaintChannelFrom8( channel_t *ch, sfxcache_t *sc, unsigned int count, int offset )
 {
-	int i, j;
+	unsigned int i;
+	int j;
 	int *lscale, *rscale;
 	unsigned char *sfx;
 	portable_samplepair_t *samp;
@@ -622,9 +629,10 @@ static void S_PaintChannelFrom8( channel_t *ch, sfxcache_t *sc, int count, int o
 	ch->pos += count;
 }
 
-static void S_PaintChannelFrom16( channel_t *ch, sfxcache_t *sc, int count, int offset )
+static void S_PaintChannelFrom16( channel_t *ch, sfxcache_t *sc, unsigned int count, int offset )
 {
-	int i, j;
+	unsigned int i;
+	int j;
 	int leftvol, rightvol;
 	signed short *sfx;
 	portable_samplepair_t *samp;
@@ -660,6 +668,159 @@ static void S_PaintChannelFrom16( channel_t *ch, sfxcache_t *sc, int count, int 
 			samp->left += ( j * leftvol ) >> 8;
 			samp->right += ( j * rightvol ) >> 8;
 		}
+	}
+
+	ch->pos += count;
+}
+
+static void S_PaintChannelFrom8HQ( channel_t *ch, sfxcache_t *sc, unsigned int count, int offset )
+{
+	unsigned int i;
+	int j, k;
+	int *lscale, *rscale;
+	unsigned char *sfx;
+	portable_samplepair_t *samp;
+
+	if( ch->leftvol > 255 )
+		ch->leftvol = 255;
+	if( ch->rightvol > 255 )
+		ch->rightvol = 255;
+
+	if( !s_volume->value )
+	{
+		ch->pos += count;
+		return;
+	}
+
+	lscale = snd_scaletable[ch->leftvol >> 3];
+	rscale = snd_scaletable[ch->rightvol >> 3];
+
+	samp = &paintbuffer[offset];
+
+	if( sc->channels == 2 )
+	{
+		sfx = (unsigned char *)sc->data + ch->pos * 2;
+
+		for( i = 0; i < count; i++, samp++ )
+		{
+			samp->left += lscale[*sfx++];
+			samp->right += rscale[*sfx++];
+		}
+	}
+	else
+	{
+		sfx = (unsigned char *)sc->data + ch->pos;
+
+		// initialize our counter here
+		i = 0;
+		if( ch->pos < ch->ldelay )
+		{
+			// left channel delayed, write first right channels
+			unsigned int rights = min( count, ch->ldelay - ch->pos );
+			for( ; i < rights; i++, samp++ )
+			{
+				j = *sfx++;
+				j = S_Lowpass2pole( j << 8, &ch->lpf_history[2], ch->lpf_rcoeff ) >> 8;
+				samp->right += rscale[j&255];
+			}
+		}
+		else if( ch->pos < ch->rdelay )
+		{
+			// right channel delayed, write first left channels
+			unsigned int lefts = min( count, ch->rdelay - ch->pos );
+			for( ; i < lefts; i++, samp++ )
+			{
+				j = *sfx++;
+				j = S_Lowpass2pole( j << 8, &ch->lpf_history[0], ch->lpf_lcoeff )>> 8;
+				samp->left += lscale[j&255];
+			}
+		}
+
+		// write the common samples for both channels
+		for( ; i < count; i++, samp++, sfx++ )
+		{
+			j = *(sfx - ch->ldelay) << 8;
+			k = *(sfx - ch->rdelay) << 8;
+
+			j = S_Lowpass2pole( j, &ch->lpf_history[0], ch->lpf_lcoeff ) >> 8;
+			k = S_Lowpass2pole( k, &ch->lpf_history[2], ch->lpf_rcoeff ) >> 8;
+			samp->left += lscale[j&255];
+			samp->right += rscale[k&255];
+		}
+
+		// TODO: write the rest of the delayed channel
+	}
+
+	ch->pos += count;
+}
+
+static void S_PaintChannelFrom16HQ( channel_t *ch, sfxcache_t *sc, unsigned int count, int offset )
+{
+	unsigned int i;
+	int j, k;
+	int leftvol, rightvol;
+	signed short *sfx;
+	portable_samplepair_t *samp;
+
+	if( !snd_vol )
+	{
+		ch->pos += count;
+		return;
+	}
+
+	leftvol = ch->leftvol*snd_vol;
+	rightvol = ch->rightvol*snd_vol;
+
+	samp = &paintbuffer[offset];
+
+	if( sc->channels == 2 )
+	{
+		sfx = (signed short *)sc->data + ch->pos * 2;
+
+		for( i = 0; i < count; i++, samp++ )
+		{
+			samp->left += ( *sfx++ * leftvol ) >> 8;
+			samp->right += ( *sfx++ * rightvol ) >> 8;
+		}
+	}
+	else
+	{
+		sfx = (signed short *)sc->data + ch->pos;
+
+		// initialize our counter here
+		i = 0;
+		if( ch->pos < ch->ldelay )
+		{
+			// left channel delayed, write first right channels
+			unsigned int rights = min( count, ch->ldelay - ch->pos );
+			for( ; i < rights; i++, samp++ )
+			{
+				j = *sfx++;
+				samp->right += ( S_Lowpass2pole( j, &ch->lpf_history[2], ch->lpf_rcoeff ) * rightvol ) >> 8;
+			}
+		}
+		else if( ch->pos < ch->rdelay )
+		{
+			// right channel delayed, write first left channels
+			unsigned int lefts = min( count, ch->rdelay - ch->pos );
+			for( ; i < lefts; i++, samp++ )
+			{
+				j = *sfx++;
+				samp->left += ( S_Lowpass2pole( j, &ch->lpf_history[0], ch->lpf_lcoeff ) * leftvol ) >> 8;
+			}
+		}
+
+		// write the common samples for both chann[1]els
+		for( ; i < count; i++, samp++, sfx++ )
+		{
+			j = *(sfx - ch->ldelay);
+			k = *(sfx - ch->rdelay);
+
+			samp->left += ( S_Lowpass2pole( j, &ch->lpf_history[0], ch->lpf_lcoeff ) * leftvol ) >> 8;
+			samp->right += ( S_Lowpass2pole( k, &ch->lpf_history[2], ch->lpf_rcoeff ) * rightvol ) >> 8;
+		}
+
+		// TODO: write the rest of the delayed channel
 	}
 
 	ch->pos += count;

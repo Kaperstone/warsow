@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -18,44 +18,171 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "../game/q_shared.h"
-#include "uiwsw_SysCalls.h"
-#include "uiwsw_Utils.h"
-#include "uiwsw_Export.h"
-#include "uimenu_JoinServerMenu.h"
-#include "uimenu_MatchMakerMenu.h"
+#include "ui_precompiled.h"
+#include "kernel/ui_common.h"
+#include "kernel/ui_main.h"
+#include <cctype>
 
-using namespace UIWsw;
+namespace WSWUI
+{
+	UI_Main *ui_main = 0;
+	ui_import_t UI_IMPORT;
 
-ui_import_t Trap::UI_IMPORT;
+	// if API is different, the dll cannot be used
+	int API( void )
+	{
+		return UI_API_VERSION;
+	}
+
+	void Init( int vidWidth, int vidHeight, int protocol, int sharedSeed, qboolean demoPlaying, const char *demoName )
+	{
+		// destructor doesnt throw
+		if( ui_main ) {
+			UI_Main::Destroy();
+			ui_main = NULL;
+		}
+
+		// constructor may throw
+		try
+		{
+			ui_main = UI_Main::Instance( vidWidth, vidHeight, protocol, sharedSeed, demoPlaying == qtrue, demoName ? demoName : "" );
+		}
+		catch( std::runtime_error &err )
+		{
+			ui_main = NULL;
+			Com_Printf(S_COLOR_RED"UI Init: %s\n", err.what() );
+		}
+	}
+
+	void Shutdown( void )
+	{
+		// destructor doesnt throw
+		if( ui_main )
+			__delete__( ui_main );
+		ui_main = 0;
+	}
+
+	void Refresh( unsigned int time, int clientState, int serverState, qboolean demoPaused, unsigned int demoTime, qboolean backGround )
+	{
+		if( ui_main ) {
+			ui_main->refreshScreen( time, clientState, serverState, demoPaused == qtrue, demoTime, backGround == qtrue );
+		}
+	}
+
+	void DrawConnectScreen( const char *serverName, const char *rejectmessage, int downloadType, const char *downloadfilename,
+						  float downloadPercent, int downloadSpeed, int connectCount, qboolean backGround )
+	{
+		if( ui_main ) {
+			ui_main->drawConnectScreen( serverName, rejectmessage, downloadType, downloadfilename, 
+				downloadPercent, downloadSpeed, connectCount, backGround == qtrue );
+		}
+	}
+
+	void Keydown( int key )
+	{
+		if( ui_main ) {
+			ui_main->keyEvent( key, true );
+		}
+	}
+
+	void Keyup( int key )
+	{
+		if( ui_main ) {
+			ui_main->keyEvent( key, false );
+		}
+	}
+
+	void CharEvent( qwchar key )
+	{
+		// Check if the character is printable.
+		// Emitting textinput events for non-printable chars might cause 
+		// surprising behavior (e.g. backspace key not working in librocket's
+		// text input fields).
+		if( ui_main ) {
+			if(isprint(key)) ui_main->textInput( key );
+		}
+	}
+
+	void MouseMove( int dx, int dy )
+	{
+		if( ui_main ) {
+			ui_main->mouseMove( dx, dy );
+		}
+	}
+
+	void ForceMenuOff( void )
+	{
+		if( ui_main ) {
+			ui_main->forceMenuOff();
+		}
+	}
+
+	void AddToServerList( const char *adr, const char *info )
+	{
+		if( ui_main ) {
+			ui_main->addToServerList( adr, info );
+		}
+	}
+
+}	// namespace
+
+//=================================
 
 ui_export_t *GetUIAPI( ui_import_t *import )
 {
 	static ui_export_t globals;
 
-	Trap::UI_IMPORT = *import;
+	// Trap::UI_IMPORT = *import;
+	WSWUI::UI_IMPORT = *import;
 
-	globals.API = UI_API;
+	globals.API = WSWUI::API;
 
-	globals.Init = UI_Init;
-	globals.Shutdown = UI_Shutdown;
+	globals.Init = WSWUI::Init;
+	globals.Shutdown = WSWUI::Shutdown;
 
-	globals.Refresh = UI_Refresh;
-	globals.DrawConnectScreen = UI_DrawConnectScreen;
+	globals.Refresh = WSWUI::Refresh;
+	globals.DrawConnectScreen = WSWUI::DrawConnectScreen;
 
-	globals.Keydown = UI_Keydown;
-	globals.Keyup = UI_Keyup;
-	globals.CharEvent = UI_CharEvent;
-	globals.MouseMove = UI_MouseMove;
+	globals.Keydown = WSWUI::Keydown;
+	globals.Keyup = WSWUI::Keyup;
+	globals.CharEvent = WSWUI::CharEvent;
+	globals.MouseMove = WSWUI::MouseMove;
 
-	globals.ForceMenuOff = UI_ForceMenuOff;
+	globals.ForceMenuOff = WSWUI::ForceMenuOff;
 
-	globals.AddToServerList = UIMenu::JoinServerMenu::AddToServerList;
-
-	globals.MM_UIReply = UIMenu::MatchMakerMenu::MM_UIReply;
+	globals.AddToServerList = WSWUI::AddToServerList;
 
 	return &globals;
 }
+
+#ifndef UI_HARD_LINKED
+#include <stdarg.h>
+
+// this is only here so the functions in q_shared.c and q_math.c can link
+void Sys_Error( const char *format, ... )
+{
+	va_list	argptr;
+	char msg[1024];
+
+	va_start( argptr, format );
+	Q_vsnprintfz( msg, sizeof( msg ), format, argptr );
+	va_end( argptr );
+
+	trap::Error( msg );
+}
+
+void Com_Printf( const char *format, ... )
+{
+	va_list	argptr;
+	char msg[1024];
+
+	va_start( argptr, format );
+	Q_vsnprintfz( msg, sizeof( msg ), format, argptr );
+	va_end( argptr );
+
+	trap::Print( msg );
+}
+#endif
 
 #if defined(HAVE_DLLMAIN) && !defined(UI_HARD_LINKED)
 int _stdcall DLLMain( void *hinstDll, unsigned long dwReason, void *reserved )

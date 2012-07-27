@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 2002-2003 Victor Luchits
+Copyright (C) 2002-2003 Victor Luchits
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #ifdef TV_MODULE_HARD_LINKED
 #define TV_MODULE_IMPORT gi_imp_local
@@ -53,14 +53,6 @@ static inline unsigned int trap_Milliseconds( void )
 {
 	return TV_MODULE_IMPORT.Milliseconds();
 }
-
-/*static inline qboolean trap_inPVS( vec3_t p1, vec3_t p2 ) {
-    return TV_MODULE_IMPORT.inPVS( p1, p2 );
-   }
-
-   static inline qboolean trap_inPHS( vec3_t p1, vec3_t p2 ) {
-    return TV_MODULE_IMPORT.inPHS( p1, p2 );
-   }*/
 
 static inline int trap_CM_TransformedPointContents( tvm_relay_t *relay, vec3_t p, struct cmodel_s *cmodel, vec3_t origin, vec3_t angles )
 {

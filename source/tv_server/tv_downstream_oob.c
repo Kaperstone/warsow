@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -26,28 +26,28 @@
 #include "tv_lobby.h"
 #include "tv_relay_client.h"
 
-//================
-//TV_Downstream_Ack
-//================
+/*
+* TV_Downstream_Ack
+*/
 static void TV_Downstream_Ack( const socket_t *socket, const netadr_t *address )
 {
 	Com_Printf( "Ping acknowledge from %s\n", NET_AddressToString( address ) );
 }
 
-//================
-//TV_Downstream_Ping
-//Just responds with an acknowledgement
-//================
+/*
+* TV_Downstream_Ping
+* Just responds with an acknowledgement
+*/
 static void TV_Downstream_Ping( const socket_t *socket, const netadr_t *address )
 {
 	// send any arguments back with ack
 	Netchan_OutOfBandPrint( socket, address, "ack %s", Cmd_Args() );
 }
 
-//===============
-//TV_Downstream_LongInfoString
-//Builds the string that is sent as heartbeats and status replies
-//===============
+/*
+* TV_Downstream_LongInfoString
+* Builds the string that is sent as heartbeats and status replies
+*/
 static char *TV_Downstream_LongInfoString( qboolean fullStatus )
 {
 	char tempstr[1024] = { 0 };
@@ -110,10 +110,10 @@ static char *TV_Downstream_LongInfoString( qboolean fullStatus )
 	return status;
 }
 
-//================
-//SV_ShortInfoString
-//Generates a short info string for broadcast scan replies
-//================
+/*
+* SV_ShortInfoString
+* Generates a short info string for broadcast scan replies
+*/
 #define MAX_STRING_SVCINFOSTRING 160
 #define MAX_SVCINFOSTRING_LEN ( MAX_STRING_SVCINFOSTRING - 4 )
 static char *TV_Downstream_ShortInfoString( void )
@@ -123,10 +123,10 @@ static char *TV_Downstream_ShortInfoString( void )
 	char entry[20];
 	size_t len;
 	int i, count;
-/*
+	/*
 	int channels;
 	upstream_t *upstream;
-*/
+	*/
 
 	count = 0;
 	for( i = 0; i < tv_maxclients->integer; i++ )
@@ -140,12 +140,12 @@ static char *TV_Downstream_ShortInfoString( void )
 
 	Q_strncpyz( hostname, tv_name->string, sizeof( hostname ) );
 	Q_snprintfz( string, sizeof( string ),
-	             "\\\\n\\\\%s\\\\m\\\\%8s\\\\u\\\\%2i/%2i\\\\",
-	             hostname,
-	             "lobby",
-	             count > 99 ? 99 : count,
-	             tv_maxclients->integer > 99 ? 99 : tv_maxclients->integer
-	);
+		"\\\\n\\\\%s\\\\m\\\\%8s\\\\u\\\\%2i/%2i\\\\",
+		hostname,
+		"lobby",
+		count > 99 ? 99 : count,
+		tv_maxclients->integer > 99 ? 99 : tv_maxclients->integer
+		);
 
 	len = strlen( string );
 
@@ -165,36 +165,36 @@ static char *TV_Downstream_ShortInfoString( void )
 			len = strlen( string );
 		}
 	}
-/*
+	/*
 	channels = 0;
 	for( i = 0; i < tvs.numupstreams; i++ )
 	{
-		upstream = tvs.upstreams[i];
-		if( upstream && upstream->relay.state > CA_CONNECTING )
-			channels++;
+	upstream = tvs.upstreams[i];
+	if( upstream && upstream->relay.state > CA_CONNECTING )
+	channels++;
 	}
 
 	if( channels )
 	{
-		Q_snprintfz( entry, sizeof( entry ), "c\\\\%2i\\\\", channels > 99 ? 99 : channels );
-		if( MAX_SVCINFOSTRING_LEN - len > strlen( entry ) )
-		{
-			Q_strncatz( string, entry, sizeof( string ) );
-			len = strlen( string );
-		}
+	Q_snprintfz( entry, sizeof( entry ), "c\\\\%2i\\\\", channels > 99 ? 99 : channels );
+	if( MAX_SVCINFOSTRING_LEN - len > strlen( entry ) )
+	{
+	Q_strncatz( string, entry, sizeof( string ) );
+	len = strlen( string );
 	}
-*/
+	}
+	*/
 	// finish it
 	Q_strncatz( string, "EOT", sizeof( string ) );
 	return string;
 }
 
-//================
-//TV_Downstream_InfoResponse
-//
-//Responds with short info for broadcast scans
-//The second parameter should be the current protocol version number.
-//================
+/*
+* TV_Downstream_InfoResponse
+* 
+* Responds with short info for broadcast scans
+* The second parameter should be the current protocol version number.
+*/
 static void TV_Downstream_InfoResponse( const socket_t *socket, const netadr_t *address )
 {
 	int i, count;
@@ -204,7 +204,7 @@ static void TV_Downstream_InfoResponse( const socket_t *socket, const netadr_t *
 	// KoFFiE: When not public and coming from a LAN address
 	//         assume broadcast and respond anyway, otherwise ignore
 	if( ( ( !tv_public->integer ) && ( !NET_IsLANAddress( address ) ) ) ||
-	   ( tv_maxclients->integer == 1 ) )
+		( tv_maxclients->integer == 1 ) )
 		return;
 
 	// different protocol version
@@ -235,9 +235,9 @@ static void TV_Downstream_InfoResponse( const socket_t *socket, const netadr_t *
 		Netchan_OutOfBandPrint( socket, address, "info\n%s", string );
 }
 
-//================
-//TV_Downstream_SendInfoString
-//================
+/*
+* TV_Downstream_SendInfoString
+*/
 static void TV_Downstream_SendInfoString( const socket_t *socket, const netadr_t *address, const char *responseType, qboolean fullStatus )
 {
 	char *string;
@@ -245,7 +245,7 @@ static void TV_Downstream_SendInfoString( const socket_t *socket, const netadr_t
 	// KoFFiE: When not public and coming from a LAN address
 	//         assume broadcast and respond anyway, otherwise ignore
 	if( ( ( !tv_public->integer ) && ( !NET_IsLANAddress( address ) ) ) ||
-	   ( tv_maxclients->integer == 1 ) )
+		( tv_maxclients->integer == 1 ) )
 		return;
 
 	// send the same string that we would give for a status OOB command
@@ -254,27 +254,27 @@ static void TV_Downstream_SendInfoString( const socket_t *socket, const netadr_t
 		Netchan_OutOfBandPrint( socket, address, "%s\n\\challenge\\%s%s", responseType, Cmd_Argv( 1 ), string );
 }
 
-//================
-//TV_Downstream_GetInfoResponse
-//================
+/*
+* TV_Downstream_GetInfoResponse
+*/
 static void TV_Downstream_GetInfoResponse( const socket_t *socket, const netadr_t *address )
 {
 	TV_Downstream_SendInfoString( socket, address, "infoResponse", qfalse );
 }
 
-//================
-//TV_Downstream_GetStatusResponse
-//================
+/*
+* TV_Downstream_GetStatusResponse
+*/
 static void TV_Downstream_GetStatusResponse( const socket_t *socket, const netadr_t *address )
 {
 	TV_Downstream_SendInfoString( socket, address, "statusResponse", qtrue );
 }
 
-//==================
-//TV_Downstream_ClientConnect
-//==================
+/*
+* TV_Downstream_ClientConnect
+*/
 static qboolean TV_Downstream_ClientConnect( const socket_t *socket, const netadr_t *address, client_t *client,
-                                             char *userinfo, int game_port, int challenge, qboolean tv_client )
+											char *userinfo, int game_port, int challenge, qboolean tv_client )
 {
 	assert( socket );
 	assert( address );
@@ -341,10 +341,10 @@ static qboolean TV_Downstream_ClientConnect( const socket_t *socket, const netad
 	return qtrue;
 }
 
-//==================
-//TV_Downstream_DirectConnect
-//A upstream request that did not come from the master
-//==================
+/*
+* TV_Downstream_DirectConnect
+* A upstream request that did not come from the master
+*/
 static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t *address )
 {
 #ifdef TCP_SUPPORT
@@ -361,12 +361,12 @@ static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t 
 		if( version <= 6 )
 		{            // before reject packet was added
 			Netchan_OutOfBandPrint( socket, address, "print\nServer is version %4.2f. Protocol %3i\n",
-			                        APP_VERSION, APP_PROTOCOL_VERSION );
+				APP_VERSION, APP_PROTOCOL_VERSION );
 		}
 		else
 		{
 			Netchan_OutOfBandPrint( socket, address,
-			                        "reject\n%i\n%i\nServer and client don't have the same version\n", DROP_TYPE_GENERAL, 0 );
+				"reject\n%i\n%i\nServer and client don't have the same version\n", DROP_TYPE_GENERAL, 0 );
 		}
 		return;
 	}
@@ -388,14 +388,14 @@ static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t 
 	if( !Info_SetValueForKey( userinfo, "socket", NET_SocketTypeToString( socket->type ) ) )
 	{
 		Netchan_OutOfBandPrint( socket, address, "reject\n%i\n%i\nError: Couldn't set userinfo (socket)\n",
-		                        DROP_TYPE_GENERAL, 0 );
+			DROP_TYPE_GENERAL, 0 );
 		Com_DPrintf( "Upstream from %s refused: couldn't set userinfo (socket)\n", NET_AddressToString( address ) );
 		return;
 	}
 	if( !Info_SetValueForKey( userinfo, "ip", NET_AddressToString( address ) ) )
 	{
 		Netchan_OutOfBandPrint( socket, address, "reject\n%i\n%i\nError: Couldn't set userinfo (ip)\n",
-		                        DROP_TYPE_GENERAL, 0 );
+			DROP_TYPE_GENERAL, 0 );
 		Com_DPrintf( "Upstream from %s refused: couldn't set userinfo (ip)\n", NET_AddressToString( address ) );
 		return;
 	}
@@ -405,7 +405,7 @@ static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t 
 	if( !Info_SetValueForKey( userinfo, "name", name ) )
 	{
 		Netchan_OutOfBandPrint( socket, address, "reject\n%i\n%i\nError: Couldn't set userinfo (name)\n",
-		                        DROP_TYPE_GENERAL, 0 );
+			DROP_TYPE_GENERAL, 0 );
 		Com_DPrintf( "Upstream from %s refused: couldn't set userinfo (name)\n", NET_AddressToString( address ) );
 		return;
 	}
@@ -444,14 +444,14 @@ static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t 
 				break; // good
 			}
 			Netchan_OutOfBandPrint( socket, address, "reject\n%i\n%i\nBad challenge\n",
-			                        DROP_TYPE_GENERAL, DROP_FLAG_AUTORECONNECT );
+				DROP_TYPE_GENERAL, DROP_FLAG_AUTORECONNECT );
 			return;
 		}
 	}
 	if( i == MAX_CHALLENGES )
 	{
 		Netchan_OutOfBandPrint( socket, address, "reject\n%i\n%i\nNo challenge for address\n",
-		                        DROP_TYPE_GENERAL, DROP_FLAG_AUTORECONNECT );
+			DROP_TYPE_GENERAL, DROP_FLAG_AUTORECONNECT );
 		return;
 	}
 
@@ -467,7 +467,7 @@ static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t 
 			( NET_CompareBaseAddress( address, &cl->netchan.remoteAddress ) && cl->netchan.game_port == game_port ) )
 		{
 			if( !NET_IsLocalAddress( address ) &&
-			   ( tvs.realtime - cl->lastconnect ) < (unsigned)( tv_reconnectlimit->integer * 1000 ) )
+				( tvs.realtime - cl->lastconnect ) < (unsigned)( tv_reconnectlimit->integer * 1000 ) )
 			{
 				return;
 			}
@@ -490,7 +490,7 @@ static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t 
 		if( !newcl )
 		{
 			Netchan_OutOfBandPrint( socket, address, "reject\n%i\n%i\nServer is full\n", DROP_TYPE_GENERAL,
-			                        DROP_FLAG_AUTORECONNECT );
+				DROP_FLAG_AUTORECONNECT );
 			return;
 		}
 	}
@@ -521,15 +521,15 @@ static void TV_Downstream_DirectConnect( const socket_t *socket, const netadr_t 
 #endif
 }
 
-//=================
-//TV_Downstream_GetChallenge
-//
-//Returns a challenge number that can be used
-//in a subsequent client_connect command.
-//We do this to prevent denial of service attacks that
-//flood the server with invalid upstream IPs.  With a
-//challenge, they must give a valid IP address.
-//=================
+/*
+* TV_Downstream_GetChallenge
+* 
+* Returns a challenge number that can be used
+* in a subsequent client_connect command.
+* We do this to prevent denial of service attacks that
+* flood the server with invalid upstream IPs.  With a
+* challenge, they must give a valid IP address.
+*/
 static void TV_Downstream_GetChallenge( const socket_t *socket, const netadr_t *address )
 {
 	int i;
@@ -563,9 +563,9 @@ static void TV_Downstream_GetChallenge( const socket_t *socket, const netadr_t *
 	Netchan_OutOfBandPrint( socket, address, "challenge %i", tvs.challenges[i].challenge );
 }
 
-//===============
-//Rcon_Validate
-//===============
+/*
+* Rcon_Validate
+*/
 static int Rcon_Validate( void )
 {
 	if( !strlen( tv_rcon_password->string ) )
@@ -577,13 +577,13 @@ static int Rcon_Validate( void )
 	return 1;
 }
 
-//===============
-//TV_Downstream_RemoteCommand
-//
-//A client issued an rcon command.
-//Shift down the remaining args
-//Redirect all printfs
-//===============
+/*
+* TV_Downstream_RemoteCommand
+* 
+* A client issued an rcon command.
+* Shift down the remaining args
+* Redirect all printfs
+*/
 static void TV_Downstream_RemoteCommand( const socket_t *socket, const netadr_t *address )
 {
 	int i;
@@ -599,7 +599,7 @@ static void TV_Downstream_RemoteCommand( const socket_t *socket, const netadr_t 
 
 	extra.socket = socket;
 	extra.address = address;
-	Com_BeginRedirect( RD_PACKET, tv_outputbuf, TV_OUTPUTBUF_LENGTH, TV_FlushRedirect, &extra );
+	Com_BeginRedirect( RD_PACKET, tv_outputbuf, TV_OUTPUTBUF_LENGTH, TV_FlushRedirect, ( const void * )&extra );
 
 	if( !Rcon_Validate() )
 	{
@@ -644,9 +644,9 @@ static upstreamless_cmd_t upstreamless_cmds[] =
 	{ NULL, NULL }
 };
 
-//=================
-//TV_Downstream_UpstreamlessPacket
-//=================
+/*
+* TV_Downstream_UpstreamlessPacket
+*/
 void TV_Downstream_UpstreamlessPacket( const socket_t *socket, const netadr_t *address, msg_t *msg )
 {
 	upstreamless_cmd_t *cmd;

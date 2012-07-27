@@ -1,3 +1,0 @@
-SKModel is a HL2 SMD format to QFusion's SKM format compiler tool.
-
-usage: See skeletal models doc for instructions.

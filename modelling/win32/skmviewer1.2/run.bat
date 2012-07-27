@@ -1,1 +1,0 @@
-skmviewer tris.skp

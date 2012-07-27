@@ -131,7 +131,6 @@ static void byteSwapRawSamples( int samples, int width, int channels, const qbyt
 static qboolean read_wav_header( int filenum, snd_info_t *info )
 {
 	char dump[16];
-	int wav_format;
 	int fmtlen = 0;
 
 	// skip the riff wav header
@@ -145,7 +144,7 @@ static qboolean read_wav_header( int filenum, snd_info_t *info )
 	}
 
 	// Save the parameters
-	wav_format = FGetLittleShort( filenum );
+	FGetLittleShort( filenum );
 	info->channels = FGetLittleShort( filenum );
 	info->rate = FGetLittleLong( filenum );
 	FGetLittleLong( filenum );
@@ -184,9 +183,12 @@ snd_decoder_t wav_decoder =
 	".wav",
 	decoder_wav_load,
 	decoder_wav_open,
+	decoder_wav_cont_open,
 	decoder_wav_read,
 	decoder_wav_close,
 	decoder_wav_reset,
+	decoder_wav_eof,
+	decoder_wav_tell,
 	NULL
 };
 
@@ -196,7 +198,10 @@ void *decoder_wav_load( const char *filename, snd_info_t *info )
 	int read;
 	void *buffer;
 
-	trap_FS_FOpenFile( filename, &filenum, FS_READ );
+	if( trap_FS_IsUrl( filename ) )
+		return NULL;
+
+	trap_FS_FOpenFile( filename, &filenum, FS_READ|FS_NOSIZE );
 	if( !filenum )
 		return NULL;
 
@@ -224,7 +229,7 @@ void *decoder_wav_load( const char *filename, snd_info_t *info )
 	return buffer;
 }
 
-snd_stream_t *decoder_wav_open( const char *filename )
+snd_stream_t *decoder_wav_open( const char *filename, qboolean *delay )
 {
 	snd_stream_t *stream;
 	snd_wav_stream_t *wav_stream;
@@ -233,42 +238,59 @@ snd_stream_t *decoder_wav_open( const char *filename )
 	if( !stream )
 		return NULL;
 
+	stream->isUrl = trap_FS_IsUrl( filename );
+	if( stream->isUrl )
+		return NULL;
+
+	if( delay )
+		*delay = qfalse;
+
 	stream->ptr = S_Malloc( sizeof( snd_wav_stream_t ) );
 	wav_stream = (snd_wav_stream_t *)stream->ptr;
 
-	trap_FS_FOpenFile( filename, &wav_stream->filenum, FS_READ );
+	trap_FS_FOpenFile( filename, &wav_stream->filenum, FS_READ|FS_NOSIZE );
 	if( !wav_stream->filenum )
 	{
 		decoder_wav_stream_shutdown( stream );
 		return NULL;
 	}
 
-	if( !read_wav_header( wav_stream->filenum, &stream->info ) )
+	if( !decoder_wav_cont_open( stream ) )
 	{
-		decoder_wav_close( stream );
 		return NULL;
 	}
-
-	wav_stream->content_start = wav_stream->position;
 
 	return stream;
 }
 
-int decoder_wav_read( snd_stream_t *stream, int bytes, void *buffer, qboolean loop )
+qboolean decoder_wav_cont_open( snd_stream_t *stream )
+{
+	snd_wav_stream_t *wav_stream;
+
+	if( !stream )
+		return qfalse;
+
+	wav_stream = (snd_wav_stream_t *)stream->ptr;
+
+	if( !read_wav_header( wav_stream->filenum, &stream->info ) )
+	{
+		decoder_wav_close( stream );
+		return qfalse;
+	}
+
+	wav_stream->content_start = wav_stream->position;
+	return qtrue;
+}
+
+int decoder_wav_read( snd_stream_t *stream, int bytes, void *buffer )
 {
 	snd_wav_stream_t *wav_stream = (snd_wav_stream_t *)stream->ptr;
 	int remaining = stream->info.size - wav_stream->position;
 	int samples, bytes_read;
 
 	if( remaining <= 0 )
-	{
-		if( loop )
-		{
-			trap_FS_Seek( wav_stream->filenum, wav_stream->content_start, FS_SEEK_SET );
-			wav_stream->position = wav_stream->content_start;
-		}
 		return 0;
-	}
+
 	if( bytes > remaining )
 		bytes_read = remaining;
 	else
@@ -279,9 +301,6 @@ int decoder_wav_read( snd_stream_t *stream, int bytes, void *buffer, qboolean lo
 
 	trap_FS_Read( buffer, bytes_read, wav_stream->filenum );
 	byteSwapRawSamples( samples, stream->info.width, stream->info.channels, buffer );
-
-	if( loop && bytes_read < bytes )
-		decoder_wav_reset( stream );
 
 	return bytes_read;
 }
@@ -294,10 +313,25 @@ void decoder_wav_close( snd_stream_t *stream )
 	decoder_wav_stream_shutdown( stream );
 }
 
-void decoder_wav_reset( snd_stream_t *stream )
+qboolean decoder_wav_reset( snd_stream_t *stream )
 {
 	snd_wav_stream_t *wav_stream = (snd_wav_stream_t *)stream->ptr;
 
-	trap_FS_Seek( wav_stream->filenum, wav_stream->content_start, FS_SEEK_SET );
+	if( trap_FS_Seek( wav_stream->filenum, wav_stream->content_start, FS_SEEK_SET ) )
+		return qfalse;
+
 	wav_stream->position = wav_stream->content_start;
+	return qtrue;
+}
+
+qboolean decoder_wav_eof( snd_stream_t *stream )
+{
+	snd_wav_stream_t *wav_stream = (snd_wav_stream_t *)stream->ptr;
+	return trap_FS_Eof( wav_stream->filenum );
+}
+
+int decoder_wav_tell( snd_stream_t *stream )
+{
+	snd_wav_stream_t *wav_stream = (snd_wav_stream_t *)stream->ptr;
+	return trap_FS_Tell( wav_stream->filenum );
 }

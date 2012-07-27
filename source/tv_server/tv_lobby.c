@@ -1,22 +1,22 @@
 /*
-   Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-   See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 
 #include "tv_local.h"
 
@@ -25,9 +25,9 @@
 #include "tv_relay.h"
 #include "tv_downstream.h"
 
-//=======================
-//TV_Lobby_WriteFrameSnapToClient
-//=======================
+/*
+* TV_Lobby_WriteFrameSnapToClient
+*/
 static void TV_Lobby_WriteFrameSnapToClient( client_t *client, msg_t *msg )
 {
 	ginfo_t gi;
@@ -37,9 +37,9 @@ static void TV_Lobby_WriteFrameSnapToClient( client_t *client, msg_t *msg )
 	SNAP_WriteFrameSnapToClient( &gi, client, msg, tvs.lobby.framenum, tvs.realtime, NULL, NULL, 0, NULL, NULL );
 }
 
-//=======================
-//TV_Lobby_SendClientDatagram
-//=======================
+/*
+* TV_Lobby_SendClientDatagram
+*/
 static qboolean TV_Lobby_SendClientDatagram( client_t *client )
 {
 	qbyte msg_buf[MAX_MSGLEN];
@@ -56,9 +56,9 @@ static qboolean TV_Lobby_SendClientDatagram( client_t *client )
 	return TV_Downstream_SendMessageToClient( client, &msg );
 }
 
-//=======================
-//TV_Lobby_SendClientMessages
-//=======================
+/*
+* TV_Lobby_SendClientMessages
+*/
 static void TV_Lobby_SendClientMessages( void )
 {
 	int i;
@@ -79,15 +79,15 @@ static void TV_Lobby_SendClientMessages( void )
 			if( client->reliable )
 			{
 				TV_Downstream_DropClient( client, DROP_TYPE_GENERAL, "Error sending message: %s\n",
-				                         NET_ErrorString() );
+					NET_ErrorString() );
 			}
 		}
 	}
 }
 
-//================
-//TV_Lobby_RunSnap
-//================
+/*
+* TV_Lobby_RunSnap
+*/
 static qboolean TV_Lobby_RunSnap( void )
 {
 	if( tvs.lobby.lastrun + tvs.lobby.snapFrameTime > tvs.realtime )
@@ -97,26 +97,26 @@ static qboolean TV_Lobby_RunSnap( void )
 	return qtrue;
 }
 
-//=======================
-//TV_Lobby_ClientBegin
-//=======================
+/*
+* TV_Lobby_ClientBegin
+*/
 void TV_Lobby_ClientBegin( client_t *client )
 {
 	assert( client );
 	assert( !client->relay );
 }
 
-//=======================
-//TV_Lobby_ClientDisconnect
-//=======================
+/*
+* TV_Lobby_ClientDisconnect
+*/
 void TV_Lobby_ClientDisconnect( client_t *client )
 {
 	assert( client );
 }
 
-//=======================
-//TV_Lobby_CanConnect
-//=======================
+/*
+* TV_Lobby_CanConnect
+*/
 qboolean TV_Lobby_CanConnect( client_t *client, char *userinfo )
 {
 	char *value;
@@ -143,9 +143,9 @@ qboolean TV_Lobby_CanConnect( client_t *client, char *userinfo )
 	return qtrue;
 }
 
-//=======================
-//TV_Lobby_ClientConnect
-//=======================
+/*
+* TV_Lobby_ClientConnect
+*/
 void TV_Lobby_ClientConnect( client_t *client )
 {
 	assert( client );
@@ -154,9 +154,9 @@ void TV_Lobby_ClientConnect( client_t *client )
 	client->relay = NULL;
 }
 
-//================
-//TV_Lobby_Run
-//================
+/*
+* TV_Lobby_Run
+*/
 void TV_Lobby_Run( void )
 {
 	if( TV_Lobby_RunSnap() )
