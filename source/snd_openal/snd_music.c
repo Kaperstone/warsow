@@ -559,7 +559,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop )
 
 start_playback:
 	// this effectively precaches the first 15 scheduled tracks in the playlist
-	for( count = 0, t = s_bgTrack; count < 15 && t && t != s_bgTrack; count++ )
+	for( count = 0, t = s_bgTrack; count < 15 && t; count++ )
 	{
 		if( !t->isUrl )
 		{
@@ -582,10 +582,9 @@ start_playback:
 	{
 		memset( &f, 0, sizeof( f ) );
 		f.next = s_bgTrack;
-
 		s_bgTrack = S_NextMusicTrack( &f );
 	}
-	else
+	else if( s_bgTrack && s_bgTrack->isUrl )
 	{
 		S_OpenMusicTrack( s_bgTrack );
 	}

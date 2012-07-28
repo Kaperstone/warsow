@@ -514,6 +514,7 @@ static const asEnumVal_t asSVFlagEnumVals[] =
 	ASLIB_ENUM_VAL( SVF_PROJECTILE ),
 	ASLIB_ENUM_VAL( SVF_ONLYTEAM ),
 	ASLIB_ENUM_VAL( SVF_FORCEOWNER ),
+	ASLIB_ENUM_VAL( SVF_ONLYOWNER ),
 
 	ASLIB_ENUM_VAL_NULL
 };
@@ -962,7 +963,7 @@ static unsigned int objectMatch_startTime( match_t *self )
 
 static unsigned int objectMatch_endTime( match_t *self )
 {
-	return GS_MatchStartTime();
+	return GS_MatchEndTime();
 }
 
 static int objectMatch_getState( match_t *self )
@@ -2906,7 +2907,7 @@ static gsitem_t *asFunc_GS_FindItemByName( asstring_t *name )
 
 static gsitem_t *asFunc_GS_FindItemByClassname( asstring_t *name )
 {
-	return ( !name || !name->len ) ? NULL : GS_FindItemByName( name->buffer );
+	return ( !name || !name->len ) ? NULL : GS_FindItemByClassname( name->buffer );
 }
 
 static void asFunc_G_Match_RemoveAllProjectiles( void )
@@ -3281,6 +3282,28 @@ static void asFunc_G_GlobalSound( int channel, int soundindex )
 	G_GlobalSound( channel, soundindex );
 }
 
+static void asFunc_G_LocalSound( gclient_t *target, int channel, int soundindex )
+{
+	edict_t *ent = NULL;
+
+	if( !target )
+		return;
+
+	if( target && !target->asFactored )
+	{
+		int playerNum = target - game.clients;
+
+		if( playerNum < 0 || playerNum >= gs.maxclients )
+			return;
+
+		ent = game.edicts + playerNum + 1;
+	}
+
+	if( ent ) {
+		G_LocalSound( ent, channel, soundindex );
+	}
+}
+
 static void asFunc_G_AnnouncerSound( gclient_t *target, int soundindex, int team, qboolean queued, gclient_t *ignore )
 {
 	edict_t *ent = NULL, *passent = NULL;
@@ -3395,6 +3418,7 @@ static const asglobfuncs_t asGlobFuncs[] =
 	{ "void G_Sound( cEntity @, int channel, int soundindex, float attenuation )", asFunc_G_Sound },
 	{ "void G_PositionedSound( const Vec3 &in, int channel, int soundindex, float attenuation )", asFunc_PositionedSound },
 	{ "void G_GlobalSound( int channel, int soundindex )", asFunc_G_GlobalSound },
+	{ "void G_LocalSound( cClient @, int channel, int soundIndex )", asFunc_G_LocalSound },
 	{ "void G_AnnouncerSound( cClient @, int soundIndex, int team, bool queued, cClient @ )", asFunc_G_AnnouncerSound },
 	{ "float random()", asFunc_Random },
 	{ "float brandom( float min, float max )", asFunc_BRandom },
@@ -4364,7 +4388,7 @@ qboolean G_asInitializeGametypeScript( const char *script, const char *gametypeN
 
 	fdeclstr = "bool GT_UpdateBotStatus( cEntity @ent )";
 	level.gametype.botStatusFunc = angelExport->asGetFunctionByDecl( asEngineHandle, SCRIPT_MODULE_NAME, fdeclstr );
-	if( level.gametype.botStatusFunc < 0 )
+	if( !level.gametype.botStatusFunc )
 	{
 		if( developer->integer || sv_cheats->integer )
 			G_Printf( "* The function '%s' was not present in the script.\n", fdeclstr );

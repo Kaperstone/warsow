@@ -511,6 +511,8 @@
 		9D25226F15A0A8AE001CE46F /* libcurl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D251E4C159F5B00001CE46F /* libcurl.framework */; };
 		9D2522A915A0AE8E001CE46F /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D2522A815A0AE8E001CE46F /* png.framework */; };
 		9D2522AA15A0AE9B001CE46F /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D2522A815A0AE8E001CE46F /* png.framework */; };
+		9D5728DA15B99CDB00727DB0 /* basewsw in copy basewsw pk3, docs */ = {isa = PBXBuildFile; fileRef = 9D5728D815B99CDB00727DB0 /* basewsw */; };
+		9D5728DB15B99CDB00727DB0 /* docs in copy basewsw pk3, docs */ = {isa = PBXBuildFile; fileRef = 9D5728D915B99CDB00727DB0 /* docs */; };
 		9DA731D815A1C46D00910C34 /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DA731D715A1C46D00910C34 /* Theora.framework */; };
 		9DA731DA15A1C49200910C34 /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DA731D715A1C46D00910C34 /* Theora.framework */; };
 		9DD8CD2C15B749AF0020C7B4 /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 289762C20F682681001563E7 /* q_shared.c */; };
@@ -519,7 +521,6 @@
 		9DD8CD3415B74D080020C7B4 /* ui_ircchannels_datasource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DD8CD3215B74D080020C7B4 /* ui_ircchannels_datasource.cpp */; };
 		9DD8CD3515B74D080020C7B4 /* ui_ircchannels_datasource.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DD8CD3315B74D080020C7B4 /* ui_ircchannels_datasource.h */; };
 		9DD8CD3715B74D4C0020C7B4 /* ui_irc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DD8CD3615B74D4C0020C7B4 /* ui_irc.cpp */; };
-		9DD8CD4615B755640020C7B4 /* basewsw in basewsw pk3 */ = {isa = PBXBuildFile; fileRef = 9DD8CD4515B755640020C7B4 /* basewsw */; };
 		F32B3CDD126AD0770009B379 /* cg_chat.c in Sources */ = {isa = PBXBuildFile; fileRef = F393AB111237FAE600AF2318 /* cg_chat.c */; };
 		F388D9E9113BE43D0039559F /* libmumblelink.c in Sources */ = {isa = PBXBuildFile; fileRef = F388D9E7113BE43D0039559F /* libmumblelink.c */; };
 		F3DA081910DA33350038AE7F /* wswcurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DA081710DA33350038AE7F /* wswcurl.c */; };
@@ -650,15 +651,16 @@
 			name = libs;
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9D25226415A0A0D3001CE46F /* basewsw pk3 */ = {
+		9D25226415A0A0D3001CE46F /* copy basewsw pk3, docs */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				9DD8CD4615B755640020C7B4 /* basewsw in basewsw pk3 */,
+				9D5728DA15B99CDB00727DB0 /* basewsw in copy basewsw pk3, docs */,
+				9D5728DB15B99CDB00727DB0 /* docs in copy basewsw pk3, docs */,
 			);
-			name = "basewsw pk3";
+			name = "copy basewsw pk3, docs";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -1184,13 +1186,14 @@
 		9D25225715A08FC3001CE46F /* unix_xpm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unix_xpm.c; sourceTree = "<group>"; };
 		9D25226215A09B5B001CE46F /* mac_vid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mac_vid.m; sourceTree = "<group>"; };
 		9D2522A815A0AE8E001CE46F /* png.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = png.framework; path = Frameworks/png.framework; sourceTree = "<group>"; };
+		9D5728D815B99CDB00727DB0 /* basewsw */ = {isa = PBXFileReference; lastKnownFileType = folder; name = basewsw; path = ../../../../Resource/basewsw; sourceTree = "<group>"; };
+		9D5728D915B99CDB00727DB0 /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = docs; path = ../../../../Resource/docs; sourceTree = "<group>"; };
 		9DA731D715A1C46D00910C34 /* Theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Theora.framework; path = Frameworks/Theora.framework; sourceTree = "<group>"; };
 		9DD8CD2E15B74CA80020C7B4 /* as_bind_irc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = as_bind_irc.cpp; sourceTree = "<group>"; };
 		9DD8CD3015B74CC90020C7B4 /* as_bind_downloadinfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = as_bind_downloadinfo.cpp; sourceTree = "<group>"; };
 		9DD8CD3215B74D080020C7B4 /* ui_ircchannels_datasource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ui_ircchannels_datasource.cpp; sourceTree = "<group>"; };
 		9DD8CD3315B74D080020C7B4 /* ui_ircchannels_datasource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_ircchannels_datasource.h; sourceTree = "<group>"; };
 		9DD8CD3615B74D4C0020C7B4 /* ui_irc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ui_irc.cpp; sourceTree = "<group>"; };
-		9DD8CD4515B755640020C7B4 /* basewsw */ = {isa = PBXFileReference; lastKnownFileType = folder; name = basewsw; path = ../../../../basewsw; sourceTree = "<group>"; };
 		F388D9E7113BE43D0039559F /* libmumblelink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = libmumblelink.c; sourceTree = "<group>"; };
 		F388D9E8113BE43D0039559F /* libmumblelink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libmumblelink.h; sourceTree = "<group>"; };
 		F393AB111237FAE600AF2318 /* cg_chat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cg_chat.c; sourceTree = "<group>"; };
@@ -1932,7 +1935,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				9DD8CD4515B755640020C7B4 /* basewsw */,
+				9D5728D815B99CDB00727DB0 /* basewsw */,
+				9D5728D915B99CDB00727DB0 /* docs */,
 				2867572A0F5DFE9000C05B53 /* wsw_icon.icns */,
 				2867566A0F5DF8ED00C05B53 /* Warsow SDL-Info.plist */,
 			);
@@ -2346,10 +2350,10 @@
 				283CABFB0EA3406100209134 /* Sources */,
 				283CABFC0EA3406100209134 /* Frameworks */,
 				286756CB0F5DFB3500C05B53 /* Frameworks */,
-				9D25226415A0A0D3001CE46F /* basewsw pk3 */,
+				9D25226415A0A0D3001CE46F /* copy basewsw pk3, docs */,
 				286757280F5DFCF900C05B53 /* basewsw */,
 				286757290F5DFCF900C05B53 /* libs */,
-				2807570C0F6076DE00566D02 /* sync svn data */,
+				2807570C0F6076DE00566D02 /* set some cvars */,
 				282252200F6BEAF7002F3547 /* command line tools */,
 			);
 			buildRules = (
@@ -2464,19 +2468,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2807570C0F6076DE00566D02 /* sync svn data */ = {
+		2807570C0F6076DE00566D02 /* set some cvars */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "sync svn data";
+			name = "set some cvars";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -vaz --exclude=.svn /$TARGET_BUILD_DIR/../../../../../../../../datasvn/warsow/data/warsow/basewsw/ \"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Resources/basewsw/\"\necho \"seta vid_fullscreen 0\" > $TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Resources/basewsw/autoexec.cfg\necho \"seta r_ignorehwgamma 1\" >> $TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Resources/basewsw/autoexec.cfg";
+			shellScript = "echo \"seta r_ignorehwgamma 1\" > $TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Resources/basewsw/autoexec.cfg";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3283,6 +3287,7 @@
 				HEADER_SEARCH_PATHS = "\"$(SDKROOT)/usr/X11/include/\"";
 				INFOPLIST_FILE = "Warsow SDL-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-mdynamic-no-pic";
 				OTHER_LDFLAGS = "";
@@ -3311,6 +3316,7 @@
 				HEADER_SEARCH_PATHS = "\"$(SDKROOT)/usr/X11/include/\"";
 				INFOPLIST_FILE = "Warsow SDL-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				OTHER_CFLAGS = "-fno-strict-aliasing";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "Warsow SDL";

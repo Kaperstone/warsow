@@ -943,10 +943,11 @@ usercmd_t *TV_Downstream_FindNextUserCommand( client_t *client )
 	unsigned int higherTime = 0xFFFFFFFF;
 	unsigned int i;
 
-	higherTime = client->relay ? client->relay->serverTime : tvs.realtime; // ucmds can never have a higher timestamp than server time, unless cheating
 	ucmd = NULL;
 	if( client )
 	{
+		higherTime = client->relay ? client->relay->serverTime : tvs.realtime; // ucmds can never have a higher timestamp than server time, unless cheating
+
 		for( i = client->UcmdExecuted + 1; i <= client->UcmdReceived; i++ )
 		{
 			// skip backups if already executed

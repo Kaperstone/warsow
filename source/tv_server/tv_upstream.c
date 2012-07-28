@@ -899,12 +899,12 @@ void TV_Upstream_Connect( upstream_t *upstream, const char *servername, const ch
 {
 	netadr_t socketaddress;
 
-	if( upstream->demo.playing )
-		return;
-
 	assert( upstream && upstream->state <= CA_DISCONNECTED );
 	assert( servername );
 	assert( address );
+
+	if( upstream->demo.playing )
+		return;
 
 	switch( type )
 	{

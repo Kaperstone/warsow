@@ -178,11 +178,11 @@ void TV_Relay_Shutdown( relay_t *relay, const char *format, ... )
 	int i;
 	client_t *client;
 
-	if( relay->state == CA_UNINITIALIZED )
-		return;
-
 	assert( relay );
 	assert( format );
+
+	if( relay->state == CA_UNINITIALIZED )
+		return;
 
 	va_start( argptr, format );
 	Q_vsnprintfz( msg, sizeof( msg ), format, argptr );

@@ -197,8 +197,8 @@ static void CG_SC_PrintPlayerStats( const char *s, void ( *pp ) )
 
 	// print stats to console/file
 	print( "Stats for %s" S_COLOR_WHITE ":\r\n\r\n", cgs.clientInfo[playerNum].name );
-	print( "   Weapon             Weak               Strong\r\n" );
-	print( "    hit/shot percent   hit/shot percent   hit/shot percent\r\n" );
+	print( "Weapon\r\n" );
+	print( "    hit/shot percent\r\n" );
 
 	for( i = WEAP_GUNBLADE; i < WEAP_TOTAL; i++ )
 	{
@@ -224,14 +224,6 @@ static void CG_SC_PrintPlayerStats( const char *s, void ( *pp ) )
 		// total
 		print( S_COLOR_GREEN "%3i" S_COLOR_WHITE "/" S_COLOR_CYAN "%3i      " S_COLOR_YELLOW "%2.1f",
 			hit_total, shot_total, STATS_PERCENT( hit_total, shot_total ) );
-
-		// weak
-		print( "    " S_COLOR_GREEN "%3i" S_COLOR_WHITE "/" S_COLOR_CYAN "%3i      " S_COLOR_YELLOW "%2.1f",
-			hit_weak, shot_weak,  STATS_PERCENT( hit_weak, shot_weak ) );
-
-		// strong
-		print( "   " S_COLOR_GREEN "%3i" S_COLOR_WHITE "/" S_COLOR_CYAN "%3i      " S_COLOR_YELLOW "%2.1f",
-			hit_strong, shot_strong, STATS_PERCENT( hit_strong, shot_strong ) );
 
 		print( "\r\n" );
 	}

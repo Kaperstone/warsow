@@ -206,8 +206,8 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			175,							// spread
 
 			//ammo
-			25,                             // weapon pickup amount
-			25,								// pickup amount
+			50,                             // weapon pickup amount
+			50,								// pickup amount
 			100								// max amount
 		},
 
@@ -416,7 +416,7 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			0,								// spread
 
 			//ammo
-			5,                              // weapon pickup amount
+			10,                             // weapon pickup amount
 			10,								// pickup amount
 			20								// max amount
 		},
@@ -486,8 +486,8 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			0,								// spread
 
 			//ammo
-			50,                             // weapon pickup amount
-			50,								// pickup amount
+			75,                             // weapon pickup amount
+			75,								// pickup amount
 			150								// max amount
 		},
 
@@ -556,8 +556,8 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			0,								// spread
 
 			//ammo
-			50,                             // weapon pickup amount
-			50,								// pickup amount
+			75,                             // weapon pickup amount
+			75,								// pickup amount
 			150								// max amount
 		},
 
