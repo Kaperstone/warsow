@@ -516,6 +516,7 @@ typedef struct
 	qboolean oldAreabits;
 	qboolean portalInView;
 	qboolean fireEvents;
+	qboolean firstFrame;
 
 	float predictedOrigins[CMD_BACKUP][3];              // for debug comparing against server
 

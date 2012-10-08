@@ -76,13 +76,13 @@ void IN_SetMouseScalingEnabled (BOOL theState)
 					if(IOHIDSetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), -1.0) != kIOReturnSuccess)
 					{
 						Com_Printf("Could not disable mouse acceleration (failed at IOHIDSetAccelerationWithKey).\n");
-						Cvar_Set ("in_disablemacosxmouseaccel", 0);
+						Cvar_Set ("in_disablemacosxmouseaccel", "0");
 					}
 				}
 				else
 				{
 					Com_Printf("Could not disable mouse acceleration (failed at IOHIDGetAccelerationWithKey).\n");
-					Cvar_Set ("in_disablemacosxmouseaccel", 0);
+					Cvar_Set ("in_disablemacosxmouseaccel", "0");
 				}
 			}
 			IOServiceClose(mouseDev);
@@ -90,7 +90,7 @@ void IN_SetMouseScalingEnabled (BOOL theState)
 		else
 		{
 			Com_Printf("Could not disable mouse acceleration (failed at IO_GetIOHandle).\n");
-			Cvar_Set ("in_disablemacosxmouseaccel", 0);
+			Cvar_Set ("in_disablemacosxmouseaccel", "0");
 		}
 	}
 }
@@ -276,7 +276,7 @@ void IN_Init()
 		return;
 	
 	in_grabinconsole = Cvar_Get( "in_grabinconsole", "0", CVAR_ARCHIVE );
-	in_disablemacosxmouseaccel = Cvar_Get( "in_disablemacosxmouseaccel", "0", CVAR_ARCHIVE );
+	in_disablemacosxmouseaccel = Cvar_Get( "in_disablemacosxmouseaccel", "1", CVAR_ARCHIVE );
 	
 	Com_Printf("Initializing SDL Input\n");
 	

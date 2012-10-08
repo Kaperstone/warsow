@@ -188,6 +188,8 @@ qboolean VID_SetFullscreenMode( qboolean fullscreen )
 	{
 		int a;
 		DEVMODE dm;
+		HDC hdc;
+		int bitspixel;
 
 		Com_DPrintf( "...attempting fullscreen\n" );
 
@@ -199,21 +201,12 @@ qboolean VID_SetFullscreenMode( qboolean fullscreen )
 		dm.dmPelsHeight = glState.height;
 		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
 
-		if( r_colorbits->integer != 0 )
-		{
-			dm.dmBitsPerPel = r_colorbits->integer;
-			dm.dmFields |= DM_BITSPERPEL;
-			Com_DPrintf( "...using r_bitdepth of %d\n", dm.dmBitsPerPel );
-		}
-		else
-		{
-			HDC hdc = GetDC( NULL );
-			int bitspixel = GetDeviceCaps( hdc, BITSPIXEL );
+		hdc = GetDC( NULL );
+		bitspixel = GetDeviceCaps( hdc, BITSPIXEL );
 
-			Com_DPrintf( "...using desktop display depth of %d\n", bitspixel );
+		Com_DPrintf( "...using desktop display depth of %d\n", bitspixel );
 
-			ReleaseDC( 0, hdc );
-		}
+		ReleaseDC( 0, hdc );
 
 		if( vid_displayfrequency->integer > 0 )
 		{
@@ -242,13 +235,6 @@ qboolean VID_SetFullscreenMode( qboolean fullscreen )
 			dm.dmPelsWidth = glState.width * 2;
 			dm.dmPelsHeight = glState.height;
 			dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-
-			if( r_colorbits->integer != 0 )
-			{
-				dm.dmBitsPerPel = r_colorbits->integer;
-				dm.dmFields |= DM_BITSPERPEL;
-				Com_DPrintf( "...using r_bitdepth of %d\n", dm.dmBitsPerPel );
-			}
 
 			if( vid_displayfrequency->integer > 0 )
 			{

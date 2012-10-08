@@ -17,9 +17,9 @@ public:
 
 	/* object methods */
 	cEntity @ ent( int index );
-	String @ getName() const;
-	String @ getDefaultName() const;
-	void setName( String &in );
+	String @ get_name() const;
+	String @ get_defaultName() const;
+	void set_name( String &in );
 	bool isLocked() const;
 	bool lock() const;
 	bool unlock() const;

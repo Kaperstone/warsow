@@ -263,7 +263,7 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			0,								// smooth refire
 
 			//damages
-			3.6,							// damage
+			3.8,							// damage
 			0,								// selfdamage ratio (rg cant selfdamage)
 			5,								// knockback
 			85,								// stun
@@ -543,7 +543,7 @@ gs_weapon_definition_t gs_weaponDefs[] =
 			1,								// smooth refire
 
 			//damages
-			6.5,							// damage
+			6.75,							// damage
 			0,								// selfdamage ratio (lg cant damage)
 			10,								// knockback
 			300,							// stun

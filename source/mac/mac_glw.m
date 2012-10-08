@@ -39,18 +39,7 @@ glwstate_t glw_state = { NULL, qfalse };
  */
 rserr_t GLimp_SetMode( int x, int y, int width, int height, qboolean fullscreen, qboolean wideScreen )
 {
-	int colorbits;
-
-  /*
-	if( !VID_GetModeInfo( &width, &height, &wideScreen, mode ) )
-	{
-		Com_Printf( " invalid mode\n" );
-		return rserr_invalid_mode;
-	}
-   */
-
-	if( r_colorbits->integer == 16 || r_colorbits->integer == 24 ) colorbits = r_colorbits->integer;
-	else colorbits = 0;
+	int colorbits = 0;
 
 #ifdef VIDEOMODE_HACK
 	/*
@@ -64,11 +53,16 @@ rserr_t GLimp_SetMode( int x, int y, int width, int height, qboolean fullscreen,
 #endif
 
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+  
+  if (r_swapinterval->integer == 0) {
+    SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
+  }
+  
 	if( SDL_SetVideoMode( width, height, colorbits,
 	                     SDL_OPENGL | ( fullscreen == qtrue ? SDL_FULLSCREEN : 0 ) ) == NULL )
 	{
 		Com_Printf( " setting the video mode failed: %s", SDL_GetError() );
-		return rserr_unknown;
+		return rserr_invalid_mode;
 	}
 
 	glState.width = width;

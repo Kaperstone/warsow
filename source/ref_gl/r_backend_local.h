@@ -40,6 +40,7 @@ typedef struct r_backend_s
 	qboolean currentShaderHasGLSLPasses;
 	qboolean doDynamicLightsPass;
 	qboolean lightingPassDone;
+	const struct mbrushmodel_s *currentBrushModel;
 
 	int lightmapStyleNum[MAX_TEXTURE_UNITS];
 	const superLightStyle_t *superLightStyle;

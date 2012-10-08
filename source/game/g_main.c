@@ -394,8 +394,12 @@ void G_Shutdown( void )
 
 	G_Printf( "==== G_Shutdown ====\n" );
 
-	G_asCallShutdownScript();
-	G_asShutdownGametypeScript();
+	GT_asCallShutdown();
+	G_asCallMapExit();
+
+	G_asShutdownMapScript();
+	GT_asShutdownScript();
+	G_asShutdownGameModuleEngine();
 
 	SV_WriteIPList ();
 

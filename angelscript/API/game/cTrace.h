@@ -23,7 +23,7 @@ public:
 
 	/* object methods */
 	bool doTrace( const Vec3 &in, const Vec3 &in, const Vec3 &in, const Vec3 &in, int ignore, int contentMask ) const;
-	Vec3 getEndPos() const;
-	Vec3 getPlaneNormal() const;
+	Vec3 get_endPos() const;
+	Vec3 get_planeNormal() const;
 };
 

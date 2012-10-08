@@ -755,9 +755,12 @@ void G_InitLevel( char *mapname, char *entities, int entstrlen, unsigned int lev
 
 	G_asGarbageCollect( qtrue );
 
-	G_asCallShutdownScript();
+	GT_asCallShutdown();
+	G_asCallMapExit();
 
-	G_asShutdownGametypeScript();
+	G_asShutdownMapScript();
+	GT_asShutdownScript();
+	G_asShutdownGameModuleEngine();
 
 	G_FreeCallvotes();
 
@@ -834,6 +837,9 @@ void G_InitLevel( char *mapname, char *entities, int entstrlen, unsigned int lev
 	trap_ConfigString( CS_MATCHNAME, "" );
 	trap_ConfigString( CS_MATCHSCORE, "" );
 
+	// init AS engine
+	G_asInitGameModuleEngine();
+
 	G_InitGameCommands();
 	G_MapLocations_Init();
 	G_CallVotes_Init();
@@ -845,6 +851,9 @@ void G_InitLevel( char *mapname, char *entities, int entstrlen, unsigned int lev
 	G_PrecacheMedia();
 	G_PrecacheGameCommands(); // adding commands after this point won't update them to the client
 	AI_InitLevel(); // load navigation file of the current map
+
+	// load map script
+	G_asLoadMapScript( level.mapname );
 
 	// start spawning entities
 
@@ -936,8 +945,10 @@ void G_InitLevel( char *mapname, char *entities, int entstrlen, unsigned int lev
 	//
 
 	// call gametype specific
-	if( level.gametype.asEngineHandle >= 0 )
-		G_asCallLevelSpawnScript();
+	GT_asCallSpawn();
+
+	// call map specific
+	G_asCallMapInit();
 
 	AI_InitEntitiesData();
 

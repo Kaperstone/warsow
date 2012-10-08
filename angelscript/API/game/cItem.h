@@ -19,16 +19,15 @@ public:
 	cItem@ f(); /* factory */ 
 
 	/* object methods */
-	String @ getClassname() const;
-	String @ getClassName() const;
-	String @ getName() const;
-	String @ getShortName() const;
-	String @ getModelString() const;
-	String @ getModel2String() const;
-	String @ getIconString() const;
-	String @ getSimpleItemString() const;
-	String @ getPickupSoundString() const;
-	String @ getColorToken() const;
+	String @ get_classname() const;
+	String @ get_name() const;
+	String @ get_shortName() const;
+	String @ get_model() const;
+	String @ get_model2() const;
+	String @ get_icon() const;
+	String @ get_simpleIcon() const;
+	String @ get_pickupSound() const;
+	String @ get_colorToken() const;
 	bool isPickable() const;
 	bool isUsable() const;
 	bool isDropable() const;

@@ -36,15 +36,15 @@ public:
 	cClient @ f(); /* factory */ 
 
 	/* object methods */
-	int playerNum() const;
+	int get_playerNum() const;
 	bool isReady() const;
 	bool isBot() const;
 	cBot @ getBot() const;
 	int state() const;
 	void respawn( bool ghost );
 	void clearPlayerStateEvents();
-	String @ getName() const;
-	String @ getClanName() const;
+	String @ get_name() const;
+	String @ get_clanName() const;
 	cEntity @ getEnt() const;
 	int inventoryCount( int tag ) const;
 	void inventorySetCount( int tag, int count );

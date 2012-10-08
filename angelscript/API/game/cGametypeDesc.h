@@ -38,18 +38,18 @@ public:
 	/* object behaviors */
 
 	/* object methods */
-	String @ getName() const;
-	String @ getTitle() const;
-	void setTitle( String & );
-	String @ getVersion() const;
-	void setVersion( String & );
-	String @ getAuthor() const;
-	void setAuthor( String & );
-	String @ getManifest() const;
+	String @ get_name() const;
+	String @ get_title() const;
+	void set_title( String & );
+	String @ get_version() const;
+	void set_version( String & );
+	String @ get_author() const;
+	void set_author( String & );
+	String @ get_manifest() const;
 	void setTeamSpawnsystem( int team, int spawnsystem, int wave_time, int wave_maxcount, bool deadcam );
-	bool isInstagib() const;
-	bool hasFallDamage() const;
-	bool hasSelfDamage() const;
-	bool isInvidualGameType() const;
+	bool get_isInstagib() const;
+	bool get_hasFallDamage() const;
+	bool get_hasSelfDamage() const;
+	bool get_isInvidualGameType() const;
 };
 

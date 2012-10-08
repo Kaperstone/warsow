@@ -362,6 +362,8 @@ static void uninstall_grabs( void )
 
 	XUngrabKeyboard( x11display.dpy, CurrentTime );
 
+	x11display.ic = 0;
+
 	input_active = qfalse;
 }
 

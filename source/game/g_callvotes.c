@@ -2165,7 +2165,7 @@ static qboolean G_VoteFromScriptValidate( callvotedata_t *vote, qboolean first )
 		Q_strncatz( argsString, va( " \"%s\"", vote->argv[i] ), MAX_STRING_CHARS );
 	}
 
-	return G_asCallGameCommandScript( vote->caller->r.client, "callvotevalidate", argsString, vote->argc + 1 );
+	return GT_asCallGameCommand( vote->caller->r.client, "callvotevalidate", argsString, vote->argc + 1 );
 }
 
 /*
@@ -2186,7 +2186,7 @@ static void G_VoteFromScriptPassed( callvotedata_t *vote )
 		Q_strncatz( argsString, va( " \"%s\"", vote->argv[i] ), MAX_STRING_CHARS );
 	}
 
-	G_asCallGameCommandScript( vote->caller->r.client, "callvotepassed", argsString, vote->argc + 1 );
+	GT_asCallGameCommand( vote->caller->r.client, "callvotepassed", argsString, vote->argc + 1 );
 }
 
 /*

@@ -84,8 +84,8 @@ gsitem_t	itemdefs[] =
 		S_COLOR_WHITE,              // message color  // TODO: add color
 		1,                          // count of items given at pickup
 		1,
-		AMMO_GUNBLADE,              // strong ammo tag
-		AMMO_NONE,					// weak ammo tag
+		AMMO_GUNBLADE,                 // strong ammo tag
+		AMMO_WEAK_GUNBLADE,         // weak ammo tag
 		NULL,                       // miscelanea info pointer
 		PATH_GUNBLADEBLAST_STRONG_MODEL, NULL, NULL
 		,0 ,0
@@ -109,7 +109,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_BULLETS,
-		AMMO_NONE,
+		AMMO_WEAK_BULLETS,
 		NULL,
 		NULL, NULL, NULL
 		,0 ,0
@@ -132,7 +132,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_SHELLS,
-		AMMO_NONE,
+		AMMO_WEAK_SHELLS,
 		NULL,
 		NULL, NULL, NULL
 		,0 ,0
@@ -155,7 +155,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_GRENADES,
-		AMMO_NONE,
+		AMMO_WEAK_GRENADES,
 		NULL,
 		PATH_GRENADE_WEAK_MODEL " " PATH_GRENADE_STRONG_MODEL,
 		NULL, NULL
@@ -179,7 +179,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_ROCKETS,
-		AMMO_NONE,
+		AMMO_WEAK_ROCKETS,
 		NULL,
 		PATH_ROCKET_WEAK_MODEL " " PATH_ROCKET_STRONG_MODEL,
 		S_WEAPON_ROCKET_W_FLY " " S_WEAPON_ROCKET_S_FLY,
@@ -204,7 +204,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_PLASMA,
-		AMMO_NONE,
+		AMMO_WEAK_PLASMA,
 		NULL,
 		PATH_PLASMA_WEAK_MODEL " " PATH_PLASMA_STRONG_MODEL,
 		S_WEAPON_PLASMAGUN_W_FLY " " S_WEAPON_PLASMAGUN_S_FLY,
@@ -229,7 +229,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_LASERS,
-		AMMO_NONE,
+		AMMO_WEAK_LASERS,
 		NULL,
 		NULL,
 		S_WEAPON_LASERGUN_S_HUM " " S_WEAPON_LASERGUN_W_HUM " " S_WEAPON_LASERGUN_S_QUAD_HUM " "S_WEAPON_LASERGUN_W_QUAD_HUM " " S_WEAPON_LASERGUN_S_STOP " " S_WEAPON_LASERGUN_W_STOP,
@@ -254,7 +254,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_BOLTS,
-		AMMO_NONE,
+		AMMO_WEAK_BOLTS,
 		NULL,
 		PATH_ELECTROBOLT_WEAK_MODEL, NULL, NULL
 		,0 ,0
@@ -277,7 +277,7 @@ gsitem_t	itemdefs[] =
 		1,
 		1,
 		AMMO_INSTAS,
-		AMMO_NONE,
+		AMMO_WEAK_INSTAS,
 		NULL,
 		NULL, NULL, NULL
 		,0 ,0

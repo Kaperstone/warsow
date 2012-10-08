@@ -225,7 +225,6 @@
 		286756D10F5DFB3500C05B53 /* libjpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2867563A0F5DF79500C05B53 /* libjpeg.framework */; };
 		286757090F5DFCB200C05B53 /* cgame_mac.dylib in basewsw */ = {isa = PBXBuildFile; fileRef = 283CA8B70EA332CF00209134 /* cgame_mac.dylib */; };
 		2867570A0F5DFCB200C05B53 /* game_mac.dylib in basewsw */ = {isa = PBXBuildFile; fileRef = 283CA8B00EA332BC00209134 /* game_mac.dylib */; };
-		2867570B0F5DFCB200C05B53 /* ui_mac.dylib in basewsw */ = {isa = PBXBuildFile; fileRef = 283CA8BE0EA332DA00209134 /* ui_mac.dylib */; };
 		2867570D0F5DFCCF00C05B53 /* angelwrap_mac.dylib in libs */ = {isa = PBXBuildFile; fileRef = 283CAD340EA34AD400209134 /* angelwrap_mac.dylib */; };
 		2867570E0F5DFCCF00C05B53 /* snd_qf_mac.dylib in libs */ = {isa = PBXBuildFile; fileRef = 283CA8890EA3316200209134 /* snd_qf_mac.dylib */; };
 		2867570F0F5DFCCF00C05B53 /* snd_openal_mac.dylib in libs */ = {isa = PBXBuildFile; fileRef = 283CA8590EA3303500209134 /* snd_openal_mac.dylib */; };
@@ -511,9 +510,29 @@
 		9D25226F15A0A8AE001CE46F /* libcurl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D251E4C159F5B00001CE46F /* libcurl.framework */; };
 		9D2522A915A0AE8E001CE46F /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D2522A815A0AE8E001CE46F /* png.framework */; };
 		9D2522AA15A0AE9B001CE46F /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D2522A815A0AE8E001CE46F /* png.framework */; };
+		9D48C5C115C2F9BC007A1955 /* cin.h in Headers */ = {isa = PBXBuildFile; fileRef = 28A720DB0F5DEA9F006FB1A8 /* cin.h */; };
+		9D48C5CF15C2FA5B007A1955 /* cin.c in Sources */ = {isa = PBXBuildFile; fileRef = 9D48C5C315C2FA5B007A1955 /* cin.c */; };
+		9D48C5D015C2FA5B007A1955 /* cin_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D48C5C515C2FA5B007A1955 /* cin_local.h */; };
+		9D48C5D115C2FA5B007A1955 /* cin_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 9D48C5C615C2FA5B007A1955 /* cin_main.c */; };
+		9D48C5D215C2FA5B007A1955 /* cin_ogg.c in Sources */ = {isa = PBXBuildFile; fileRef = 9D48C5C715C2FA5B007A1955 /* cin_ogg.c */; };
+		9D48C5D315C2FA5B007A1955 /* cin_ogg.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D48C5C815C2FA5B007A1955 /* cin_ogg.h */; };
+		9D48C5D415C2FA5B007A1955 /* cin_public.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D48C5C915C2FA5B007A1955 /* cin_public.h */; };
+		9D48C5D515C2FA5B007A1955 /* cin_roq.c in Sources */ = {isa = PBXBuildFile; fileRef = 9D48C5CA15C2FA5B007A1955 /* cin_roq.c */; };
+		9D48C5D615C2FA5B007A1955 /* cin_roq.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D48C5CB15C2FA5B007A1955 /* cin_roq.h */; };
+		9D48C5D715C2FA5B007A1955 /* cin_syscalls.c in Sources */ = {isa = PBXBuildFile; fileRef = 9D48C5CC15C2FA5B007A1955 /* cin_syscalls.c */; };
+		9D48C5D815C2FA5B007A1955 /* cin_syscalls.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D48C5CD15C2FA5B007A1955 /* cin_syscalls.h */; };
+		9D48C5D915C2FA5B007A1955 /* roq.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D48C5CE15C2FA5B007A1955 /* roq.h */; };
+		9D48C5DA15C2FA73007A1955 /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 289762C00F682681001563E7 /* q_math.c */; };
+		9D48C5DB15C2FA7B007A1955 /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 289762C20F682681001563E7 /* q_shared.c */; };
+		9D48C5DC15C2FA87007A1955 /* q_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 289762C30F682681001563E7 /* q_shared.h */; };
+		9D48C5DD15C2FA8F007A1955 /* q_math.h in Headers */ = {isa = PBXBuildFile; fileRef = 289762C10F682681001563E7 /* q_math.h */; };
+		9D48C5DE15C2FB32007A1955 /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DA731D715A1C46D00910C34 /* Theora.framework */; };
+		9D48C5DF15C2FB32007A1955 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28A7207D0F5DEA70006FB1A8 /* Ogg.framework */; };
+		9D48C5E015C2FB32007A1955 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28A7207E0F5DEA70006FB1A8 /* Vorbis.framework */; };
+		9D48C5E115C2FC2D007A1955 /* cin_mac.dylib in libs */ = {isa = PBXBuildFile; fileRef = 9D48C5BF15C2F94E007A1955 /* cin_mac.dylib */; };
 		9D5728DA15B99CDB00727DB0 /* basewsw in copy basewsw pk3, docs */ = {isa = PBXBuildFile; fileRef = 9D5728D815B99CDB00727DB0 /* basewsw */; };
 		9D5728DB15B99CDB00727DB0 /* docs in copy basewsw pk3, docs */ = {isa = PBXBuildFile; fileRef = 9D5728D915B99CDB00727DB0 /* docs */; };
-		9DA731D815A1C46D00910C34 /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DA731D715A1C46D00910C34 /* Theora.framework */; };
+		9DA3E6D415FBA5E00065A334 /* ui_mac.dylib in basewsw */ = {isa = PBXBuildFile; fileRef = 283CA8BE0EA332DA00209134 /* ui_mac.dylib */; };
 		9DA731DA15A1C49200910C34 /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DA731D715A1C46D00910C34 /* Theora.framework */; };
 		9DD8CD2C15B749AF0020C7B4 /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 289762C20F682681001563E7 /* q_shared.c */; };
 		9DD8CD2F15B74CA80020C7B4 /* as_bind_irc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DD8CD2E15B74CA80020C7B4 /* as_bind_irc.cpp */; };
@@ -521,6 +540,9 @@
 		9DD8CD3415B74D080020C7B4 /* ui_ircchannels_datasource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DD8CD3215B74D080020C7B4 /* ui_ircchannels_datasource.cpp */; };
 		9DD8CD3515B74D080020C7B4 /* ui_ircchannels_datasource.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DD8CD3315B74D080020C7B4 /* ui_ircchannels_datasource.h */; };
 		9DD8CD3715B74D4C0020C7B4 /* ui_irc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DD8CD3615B74D4C0020C7B4 /* ui_irc.cpp */; };
+		9DE37BE41608D52800B73FB3 /* g_as_gametypes.c in Sources */ = {isa = PBXBuildFile; fileRef = 9DE37BE11608D52800B73FB3 /* g_as_gametypes.c */; };
+		9DE37BE51608D52800B73FB3 /* g_as_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DE37BE21608D52800B73FB3 /* g_as_local.h */; };
+		9DE37BE61608D52800B73FB3 /* g_as_maps.c in Sources */ = {isa = PBXBuildFile; fileRef = 9DE37BE31608D52800B73FB3 /* g_as_maps.c */; };
 		F32B3CDD126AD0770009B379 /* cg_chat.c in Sources */ = {isa = PBXBuildFile; fileRef = F393AB111237FAE600AF2318 /* cg_chat.c */; };
 		F388D9E9113BE43D0039559F /* libmumblelink.c in Sources */ = {isa = PBXBuildFile; fileRef = F388D9E7113BE43D0039559F /* libmumblelink.c */; };
 		F3DA081910DA33350038AE7F /* wswcurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DA081710DA33350038AE7F /* wswcurl.c */; };
@@ -590,6 +612,13 @@
 			remoteGlobalIDString = 283CAD330EA34AD400209134;
 			remoteInfo = angelwrap_mac;
 		};
+		9D48C5E215C2FC6F007A1955 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9D48C54715C2F94E007A1955;
+			remoteInfo = cin_mac;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -632,7 +661,7 @@
 			files = (
 				286757090F5DFCB200C05B53 /* cgame_mac.dylib in basewsw */,
 				2867570A0F5DFCB200C05B53 /* game_mac.dylib in basewsw */,
-				2867570B0F5DFCB200C05B53 /* ui_mac.dylib in basewsw */,
+				9DA3E6D415FBA5E00065A334 /* ui_mac.dylib in basewsw */,
 			);
 			name = basewsw;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -643,6 +672,7 @@
 			dstPath = libs;
 			dstSubfolderSpec = 7;
 			files = (
+				9D48C5E115C2FC2D007A1955 /* cin_mac.dylib in libs */,
 				2867570D0F5DFCCF00C05B53 /* angelwrap_mac.dylib in libs */,
 				2867570E0F5DFCCF00C05B53 /* snd_qf_mac.dylib in libs */,
 				2867570F0F5DFCCF00C05B53 /* snd_openal_mac.dylib in libs */,
@@ -1186,6 +1216,19 @@
 		9D25225715A08FC3001CE46F /* unix_xpm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unix_xpm.c; sourceTree = "<group>"; };
 		9D25226215A09B5B001CE46F /* mac_vid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mac_vid.m; sourceTree = "<group>"; };
 		9D2522A815A0AE8E001CE46F /* png.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = png.framework; path = Frameworks/png.framework; sourceTree = "<group>"; };
+		9D48C5BF15C2F94E007A1955 /* cin_mac.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = cin_mac.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D48C5C315C2FA5B007A1955 /* cin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cin.c; sourceTree = "<group>"; };
+		9D48C5C415C2FA5B007A1955 /* cin.vcproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = cin.vcproj; sourceTree = "<group>"; };
+		9D48C5C515C2FA5B007A1955 /* cin_local.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cin_local.h; sourceTree = "<group>"; };
+		9D48C5C615C2FA5B007A1955 /* cin_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cin_main.c; sourceTree = "<group>"; };
+		9D48C5C715C2FA5B007A1955 /* cin_ogg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cin_ogg.c; sourceTree = "<group>"; };
+		9D48C5C815C2FA5B007A1955 /* cin_ogg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cin_ogg.h; sourceTree = "<group>"; };
+		9D48C5C915C2FA5B007A1955 /* cin_public.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cin_public.h; sourceTree = "<group>"; };
+		9D48C5CA15C2FA5B007A1955 /* cin_roq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cin_roq.c; sourceTree = "<group>"; };
+		9D48C5CB15C2FA5B007A1955 /* cin_roq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cin_roq.h; sourceTree = "<group>"; };
+		9D48C5CC15C2FA5B007A1955 /* cin_syscalls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cin_syscalls.c; sourceTree = "<group>"; };
+		9D48C5CD15C2FA5B007A1955 /* cin_syscalls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cin_syscalls.h; sourceTree = "<group>"; };
+		9D48C5CE15C2FA5B007A1955 /* roq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = roq.h; sourceTree = "<group>"; };
 		9D5728D815B99CDB00727DB0 /* basewsw */ = {isa = PBXFileReference; lastKnownFileType = folder; name = basewsw; path = ../../../../Resource/basewsw; sourceTree = "<group>"; };
 		9D5728D915B99CDB00727DB0 /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = docs; path = ../../../../Resource/docs; sourceTree = "<group>"; };
 		9DA731D715A1C46D00910C34 /* Theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Theora.framework; path = Frameworks/Theora.framework; sourceTree = "<group>"; };
@@ -1194,6 +1237,9 @@
 		9DD8CD3215B74D080020C7B4 /* ui_ircchannels_datasource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ui_ircchannels_datasource.cpp; sourceTree = "<group>"; };
 		9DD8CD3315B74D080020C7B4 /* ui_ircchannels_datasource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_ircchannels_datasource.h; sourceTree = "<group>"; };
 		9DD8CD3615B74D4C0020C7B4 /* ui_irc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ui_irc.cpp; sourceTree = "<group>"; };
+		9DE37BE11608D52800B73FB3 /* g_as_gametypes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = g_as_gametypes.c; sourceTree = "<group>"; };
+		9DE37BE21608D52800B73FB3 /* g_as_local.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = g_as_local.h; sourceTree = "<group>"; };
+		9DE37BE31608D52800B73FB3 /* g_as_maps.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = g_as_maps.c; sourceTree = "<group>"; };
 		F388D9E7113BE43D0039559F /* libmumblelink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = libmumblelink.c; sourceTree = "<group>"; };
 		F388D9E8113BE43D0039559F /* libmumblelink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libmumblelink.h; sourceTree = "<group>"; };
 		F393AB111237FAE600AF2318 /* cg_chat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cg_chat.c; sourceTree = "<group>"; };
@@ -1264,7 +1310,6 @@
 				282251220F6BDAA7002F3547 /* AppKit.framework in Frameworks */,
 				9D251E4F159F5B31001CE46F /* libcurl.framework in Frameworks */,
 				9D2522A915A0AE8E001CE46F /* png.framework in Frameworks */,
-				9DA731D815A1C46D00910C34 /* Theora.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1291,6 +1336,16 @@
 			files = (
 				282254D40F6C3C0B002F3547 /* libz.dylib in Frameworks */,
 				9D251E4D159F5B00001CE46F /* libcurl.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9D48C5BA15C2F94E007A1955 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D48C5DE15C2FB32007A1955 /* Theora.framework in Frameworks */,
+				9D48C5DF15C2FB32007A1955 /* Ogg.framework in Frameworks */,
+				9D48C5E015C2FB32007A1955 /* Vorbis.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1335,6 +1390,7 @@
 				283CABFE0EA3406100209134 /* Warsow SDL.app */,
 				28F121CD0F6B1DE00053E51D /* wsw_server */,
 				28F121D90F6B1DFA0053E51D /* wswtv_server */,
+				9D48C5BF15C2F94E007A1955 /* cin_mac.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1342,6 +1398,7 @@
 		283CA5460EA32E7300209134 /* Warsow Source */ = {
 			isa = PBXGroup;
 			children = (
+				9D48C5C215C2FA5B007A1955 /* cin */,
 				28A7208D0F5DEA9F006FB1A8 /* angelwrap */,
 				28A720B50F5DEA9F006FB1A8 /* cgame */,
 				28A720D90F5DEA9F006FB1A8 /* client */,
@@ -1478,6 +1535,9 @@
 			isa = PBXGroup;
 			children = (
 				28A720F20F5DEA9F006FB1A8 /* ai */,
+				9DE37BE11608D52800B73FB3 /* g_as_gametypes.c */,
+				9DE37BE21608D52800B73FB3 /* g_as_local.h */,
+				9DE37BE31608D52800B73FB3 /* g_as_maps.c */,
 				28A721060F5DEA9F006FB1A8 /* g_ascript.c */,
 				28A721070F5DEA9F006FB1A8 /* g_awards.c */,
 				28A721080F5DEA9F006FB1A8 /* g_callvotes.c */,
@@ -2125,6 +2185,26 @@
 			path = widgets;
 			sourceTree = "<group>";
 		};
+		9D48C5C215C2FA5B007A1955 /* cin */ = {
+			isa = PBXGroup;
+			children = (
+				9D48C5C315C2FA5B007A1955 /* cin.c */,
+				9D48C5C415C2FA5B007A1955 /* cin.vcproj */,
+				9D48C5C515C2FA5B007A1955 /* cin_local.h */,
+				9D48C5C615C2FA5B007A1955 /* cin_main.c */,
+				9D48C5C715C2FA5B007A1955 /* cin_ogg.c */,
+				9D48C5C815C2FA5B007A1955 /* cin_ogg.h */,
+				9D48C5C915C2FA5B007A1955 /* cin_public.h */,
+				9D48C5CA15C2FA5B007A1955 /* cin_roq.c */,
+				9D48C5CB15C2FA5B007A1955 /* cin_roq.h */,
+				9D48C5CC15C2FA5B007A1955 /* cin_syscalls.c */,
+				9D48C5CD15C2FA5B007A1955 /* cin_syscalls.h */,
+				9D48C5CE15C2FA5B007A1955 /* roq.h */,
+			);
+			name = cin;
+			path = ../cin;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2153,6 +2233,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DE37BE51608D52800B73FB3 /* g_as_local.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2234,6 +2315,22 @@
 				9D251E3B159F3946001CE46F /* addon_stringutils.h in Headers */,
 				9D251E3D159F3946001CE46F /* addon_time.h in Headers */,
 				9D251E3F159F3946001CE46F /* addon_vec3.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9D48C54815C2F94E007A1955 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D48C5DD15C2FA8F007A1955 /* q_math.h in Headers */,
+				9D48C5DC15C2FA87007A1955 /* q_shared.h in Headers */,
+				9D48C5C115C2F9BC007A1955 /* cin.h in Headers */,
+				9D48C5D015C2FA5B007A1955 /* cin_local.h in Headers */,
+				9D48C5D315C2FA5B007A1955 /* cin_ogg.h in Headers */,
+				9D48C5D415C2FA5B007A1955 /* cin_public.h in Headers */,
+				9D48C5D615C2FA5B007A1955 /* cin_roq.h in Headers */,
+				9D48C5D815C2FA5B007A1955 /* cin_syscalls.h in Headers */,
+				9D48C5D915C2FA5B007A1955 /* roq.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2368,6 +2465,7 @@
 				2867571B0F5DFCE000C05B53 /* PBXTargetDependency */,
 				2867571D0F5DFCE000C05B53 /* PBXTargetDependency */,
 				2867571F0F5DFCE000C05B53 /* PBXTargetDependency */,
+				9D48C5E315C2FC6F007A1955 /* PBXTargetDependency */,
 			);
 			name = "Warsow SDL";
 			productName = "Warsow SDL";
@@ -2423,13 +2521,30 @@
 			productReference = 28F121D90F6B1DFA0053E51D /* wswtv_server */;
 			productType = "com.apple.product-type.tool";
 		};
+		9D48C54715C2F94E007A1955 /* cin_mac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9D48C5BC15C2F94E007A1955 /* Build configuration list for PBXNativeTarget "cin_mac" */;
+			buildPhases = (
+				9D48C54815C2F94E007A1955 /* Headers */,
+				9D48C57C15C2F94E007A1955 /* Sources */,
+				9D48C5BA15C2F94E007A1955 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = cin_mac;
+			productName = ui_mac;
+			productReference = 9D48C5BF15C2F94E007A1955 /* cin_mac.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0440;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Warsow" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2452,6 +2567,7 @@
 				283CAD330EA34AD400209134 /* angelwrap_mac */,
 				28F121CC0F6B1DE00053E51D /* wsw_server */,
 				28F121D80F6B1DFA0053E51D /* wswtv_server */,
+				9D48C54715C2F94E007A1955 /* cin_mac */,
 			);
 		};
 /* End PBXProject section */
@@ -2591,6 +2707,8 @@
 				28A723D10F5DEF0A006FB1A8 /* g_clip.c in Sources */,
 				28A723D20F5DEF0A006FB1A8 /* ai_navigation.c in Sources */,
 				9D251E4A159F459F001CE46F /* mm_rating.c in Sources */,
+				9DE37BE41608D52800B73FB3 /* g_as_gametypes.c in Sources */,
+				9DE37BE61608D52800B73FB3 /* g_as_maps.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2969,6 +3087,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9D48C57C15C2F94E007A1955 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D48C5CF15C2FA5B007A1955 /* cin.c in Sources */,
+				9D48C5D115C2FA5B007A1955 /* cin_main.c in Sources */,
+				9D48C5D215C2FA5B007A1955 /* cin_ogg.c in Sources */,
+				9D48C5D515C2FA5B007A1955 /* cin_roq.c in Sources */,
+				9D48C5D715C2FA5B007A1955 /* cin_syscalls.c in Sources */,
+				9D48C5DA15C2FA73007A1955 /* q_math.c in Sources */,
+				9D48C5DB15C2FA7B007A1955 /* q_shared.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -3017,6 +3149,11 @@
 			target = 283CAD330EA34AD400209134 /* angelwrap_mac */;
 			targetProxy = 2867571E0F5DFCE000C05B53 /* PBXContainerItemProxy */;
 		};
+		9D48C5E315C2FC6F007A1955 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9D48C54715C2F94E007A1955 /* cin_mac */;
+			targetProxy = 9D48C5E215C2FC6F007A1955 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -3024,6 +3161,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -3040,6 +3178,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = "";
@@ -3060,6 +3199,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3080,6 +3220,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = "";
@@ -3104,6 +3245,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3124,6 +3266,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = "";
@@ -3148,6 +3291,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -3164,6 +3308,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = "";
@@ -3184,6 +3329,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -3200,6 +3346,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = "";
@@ -3220,6 +3367,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3244,6 +3392,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = "";
@@ -3272,6 +3421,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3280,7 +3430,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = _DEBUG;
@@ -3299,6 +3448,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3328,6 +3478,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3349,6 +3500,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = "";
@@ -3475,6 +3627,48 @@
 			};
 			name = Release;
 		};
+		9D48C5BD15C2F94E007A1955 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks\"",
+				);
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = _DEBUG;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = cin_mac;
+			};
+			name = Debug;
+		};
+		9D48C5BE15C2F94E007A1955 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Frameworks\"",
+				);
+				GCC_FAST_MATH = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
+				GCC_UNROLL_LOOPS = YES;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = "-fno-strict-aliasing";
+				PRODUCT_NAME = cin_mac;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3485,7 +3679,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = macosx10.7;
 			};
 			name = Debug;
 		};
@@ -3498,7 +3692,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = NO;
-				SDKROOT = macosx;
+				SDKROOT = macosx10.7;
 			};
 			name = Release;
 		};
@@ -3591,6 +3785,15 @@
 			buildConfigurations = (
 				28F121DB0F6B1DFA0053E51D /* Debug */,
 				28F121DC0F6B1DFA0053E51D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9D48C5BC15C2F94E007A1955 /* Build configuration list for PBXNativeTarget "cin_mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D48C5BD15C2F94E007A1955 /* Debug */,
+				9D48C5BE15C2F94E007A1955 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -205,7 +205,7 @@ typedef enum
 {
 	AMMO_NONE = 0x0,
 	AMMO_GUNBLADE = 0xa,
-	AMMO_STRONG_BULLETS = 0xb,
+	AMMO_BULLETS = 0xb,
 	AMMO_SHELLS = 0xc,
 	AMMO_GRENADES = 0xd,
 	AMMO_ROCKETS = 0xe,
@@ -214,7 +214,7 @@ typedef enum
 	AMMO_BOLTS = 0x11,
 	AMMO_INSTAS = 0x12,
 	AMMO_WEAK_GUNBLADE = 0x13,
-	AMMO_BULLETS = 0x14,
+	AMMO_WEAK_BULLETS = 0x14,
 	AMMO_WEAK_SHELLS = 0x15,
 	AMMO_WEAK_GRENADES = 0x16,
 	AMMO_WEAK_ROCKETS = 0x17,
@@ -347,6 +347,7 @@ typedef enum
 	SVF_PROJECTILE = 0x100,
 	SVF_ONLYTEAM = 0x200,
 	SVF_FORCEOWNER = 0x400,
+	SVF_ONLYOWNER = 0x800,
 } serverflags_e;
 
 typedef enum
@@ -440,6 +441,7 @@ void G_CenterPrintMsg( cEntity @, const String &in );
 void G_Sound( cEntity @, int channel, int soundindex, float attenuation );
 void G_PositionedSound( const Vec3 &in, int channel, int soundindex, float attenuation );
 void G_GlobalSound( int channel, int soundindex );
+void G_LocalSound( cClient @, int channel, int soundIndex );
 void G_AnnouncerSound( cClient @, int soundIndex, int team, bool queued, cClient @ );
 float random();
 float brandom( float min, float max );

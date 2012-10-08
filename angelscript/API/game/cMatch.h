@@ -26,9 +26,9 @@ public:
 	uint startTime() const;
 	uint endTime() const;
 	int getState() const;
-	String @ getName() const;
+	String @ get_name() const;
 	String @ getScore() const;
-	void setName( String &in );
+	void set_name( String &in );
 	void setScore( String &in );
 	void setClockOverride( uint milliseconds );
 };
