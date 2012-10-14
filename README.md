@@ -21,6 +21,8 @@ The intention of this mirror is to make it easier to create and maintain mods
 if you like to use GitHub, as well as enabling you to reference sections of the
 code and to track the changes developers have made each version.
 
+This is not an official repository.
+
 ## Branches
 
 * master - latest stable version
