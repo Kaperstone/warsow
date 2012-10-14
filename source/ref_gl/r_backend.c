@@ -733,7 +733,7 @@ void R_TransformFogPlanes( const mfog_t *fog, vec3_t fogNormal, vec_t *fogDist, 
 	fogShader = fog->shader;
 
 	// distance to fog
-	dist = ri.fog_dist_to_eye[fog-r_back.currentBrushModel->fogs];
+	dist = ri.fog_dist_to_eye[fog-r_worldbrushmodel->fogs];
 
 	if( r_back.currentShader->flags & SHADER_SKY )
 	{
@@ -1316,7 +1316,7 @@ qboolean R_VertexTCBase( const shaderpass_t *pass, int unit, mat4x4_t matrix, r_
 			matrix[13] = 1.5f/(float)FOG_TEXTURE_HEIGHT;
 
 			// distance to fog
-			dist = ri.fog_dist_to_eye[r_back.texFog-r_back.currentBrushModel->fogs];
+			dist = ri.fog_dist_to_eye[r_back.texFog-r_worldbrushmodel->fogs];
 
 			R_TransformFogPlanes( r_back.texFog, fogNormal, &fogDist, vpnNormal, &vpnDist );
 
@@ -1482,7 +1482,7 @@ static inline image_t *R_ShaderpassTex( const shaderpass_t *pass, int unit )
 	if( pass->anim_fps )
 		return pass->anim_frames[(int)( pass->anim_fps * r_back.currentShaderTime ) % pass->anim_numframes];
 	if( pass->flags & SHADERPASS_LIGHTMAP )
-		return r_back.currentBrushModel->lightmapImages[r_back.superLightStyle->lightmapNum[r_back.lightmapStyleNum[unit]]];
+		return r_worldbrushmodel->lightmapImages[r_back.superLightStyle->lightmapNum[r_back.lightmapStyleNum[unit]]];
 	if( pass->flags & SHADERPASS_PORTALMAP )
 		return r_portaltextures[0] ? r_portaltextures[0] : r_blacktexture;
 	return ( pass->anim_frames[0] ? pass->anim_frames[0] : r_notexture );
@@ -1952,7 +1952,7 @@ done_alpha:
 		qboolean alphaFog = !noAlpha;
 
 		// distance to fog
-		dist = ri.fog_dist_to_eye[r_back.colorFog-r_back.currentBrushModel->fogs];
+		dist = ri.fog_dist_to_eye[r_back.colorFog-r_worldbrushmodel->fogs];
 
 		R_TransformFogPlanes( r_back.colorFog, fogNormal, &fogDist, vpnNormal, &vpnDist );
 
@@ -2589,7 +2589,6 @@ void R_RenderMeshBuffer( const meshbuffer_t *mb, const rbackAnimData_t *animData
 		fog = NULL;
 		r_back.texFog = r_back.colorFog = NULL;
 		r_back.currentDlightBits = r_back.currentShadowBits = 0;
-		r_back.currentBrushModel = NULL;
 		r_back.superLightStyle = NULL;
 		r_back.doDynamicLightsPass = qfalse;
 	}
@@ -2600,7 +2599,6 @@ void R_RenderMeshBuffer( const meshbuffer_t *mb, const rbackAnimData_t *animData
 		fog = NULL;
 		r_back.texFog = r_back.colorFog = NULL;
 		r_back.currentDlightBits = r_back.currentShadowBits = 0;
-		r_back.currentBrushModel = NULL;
 		r_back.superLightStyle = NULL;
 		r_back.doDynamicLightsPass = qfalse;
 	}
@@ -2634,12 +2632,10 @@ void R_RenderMeshBuffer( const meshbuffer_t *mb, const rbackAnimData_t *animData
 
 		r_back.currentDlightBits = mb->infokey > 0 ? mb->dlightbits : 0;
 		r_back.currentShadowBits = mb->shadowbits & ri.shadowBits;
-		if( ri.currententity && ri.currententity->model != NULL && ri.currententity->model->type == mod_brush ) {
-			r_back.currentBrushModel = ( mbrushmodel_t * )ri.currententity->model->extradata;
-			r_back.superLightStyle = &r_back.currentBrushModel->superLightStyles[((mb->sortkey >> 10) - 1) & (MAX_SUPER_STYLES-1)];
+		if( r_worldbrushmodel ) {
+			r_back.superLightStyle = &r_worldbrushmodel->superLightStyles[((mb->sortkey >> 10) - 1) & (MAX_SUPER_STYLES-1)];
 		}
 		else {
-			r_back.currentBrushModel = NULL;
 			r_back.superLightStyle = NULL;
 		}
 

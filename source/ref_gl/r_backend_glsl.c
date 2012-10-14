@@ -339,7 +339,7 @@ static void R_RenderMeshGLSL_Material( r_glslfeat_t programFeatures )
 			for( i = 0; i < MAX_LIGHTMAPS && lightStyle->lightmapStyles[i] != 255; i++ )
 			{
 				r_back.lightmapStyleNum[i+4] = i;
-				GL_Bind( i+4, r_back.currentBrushModel->lightmapImages[lightStyle->lightmapNum[i]] ); // lightmap
+				GL_Bind( i+4, r_worldbrushmodel->lightmapImages[lightStyle->lightmapNum[i]] ); // lightmap
 				GL_SetTexCoordArrayMode( GL_TEXTURE_COORD_ARRAY );
 				R_VertexTCBase( pass, i+4, unused, NULL );
 			}
@@ -436,7 +436,7 @@ static void R_RenderMeshGLSL_Material( r_glslfeat_t programFeatures )
 			R_TransformFogPlanes( fog, fogPlane.normal, &fogPlane.dist, vpnPlane.normal, &vpnPlane.dist );
 
 			R_UpdateProgramFogParams( program, fog->shader->fog_color, fog->shader->fog_clearDist,
-				fog->shader->fog_dist, &fogPlane, &vpnPlane, ri.fog_dist_to_eye[fog-r_back.currentBrushModel->fogs] );
+				fog->shader->fog_dist, &fogPlane, &vpnPlane, ri.fog_dist_to_eye[fog-r_worldbrushmodel->fogs] );
 		}
 
 		// submit animation data
@@ -955,7 +955,7 @@ static void R_RenderMeshGLSL_Q3AShader( r_glslfeat_t programFeatures )
 			R_TransformFogPlanes( fog, fogPlane.normal, &fogPlane.dist, vpnPlane.normal, &vpnPlane.dist );
 
 			R_UpdateProgramFogParams( program, fog->shader->fog_color, fog->shader->fog_clearDist,
-				fog->shader->fog_dist, &fogPlane, &vpnPlane, ri.fog_dist_to_eye[fog-r_back.currentBrushModel->fogs] );
+				fog->shader->fog_dist, &fogPlane, &vpnPlane, ri.fog_dist_to_eye[fog-r_worldbrushmodel->fogs] );
 		}
 
 		// submit animation data
@@ -1134,7 +1134,7 @@ static void R_RenderMeshGLSL_Cellshade( r_glslfeat_t programFeatures )
 			R_TransformFogPlanes( fog, fogPlane.normal, &fogPlane.dist, vpnPlane.normal, &vpnPlane.dist );
 
 			R_UpdateProgramFogParams( program, fog->shader->fog_color, fog->shader->fog_clearDist,
-				fog->shader->fog_dist, &fogPlane, &vpnPlane, ri.fog_dist_to_eye[fog-r_back.currentBrushModel->fogs] );
+				fog->shader->fog_dist, &fogPlane, &vpnPlane, ri.fog_dist_to_eye[fog-r_worldbrushmodel->fogs] );
 		}
 
 		// submit animation data

@@ -179,8 +179,8 @@ int evdev_scandevices( void )
 
 void evdev_closedevices( void )
 {
-	while( m_evdev_num-- > 0 )
-		close( m_evdev_fds[m_evdev_num] );
+	while( m_evdev_num > 0 )
+		close( m_evdev_fds[--m_evdev_num] );
 
 	free( m_evdev_fds );
 	m_evdev_fds = 0;
