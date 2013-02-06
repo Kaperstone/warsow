@@ -46,29 +46,21 @@ io_connect_t IN_GetIOHandle (void)
     return (myHandle);
 }
 
-void IN_SetMouseScalingEnabled (BOOL theState)
+void IN_SetMouseScalingEnabled (BOOL isRestore)
 {
-	static BOOL		myMouseScalingEnabled	= YES;
 	static double	myOldAcceleration		= 0.0;
-	io_connect_t	myIOHandle				= 0;
-
-    // Do we have a state change?
-    if (theState == myMouseScalingEnabled)
-    {
-        return;
-    }
 
 	if(in_disablemacosxmouseaccel->integer)
 	{
 		io_connect_t mouseDev = IN_GetIOHandle();
 		if(mouseDev != 0)
 		{
-			// Set the mouse acceleration according to the current state:
-			if (theState == YES)
+			// if isRestore YES, restore old (set by system control panel) acceleration.
+			if (isRestore == YES)
 			{
-				IOHIDSetAccelerationWithKey (myIOHandle, CFSTR (kIOHIDMouseAccelerationType), myOldAcceleration);
+				IOHIDSetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), myOldAcceleration);
 			}
-			else 
+			else // otherwise, disable mouse acceleration. we won't disable trackpad acceleration.
 			{
 				if(IOHIDGetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), &myOldAcceleration) == kIOReturnSuccess)
 				{
