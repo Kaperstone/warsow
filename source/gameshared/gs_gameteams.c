@@ -71,7 +71,7 @@ const char *GS_DefaultTeamName( int team )
 /*
 * GS_TeamSkinName
 */
-const char *GS_TeamSkinName( int team )
+char *GS_TeamSkinName( int team )
 {
 	if( team < 0 && team >= GS_MAX_TEAMS )
 		return NULL;
@@ -82,7 +82,7 @@ const char *GS_TeamSkinName( int team )
 /*
 * GS_Teams_TeamFromName
 */
-int GS_Teams_TeamFromName( const char *teamname )
+int GS_Teams_TeamFromName( char *teamname )
 {
 	const char *s;
 	int i;

@@ -80,25 +80,20 @@ void	Swap_Init( void );
 // fonts
 //=============================================
 
-#define DEFAULT_SYSTEM_FONT_FAMILY			"DejaVu Sans"
-#define DEFAULT_SYSTEM_FONT_SMALL_SIZE		14
-#define DEFAULT_SYSTEM_FONT_MEDIUM_SIZE		16
-#define DEFAULT_SYSTEM_FONT_BIG_SIZE		24
-#define DEFAULT_SYSTEM_FONT_STYLE			0
+#define DEFAULT_FONT_SMALL "bitstream_10"
+#define DEFAULT_FONT_MEDIUM "bitstream_12"
+#define DEFAULT_FONT_BIG "hemihead_22"
+#define DEFAULT_FONT_SCOREBOARD "virtue_10"
 
-#define DEFAULT_SCOREBOARD_FONT_FAMILY		"Virtue"
-#define DEFAULT_SCOREBOARD_FONT_SIZE		14
-#define DEFAULT_SCOREBOARD_FONT_STYLE		0
-
-#define ALIGN_LEFT_TOP				0
-#define ALIGN_CENTER_TOP			1
-#define ALIGN_RIGHT_TOP				2
-#define ALIGN_LEFT_MIDDLE			3
-#define ALIGN_CENTER_MIDDLE			4
-#define ALIGN_RIGHT_MIDDLE			5
-#define ALIGN_LEFT_BOTTOM			6
-#define ALIGN_CENTER_BOTTOM			7
-#define ALIGN_RIGHT_BOTTOM			8
+#define ALIGN_LEFT_TOP	    0
+#define ALIGN_CENTER_TOP    1
+#define ALIGN_RIGHT_TOP	    2
+#define ALIGN_LEFT_MIDDLE   3
+#define ALIGN_CENTER_MIDDLE 4
+#define ALIGN_RIGHT_MIDDLE  5
+#define ALIGN_LEFT_BOTTOM   6
+#define ALIGN_CENTER_BOTTOM 7
+#define ALIGN_RIGHT_BOTTOM  8
 
 //==============================================================
 //
@@ -143,11 +138,6 @@ qboolean COM_ValidateConfigstring( const char *string );
 
 #define MAX_NAME_BYTES				32			// max length of a player name, including trailing \0
 #define MAX_NAME_CHARS				15			// max visible characters in a name (color tokens and \0 not counted)
-
-#ifndef STR_HELPER
-#define STR_HELPER( s )					# s
-#define STR_TOSTR( x )					STR_HELPER( x )
-#endif
 
 //=============================================
 // string colors
@@ -356,16 +346,6 @@ typedef enum
 
 	rserr_unknown
 } rserr_t;
-
-// font style flags
-typedef enum {
-	QFONT_STYLE_NONE			= 0,
-
-	QFONT_STYLE_ITALIC			= (1<<0),
-	QFONT_STYLE_BOLD			= (1<<1),
-
-	QFONT_STYLE_MASK			= (1<<2)-1
-} qfontstyle_t;
 
 #ifdef __cplusplus
 };

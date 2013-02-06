@@ -81,10 +81,6 @@ void SCR_EndLoadingPlaque( void )
 {
 }
 
-void SCR_ChangeSystemFontSmallSize( int ch )
-{
-}
-
 void Key_Init( void )
 {
 	Cmd_AddCommand( "bind", Key_Bind_Null_f );

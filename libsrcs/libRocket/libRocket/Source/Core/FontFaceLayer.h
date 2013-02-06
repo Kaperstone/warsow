@@ -75,12 +75,11 @@ public:
 	/// @param[in] colour The colour of the string.
 	inline void GenerateGeometry(Geometry* geometry, const word character_code, const Vector2f& position, const Colourb& colour) const
 	{
-		if (character_code >= characters.size())
+		CharacterMap::const_iterator iterator = characters.find(character_code);
+		if (iterator == characters.end())
 			return;
 
-		const Character& character = characters[character_code];
-		if (character.texture_index < 0)
-			return;
+		const Character& character = (*iterator).second;
 
 		// Generate the geometry for the character.
 		std::vector< Vertex >& character_vertices = geometry[character.texture_index].GetVertices();
@@ -110,8 +109,6 @@ public:
 private:
 	struct Character
 	{
-		Character() : texture_index(-1) { }
-
 		// The offset, in pixels, of the baseline from the start of this character's geometry.
 		Vector2f origin;
 		// The width and height, in pixels, of this character's geometry.
@@ -123,7 +120,7 @@ private:
 		int texture_index;
 	};
 
-	typedef std::vector< Character > CharacterList;
+	typedef std::map< word, Character > CharacterMap;
 	typedef std::vector< Texture > TextureList;
 
 	const FontFaceHandle* handle;
@@ -131,7 +128,7 @@ private:
 
 	TextureLayout texture_layout;
 
-	CharacterList characters;
+	CharacterMap characters;
 	TextureList textures;
 	Colourb colour;
 };

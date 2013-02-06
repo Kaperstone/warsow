@@ -25,18 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "q_collision.h"
 #include "gs_public.h"
 
-void ( *module_Printf )( const char *format, ... );
-void ( *module_Error )( const char *format, ... );
-void *( *module_Malloc )( size_t size );
-void ( *module_Free )( void *data );
-void ( *module_Trace )( trace_t *t, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int ignore, int contentmask, int timeDelta );
-entity_state_t *( *module_GetEntityState )( int entNum, int deltaTime );
-int ( *module_PointContents )( vec3_t point, int timeDelta );
-void ( *module_PredictedEvent )( int entNum, int ev, int parm );
-void ( *module_PMoveTouchTriggers )( pmove_t *pm );
-void ( *module_RoundUpToHullSize )( vec3_t mins, vec3_t maxs );
-const char *( *module_GetConfigString )( int index );
-
 // TEMP MOVE ME
 gs_state_t gs;
 

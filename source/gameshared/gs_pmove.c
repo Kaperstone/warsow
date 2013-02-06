@@ -824,8 +824,8 @@ static void PM_Move( void )
 		qboolean inhibit = qfalse;
 		qboolean accelerating, decelerating;
 
-		accelerating = ( DotProduct( pml.velocity, wishdir ) > 0.0f ) ? qtrue : qfalse;
-		decelerating = ( DotProduct( pml.velocity, wishdir ) < -0.0f ) ? qtrue : qfalse;
+		accelerating = ( DotProduct( pml.velocity, wishdir ) > 0.0f );
+		decelerating = ( DotProduct( pml.velocity, wishdir ) < -0.0f );
 		
 		if( ( pm->playerState->pmove.pm_flags & PMF_WALLJUMPING ) &&
 			( pm->playerState->pmove.stats[PM_STAT_WJTIME] >= ( PM_WALLJUMP_TIMEDELAY - PM_AIRCONTROL_BOUNCE_DELAY ) ) )
@@ -1581,7 +1581,7 @@ static qboolean PM_GoodPosition( int snaptorigin[3] )
 		origin[i] = end[i] = snaptorigin[i]*( 1.0/PM_VECTOR_SNAP );
 	module_Trace( &trace, origin, pm->mins, pm->maxs, end, pm->playerState->POVnum, pm->contentmask, 0 );
 
-	return !trace.allsolid ? qtrue : qfalse;
+	return !trace.allsolid;
 }
 
 /*
@@ -1698,7 +1698,7 @@ static void PM_UpdateDeltaAngles( void )
 static void PM_ApplyMouseAnglesClamp( void )
 {
 	int i;
-	int temp;
+	short temp;
 
 	for( i = 0; i < 3; i++ )
 	{
@@ -1718,7 +1718,7 @@ static void PM_ApplyMouseAnglesClamp( void )
 			}
 		}
 
-		pm->playerState->viewangles[i] = SHORT2ANGLE( (short)temp );
+		pm->playerState->viewangles[i] = SHORT2ANGLE( temp );
 	}
 
 	AngleVectors( pm->playerState->viewangles, pml.forward, pml.right, pml.up );

@@ -354,17 +354,6 @@ void ElementDocument::DirtyLayout()
 	layout_dirty = true;
 }
 
-bool ElementDocument::IsLayoutDirty()
-{
-	return layout_dirty;
-}
-
-void ElementDocument::UpdateLayout() 
-{ 
-	if (layout_dirty && lock_layout == 0) 
-		_UpdateLayout();
-}
-
 // Refreshes the document layout if required.
 void ElementDocument::OnUpdate()
 {

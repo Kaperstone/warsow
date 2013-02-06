@@ -1,4 +1,4 @@
-#include "../qas_precompiled.h"
+#include "../qas_local.h"
 #include "addon_any.h"
 #include <new>
 #include <assert.h>

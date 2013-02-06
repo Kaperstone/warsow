@@ -586,7 +586,7 @@ static void R_RenderMeshGLSL_Distortion( r_glslfeat_t programFeatures )
 * Renders a batch of shadowmap groups in one pass
 */
 static void R_RenderMeshGLSL_ShadowmapArray( r_glslfeat_t programFeatures, 
-		int numShadows, const shadowGroup_t **shadowGroups, int *scissor )
+		int numShadows, shadowGroup_t **shadowGroups, int *scissor )
 {
 	int i;
 	int state;
@@ -694,7 +694,7 @@ static void R_RenderMeshGLSL_Shadowmap( r_glslfeat_t programFeatures )
 		}
 
 		shadowGroups[numShadows++] = group;
-		if( numShadows >= GLSL_SHADOWMAP_LIMIT ) {
+		if( numShadows >= min( GLSL_SHADOWMAP_LIMIT, r_temp1->integer) ) {
 			R_RenderMeshGLSL_ShadowmapArray( programFeatures, numShadows, shadowGroups, scissor );
 			numShadows = 0;
 		}

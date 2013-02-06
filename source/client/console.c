@@ -46,9 +46,7 @@ cvar_t *con_printText;
 
 static cvar_t *con_chatX, *con_chatY;
 static cvar_t *con_chatWidth;
-static cvar_t *con_chatFontFamily;
-static cvar_t *con_chatFontStyle;
-static cvar_t *con_chatFontSize;
+static cvar_t *con_chatFont;
 static cvar_t *con_chatCGame;
 
 // console input line editing
@@ -282,14 +280,6 @@ void Con_CheckResize( void )
 }
 
 /*
-* Con_ChangeFontSize
-*/
-void Con_ChangeFontSize( int ch )
-{
-	SCR_ChangeSystemFontSmallSize( ch );
-}
-
-/*
 * Con_Init
 */
 void Con_Init( void )
@@ -324,9 +314,7 @@ void Con_Init( void )
 	con_chatX  = Cvar_Get( "con_chatX", "0", CVAR_READONLY );
 	con_chatY = Cvar_Get( "con_chatY", "0", CVAR_READONLY );
 	con_chatWidth  = Cvar_Get( "con_chatWidth", "0", CVAR_READONLY );
-	con_chatFontFamily  = Cvar_Get( "con_chatFontFamily", "", CVAR_READONLY );
-	con_chatFontStyle  = Cvar_Get( "con_chatFontStyle", "0", CVAR_READONLY );
-	con_chatFontSize  = Cvar_Get( "con_chatFontSize", "10", CVAR_READONLY );
+	con_chatFont  = Cvar_Get( "con_chatFont", "", CVAR_READONLY );
 	con_chatCGame = Cvar_Get( "con_chatCGame", "0", CVAR_READONLY );
 
 	Cmd_AddCommand( "toggleconsole", Con_ToggleConsole_f );
@@ -627,15 +615,13 @@ void Con_DrawNotify( void )
 		int x, y;
 		int width, prewidth;
 		int promptwidth, cursorwidth;
-		struct qfontface_s *font = NULL;
+		struct mufont_s *font;
 
 		if( con_chatCGame->integer )
 		{
 			width = con_chatWidth->integer;
 
-			if( *con_chatFontFamily->string && con_chatFontSize->integer ) {
-				font = SCR_RegisterFont( con_chatFontFamily->string, (qfontstyle_t)con_chatFontStyle->integer, con_chatFontSize->integer );
-			}
+			font = SCR_RegisterFont( con_chatFont->string );
 			if( !font )
 				font = cls.fontSystemSmall;
 
@@ -724,9 +710,8 @@ void Con_DrawConsole( float frac )
 		APPLICATION, APP_VERSION, revisioncvar->string );
 #endif
 
-	SCR_DrawString( viddef.width-SCR_strWidth( version, 
-		cls.fontSystemSmall, 0 )-4, lines-SCR_strHeight( cls.fontSystemSmall ) - 4, 
-		ALIGN_LEFT_TOP, version, cls.fontSystemSmall, colorRed );
+	SCR_DrawString( viddef.width-SCR_strWidth( version, cls.fontSystemSmall, 0 )-4, lines-20, ALIGN_LEFT_TOP, version,
+		cls.fontSystemSmall, colorRed );
 
 	// prepare to draw the text
 	rows = ( lines-smallCharHeight-14 ) / smallCharHeight;  // rows of text to draw
@@ -735,11 +720,9 @@ void Con_DrawConsole( float frac )
 	row = con.display;	// first line to be drawn
 	if( con.display )
 	{
-		int width = SCR_strWidth( "^", cls.fontSystemSmall, 0 );
-
 		// draw arrows to show the buffer is backscrolled
 		for( x = 0; x < con.linewidth; x += 4 )
-			SCR_DrawRawChar( ( x+1 )*width, y, '^', cls.fontSystemSmall, colorRed );
+			SCR_DrawRawChar( ( x+1 )*SCR_strWidth( "^", cls.fontSystemSmall, 0 ), y, '^', cls.fontSystemSmall, colorRed );
 
 		// the arrows obscure one line of scrollback
 		y -= smallCharHeight;
@@ -1465,14 +1448,6 @@ void Con_KeyDown( int key )
 			input_prestep = 0;
 		}
 		return;
-	}
-	
-	if( key == K_MWHEELUP || key == K_MWHEELDOWN )
-	{
-		if( Key_IsDown( K_CTRL ) ) {
-			Con_ChangeFontSize( key == K_MWHEELUP ? 1 : -1 );
-			return;
-		}
 	}
 
 	if( key == K_PGUP || key == KP_PGUP || key == K_MWHEELUP ) // wsw : pb : support mwheel in console

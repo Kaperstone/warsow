@@ -60,7 +60,7 @@ bool StyleSheetNodeSelectorNthOfType::IsApplicable(const Element* element, int a
 
 		// Skip nodes that don't share our tag.
 		if (child->GetTagName() != element->GetTagName() ||
-			child->GetDisplay() == DISPLAY_NONE)
+			child->GetProperty< int >(DISPLAY) == DISPLAY_NONE)
 			continue;
 
 		element_index++;

@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void *vorbisLibrary = NULL;
 
 int ( *qov_clear )( OggVorbis_File *vf );
-int ( *qov_open_callbacks )( void *datasource, OggVorbis_File *vf, const char *initial, long ibytes, ov_callbacks callbacks );
+int ( *qov_open_callbacks )( void *datasource, OggVorbis_File *vf, char *initial, long ibytes, ov_callbacks callbacks );
 ogg_int64_t ( *qov_pcm_total )( OggVorbis_File *vf, int i );
 int ( *qov_pcm_seek )( OggVorbis_File *vf, ogg_int64_t pos );
 int ( *qov_raw_seek )( OggVorbis_File *vf, ogg_int64_t pos );
@@ -54,7 +54,7 @@ dllfunc_t oggvorbisfuncs[] =
 #else // VORBISLIB_RUNTIME
 
 int ( *qov_clear )( OggVorbis_File *vf ) = ov_clear;
-int ( *qov_open_callbacks )( void *datasource, OggVorbis_File *vf, const char *initial, long ibytes, ov_callbacks callbacks ) = ov_open_callbacks;
+int ( *qov_open_callbacks )( void *datasource, OggVorbis_File *vf, char *initial, long ibytes, ov_callbacks callbacks ) = ov_open_callbacks;
 ogg_int64_t ( *qov_pcm_total )( OggVorbis_File *vf, int i ) = ov_pcm_total;
 int ( *qov_raw_seek )( OggVorbis_File *vf, ogg_int64_t pos ) = ov_raw_seek;
 ogg_int64_t ( *qov_raw_tell )( OggVorbis_File *vf ) = ov_raw_tell;

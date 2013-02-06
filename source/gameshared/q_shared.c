@@ -1854,7 +1854,7 @@ void BlockAllocator_Free( block_allocator_t *ba )
 */
 
 // minimum number of preallocated elems, also in reallocation
-#define LA_MIN_PREALLOCATE	32
+#define LA_MIN_PREALLOCATE	16
 
 struct linear_allocator_s
 {
@@ -1871,7 +1871,6 @@ linear_allocator_t * LinearAllocator( size_t elemSize, size_t preAllocate, alloc
 {
 	linear_allocator_t *la;
 	size_t size;
-	void *base;
 
 	if( !elemSize )
 		return 0;
@@ -1879,18 +1878,13 @@ linear_allocator_t * LinearAllocator( size_t elemSize, size_t preAllocate, alloc
 	if( preAllocate < LA_MIN_PREALLOCATE )
 		preAllocate = LA_MIN_PREALLOCATE;
 
-	size = preAllocate * elemSize;
+	size = preAllocate * elemSize + sizeof( *la );
 
-	la = (linear_allocator_t*)alloc_function( sizeof( *la ), __FILE__, __LINE__ );
+	la = (linear_allocator_t*)alloc_function( size, __FILE__, __LINE__ );
 	if( !la )
 		Sys_Error( "LinearAllocator: failed to create allocator\n" );
-
-	base = alloc_function( size, __FILE__, __LINE__ );
-	if( !base )
-		Sys_Error( "LinearAllocator: failed to allocate base\n" );
-
 	memset( la, 0, sizeof( *la ) );
-	la->base = base;
+	la->base = (void*)( &la[1] );
 	la->elemSize = elemSize;
 	la->allocatedElems = 0;
 	la->allocatedActual = preAllocate;
@@ -1903,30 +1897,28 @@ linear_allocator_t * LinearAllocator( size_t elemSize, size_t preAllocate, alloc
 
 void *LA_Alloc( linear_allocator_t *la )
 {
-	void *newbase;
 	size_t currSize, newSize;
 
-	if( la->allocatedElems < la->allocatedActual ) {
-		return ((unsigned char*)la->base) + la->allocatedElems++ * la->elemSize;
+	if( la->allocatedElems < la->allocatedActual)
+	{
+		la->allocatedElems++;
+		return ((unsigned char*)la->base) + (la->allocatedElems-1) * la->elemSize;
 	}
 
-	currSize = la->allocatedActual * la->elemSize;
+	currSize = sizeof( *la ) + la->allocatedActual * la->elemSize;
 	newSize = currSize + LA_MIN_PREALLOCATE * la->elemSize;
 
-	newbase = (linear_allocator_t*)la->alloc( newSize, __FILE__, __LINE__ );
-	if( !newbase )
-		Sys_Error( "LA_Alloc: Failed to allocate element\n" );
-
-	// copy old data
-	memcpy( newbase, la->base, currSize );
-	la->free( la->base, __FILE__, __LINE__ );
+	la = (linear_allocator_t*)la->alloc( newSize, __FILE__, __LINE__ );
+	if( !la )
+		Sys_Error( "LinearAllocator: Failed to allocate element\n" );
 
 	// fix the base pointer
-	la->base = newbase;
+	la->base = (void*)( &la[1] );
 
 	// and the size
 	la->allocatedActual += LA_MIN_PREALLOCATE;
-	return ((unsigned char*)la->base) + la->allocatedElems++ * la->elemSize;
+	la->allocatedElems++;
+	return ((unsigned char*)la->base) + (la->allocatedElems-1) * la->elemSize;
 }
 
 void *LA_Pointer( linear_allocator_t *la, size_t index )
@@ -1945,6 +1937,5 @@ size_t LA_Size( linear_allocator_t *la )
 
 void LinearAllocator_Free( linear_allocator_t *la )
 {
-	la->free( la->base, __FILE__, __LINE__ );
 	la->free( la, __FILE__, __LINE__ );
 }

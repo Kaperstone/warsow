@@ -200,8 +200,8 @@ namespace WSWUI {
 	class ServerInfoFetcher
 	{
 		// amount if simultaneous queries
-		static const unsigned int TIMEOUT_SEC = 5;	// secs until we replace with another job
-		static const unsigned int QUERY_TIMEOUT_MSEC = 50;	// time between subsequent queries to individual servers
+		const static int TIMEOUT_SEC = 5;	// secs until we replace with another job
+		const static int QUERY_TIMEOUT_MSEC = 50;	// time between subsequent queries to individual servers
 
 		// waiting line
 		typedef std::queue<std::string> StringQueue;
@@ -216,8 +216,7 @@ namespace WSWUI {
 
 	public:
 		ServerInfoFetcher(ServerBrowserDataSource *_serverBrowser)
-			: serverBrowser( _serverBrowser ), 
-			lastQueryTime( 0 ), numIssuedQueries( 0 )
+			: serverBrowser( _serverBrowser ), lastQueryTime( 0 ), numIssuedQueries( 0 )
 		{}
 		~ServerInfoFetcher() {}
 
@@ -266,7 +265,6 @@ namespace WSWUI {
 		typedef std::pair<ServerInfoList::iterator, bool> ServerInfoListPair;
 
 		static const unsigned int MAX_RETRIES = 3;
-		static const unsigned int REFRESH_TIMEOUT_MSEC = 1000;	// time between subsequent table updates
 
 		// constants
 		/*
@@ -398,8 +396,6 @@ namespace WSWUI {
 		int getActivity( void ) { return numNotifies; }
 
 	private:
-		unsigned int lastUpdateTime;
-
 		void tableNameForServerInfo( const ServerInfo &, String &table ) const;
 		void addServerToTable( ServerInfo &info, String tableName );
 		void removeServerFromTable( ServerInfo &info, String tableName );

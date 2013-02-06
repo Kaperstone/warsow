@@ -17,7 +17,6 @@ BUILD_IRC?=YES
 BUILD_SND_QF?=YES
 BUILD_SND_OPENAL?=YES
 BUILD_CIN?=YES
-BUILD_FTLIB?=YES
 
 # game modules
 BUILD_CGAME?=YES
@@ -87,14 +86,13 @@ DEPENDFILE_GAME=$(BUILDDIR)/game/Makefile.d
 DEPENDFILE_UI_ROCKET=$(BUILDDIR)/ui/Makefile.d
 DEPENDFILE_IRC=$(BUILDDIR)/irc/Makefile.d
 DEPENDFILE_CIN=$(BUILDDIR)/cin/Makefile.d
-DEPENDFILE_FTLIB=$(BUILDDIR)/ftlib/Makefile.d
 DEPENDFILE_ANGELWRAP=$(BUILDDIR)/angelwrap/Makefile.d
 DEPENDFILE_TV_SERVER=$(BUILDDIR)/tv_server/Makefile.d
 DEPENDFILE_NULL=$(BUILDDIR)/null/Makefile.d
 DEPENDFILE_ROCKETCORE=$(BUILDDIR)/rocketcore/Makefile.d
 DEPENDFILE_ROCKETCONTROLS=$(BUILDDIR)/rocketcontrols/Makefile.d
 
-BUILDDIRS=$(BUILDDIR)/client $(BUILDDIR)/ded $(BUILDDIR)/cgame $(BUILDDIR)/game $(BUILDDIR)/ui $(BUILDDIR)/openal $(BUILDDIR)/qf $(BUILDDIR)/irc $(BUILDDIR)/cin $(BUILDDIR)/ftlib $(BUILDDIR)/angelwrap $(BUILDDIR)/tv_server $(BUILDDIR)/rocketcore $(BUILDDIR)/rocketcontrols
+BUILDDIRS=$(BUILDDIR)/client $(BUILDDIR)/ded $(BUILDDIR)/cgame $(BUILDDIR)/game $(BUILDDIR)/ui $(BUILDDIR)/openal $(BUILDDIR)/qf $(BUILDDIR)/irc $(BUILDDIR)/cin $(BUILDDIR)/angelwrap $(BUILDDIR)/tv_server $(BUILDDIR)/rocketcore $(BUILDDIR)/rocketcontrols
 
 ###########################################################
 # Angelwrap stuff
@@ -112,10 +110,6 @@ ANGELSCRIPT_LIB=$(ANGELSCRIPT_DIR)/lib/libangelscript.a
 ANGELSCRIPT_INC=$(ANGELSCRIPT_DIR)/include/
 
 CFLAGS_ANGELWRAP=-I$(ANGELSCRIPT_INC)
-
-###########################################################
-# Game modules stuff
-CFLAGS_GAME=-I$(ANGELSCRIPT_INC)
 
 ###########################################################
 # libRocket stuff
@@ -190,11 +184,6 @@ CFLAGS_CIN=-I../libsrcs/libogg/include -I../libsrcs/libvorbis/include -I../libsr
 LDFLAGS_CIN=-lvorbisstat -loggstat -ltheorastat
 endif
 
-ifeq ($(BUILD_FTLIB),YES)
-CFLAGS_FTLIB=-I../libsrcs/libfreetype/include
-LDFLAGS_FTLIB=-lfreetypestat
-endif
-
 LDFLAGS_IRC=-lwsock32 -lws2_32
 LDFLAGS_ANGELWRAP=$(ANGELSCRIPT_LIB)
 
@@ -262,13 +251,8 @@ LDFLAGS_QF=$(shell $(SDL_CONFIG) --libs) -lvorbisfile
 endif # BUILD_SND_QF
 
 ifeq ($(BUILD_CIN),YES)
-CFLAGS_CIN=
+CFLAGS_CIN=$(shell $(OPENAL_CONFIG) --cflags)
 LDFLAGS_CIN=-lvorbis -ltheora -ltheoradec
-endif
-
-ifeq ($(BUILD_FTLIB),YES)
-CFLAGS_FTLIB=$(shell freetype-config --cflags)
-LDFLAGS_FTLIB=$(shell freetype-config --libs)
 endif
 
 LDFLAGS_IRC=
@@ -299,7 +283,6 @@ CFLAGS_SDL=-I/Library/Frameworks/SDL.framework/Headers
 CFLAGS_CLIENT=-std=gnu99 -I/Library/Frameworks/SDL.framework/Headers -I/Library/Frameworks/libjpeg.framework/Headers -I/System/Library/Frameworks/OpenAL.framework/Headers
 CFLAGS_DED=-DDEDICATED_ONLY -DC_ONLY
 CFLAGS_CIN=
-CFLAGS_FTLIB=
 LDFLAGS_CLIENT=-lz -lcurl -framework libjpeg -framework SDL -framework OpenGL -I/Library/Frameworks/SDL.framework/Headers
 LDFLAGS_MODULE=-bundle
 LDFLAGS_COMMON=-arch ppc -arch i386 -framework AppKit -mmacosx-version-min=10.4 -isysroot /Developer/SDKs/MacOSX10.4u.sdk
@@ -310,7 +293,6 @@ LDFLAGS_OPENAL=-framework OpenAL -framework Ogg -framework Vorbis
 LDFLAGS_IRC=
 LDFLAGS_ANGELWRAP=$(ANGELSCRIPT_LIB) -lpthread
 LDFLAGS_CIN=
-LDFLAGS_FTLIB=
 endif
 
 ######################################################################################################
@@ -424,15 +406,13 @@ OBJS_CGAME = $(addprefix $(BUILDDIR)/cgame/, $(OFILES_CGAME) )
 #########
 # GAME
 #########
-CPPFILES_GAME  = $(wildcard game/*.cpp)
-CPPFILES_GAME += $(wildcard game/ai/*.cpp)
+CFILES_GAME  = $(wildcard game/*.c)
+CFILES_GAME += $(wildcard game/ai/*.c)
 CFILES_GAME += $(wildcard gameshared/*.c)
 CFILES_GAME += matchmaker/mm_rating.c
 
 CFILES_GAME_WITHOUT_PATH= $(notdir  $(CFILES_GAME))
 OFILES_GAME=$(CFILES_GAME_WITHOUT_PATH:.c=.o)
-CPPFILES_GAME_WITHOUT_PATH= $(notdir  $(CPPFILES_GAME))
-OFILES_GAME+=$(CPPFILES_GAME_WITHOUT_PATH:.cpp=.o)
 OBJS_GAME = $(addprefix $(BUILDDIR)/game/, $(OFILES_GAME) )
 
 #########
@@ -471,16 +451,6 @@ CFILES_CIN += $(wildcard gameshared/q_*.c)
 CFILES_CIN_WITHOUT_PATH= $(notdir  $(CFILES_CIN))
 OFILES_CIN=$(CFILES_CIN_WITHOUT_PATH:.c=.o)
 OBJS_CIN = $(addprefix $(BUILDDIR)/cin/, $(OFILES_CIN) )
-
-#########
-# FTLIB
-#########
-CFILES_FTLIB  = $(wildcard ftlib/*.c)
-CFILES_FTLIB += $(wildcard gameshared/q_*.c)
-
-CFILES_FTLIB_WITHOUT_PATH= $(notdir  $(CFILES_FTLIB))
-OFILES_FTLIB=$(CFILES_FTLIB_WITHOUT_PATH:.c=.o)
-OBJS_FTLIB = $(addprefix $(BUILDDIR)/ftlib/, $(OFILES_FTLIB) )
 
 #########
 # ANGELWRAP
@@ -527,14 +497,13 @@ OBJS_TV_SERVER = $(addprefix $(BUILDDIR)/tv_server/, $(OFILES_TV_SERVER) )
 	ui message-ui compile-ui link-ui \
 	irc message-irc compile-irc link-irc \
 	cin message-cin compile-cin link-cin \
-	ftlib message-ftlib compile-ftlib link-ftlib \
 	angelwrap message-angelwrap compile-angelwrap link-angelwrap \
 	tv_server message-tv_server compile-tv_server link-tv_server  \
 	clean clean-depend clean-client clean-openal clean-qf clean-ded \
 	clean-cgame clean-game clean-irc clean-cin clean-angelwrap clean-game clean-tv_server \
 	compile
 
-all: client openal qf ded cgame game ui irc cin ftlib angelwrap tv_server
+all: client openal qf ded cgame game ui irc cin angelwrap tv_server
 
 client: $(BUILDDIRS) message-client compile-client link-client start-script-client
 openal: $(BUILDDIRS) message-openal compile-openal link-openal
@@ -545,11 +514,10 @@ game: $(BUILDDIRS) message-game compile-game link-game
 ui: $(BUILDDIRS) message-ui compile-ui link-ui
 irc: $(BUILDDIRS) message-irc compile-irc link-irc
 cin: $(BUILDDIRS) message-cin compile-cin link-cin
-ftlib: $(BUILDDIRS) message-ftlib compile-ftlib link-ftlib
 angelwrap: $(BUILDDIRS) message-angelwrap compile-angelwrap link-angelwrap
 tv_server: $(BUILDDIRS) message-tv_server compile-tv_server link-tv_server start-script-tv_server
 
-clean: clean-msg clean-depend clean-client clean-openal clean-qf clean-ded clean-cgame clean-game clean-ui clean-librocket clean-irc clean-cin clean-ftlib clean-angelwrap clean-tv_server
+clean: clean-msg clean-depend clean-client clean-openal clean-qf clean-ded clean-cgame clean-game clean-ui clean-librocket clean-irc clean-cin clean-angelwrap clean-tv_server
 
 clean-msg:
 	@echo "> *********************************************************"
@@ -557,7 +525,7 @@ clean-msg:
 	@echo "> *********************************************************"
 clean-depend:
 	@echo "  > Removing depend files" && \
-	$(RM) $(DEPENDFILE_CLIENT) $(DEPENDFILE_DED) $(DEPENDFILE_CGAME) $(DEPENDFILE_GAME) $(DEPENDFILE_UI_ROCKET) $(DEPENDFILE_OPENAL) $(DEPENDFILE_TV_SERVER) $(DEPENDFILE_QF) $(DEPENDFILE_IRC) $(DEPENDFILE_CIN) $(DEPENDFILE_FTLIB) $(DEPENDFILE_ANGELWRAP)
+	$(RM) $(DEPENDFILE_CLIENT) $(DEPENDFILE_DED) $(DEPENDFILE_CGAME) $(DEPENDFILE_GAME) $(DEPENDFILE_UI_ROCKET) $(DEPENDFILE_OPENAL) $(DEPENDFILE_TV_SERVER) $(DEPENDFILE_QF) $(DEPENDFILE_IRC) $(DEPENDFILE_CIN) $(DEPENDFILE_ANGELWRAP)
 
 $(BUILDDIRS) $(BINDIR) $(BINDIR)/basewsw $(BINDIR)/libs:
 	@mkdir -p $@
@@ -683,18 +651,6 @@ clean-cin:
 	$(RM) $(OBJS_CIN)
 endif
 
-ifeq ($(BUILD_FTLIB),YES)
-message-ftlib:
-	@echo "> *********************************************************"
-	@echo "> * Building ftlib"
-	@echo "> *********************************************************"
-compile-ftlib: $(OBJS_FTLIB)
-link-ftlib: $(BINDIR)/libs $(BINDIR)/libs/ftlib_$(ARCH).$(SHARED_LIBRARY_EXTENSION)
-clean-ftlib:
-	@echo "  > Removing ftlib objects" && \
-	$(RM) $(OBJS_FTLIB)
-endif
-
 ifeq ($(BUILD_ANGELWRAP),YES)
 message-angelwrap:
 	@echo "> *********************************************************"
@@ -785,7 +741,7 @@ $(BINDIR)/basewsw/cgame_$(ARCH).$(SHARED_LIBRARY_EXTENSION): $(OBJS_CGAME)
 
 $(BINDIR)/basewsw/game_$(ARCH).$(SHARED_LIBRARY_EXTENSION): $(OBJS_GAME)
 	@echo "  > Linking $@" && \
-	$(LXX) -o $@ $^ $(LXXFLAGS_COMMON) $(LDFLAGS_MODULE)
+	$(LD) -o $@ $^ $(LDFLAGS_COMMON) $(LDFLAGS_MODULE)
 
 $(BINDIR)/basewsw/ui_$(ARCH).$(SHARED_LIBRARY_EXTENSION): $(OBJS_UI_ROCKET)
 	@echo "  > Linking $@" && \
@@ -798,10 +754,6 @@ $(BINDIR)/libs/irc_$(ARCH).$(SHARED_LIBRARY_EXTENSION): $(OBJS_IRC)
 $(BINDIR)/libs/cin_$(ARCH).$(SHARED_LIBRARY_EXTENSION): $(OBJS_CIN)
 	@echo "  > Linking $@" && \
 	$(LD) -o $@ $^ $(LDFLAGS_COMMON) $(LDFLAGS_MODULE) $(LDFLAGS_CIN)
-
-$(BINDIR)/libs/ftlib_$(ARCH).$(SHARED_LIBRARY_EXTENSION): $(OBJS_FTLIB)
-	@echo "  > Linking $@" && \
-	$(LD) -o $@ $^ $(LDFLAGS_COMMON) $(LDFLAGS_MODULE) $(LDFLAGS_FTLIB)
 
 $(BINDIR)/libs/angelwrap_$(ARCH).$(SHARED_LIBRARY_EXTENSION): $(OBJS_ANGELWRAP)
 	@echo "  > Linking $@" && \
@@ -943,17 +895,17 @@ $(BUILDDIR)/cgame/%.o: gameshared/%.c
 ########
 # GAME
 ########
-$(BUILDDIR)/game/%.o: game/%.cpp
-	@$(DO_CXX_MODULE) $(CFLAGS_GAME)
+$(BUILDDIR)/game/%.o: game/%.c
+	@$(DO_CC_MODULE)
 
-$(BUILDDIR)/game/%.o: game/ai/%.cpp
-	@$(DO_CXX_MODULE) $(CFLAGS_GAME)
+$(BUILDDIR)/game/%.o: game/ai/%.c
+	@$(DO_CC_MODULE)
 
 $(BUILDDIR)/game/%.o: gameshared/%.c
-	@$(DO_CC_MODULE) $(CFLAGS_GAME)
+	@$(DO_CC_MODULE)
 
 $(BUILDDIR)/game/%.o: matchmaker/%.c
-	@$(DO_CC_MODULE) $(CFLAGS_GAME)
+	@$(DO_CC_MODULE)
 
 ########
 # UI.ROCKET
@@ -999,15 +951,6 @@ $(BUILDDIR)/cin/%.o: gameshared/%.c
 
 $(BUILDDIR)/cin/%.o: cin/%.c
 	@$(DO_CC_MODULE) $(CFLAGS_CIN)
-
-########
-# FTLIB
-########
-$(BUILDDIR)/ftlib/%.o: gameshared/%.c
-	@$(DO_CC_MODULE)
-
-$(BUILDDIR)/ftlib/%.o: ftlib/%.c
-	@$(DO_CC_MODULE) $(CFLAGS_FTLIB)
 
 ########
 # ANGELWRAP
@@ -1114,11 +1057,6 @@ $(DEPENDFILE_CIN): $(BUILDDIRS) $(CFILES_CIN)
 	awk '/^[a-zA-Z_]/{ sub(/^([a-zA-Z_]*\/)+/, "$(BUILDDIR)/cin/"); print $$0, "Makefile"; \
 		sub(/^.*\:/, "$(DEPENDFILE_CIN):"); print $$0, "Makefile" }' > $(DEPENDFILE_CIN)
 
-$(DEPENDFILE_FTLIB): $(BUILDDIRS) $(CFILES_FTLIB)
-	@makedepend -f - -- $(CFLAGS_COMMON) $(CFLAGS_MODULES) -- $(CFILES_FTLIB) 2> /dev/null | \
-	awk '/^[a-zA-Z_]/{ sub(/^([a-zA-Z_]*\/)+/, "$(BUILDDIR)/ftlib/"); print $$0, "Makefile"; \
-		sub(/^.*\:/, "$(DEPENDFILE_FTLIB):"); print $$0, "Makefile" }' > $(DEPENDFILE_FTLIB)
-
 $(DEPENDFILE_ANGELWRAP): $(BUILDDIRS) $(CFILES_ANGELWRAP)
 	@makedepend -f - -- $(CFLAGS_COMMON) $(CFLAGS_MODULES) -- $(CFILES_ANGELWRAP) 2> /dev/null | \
 	awk '/^[a-zA-Z_]/{ sub(/^([a-zA-Z_]*\/)+/, "$(BUILDDIR)/angelwrap/"); print $$0, "Makefile"; \
@@ -1155,9 +1093,6 @@ ifeq ($(BUILD_IRC),YES)
 endif
 ifeq ($(BUILD_CIN),YES)
 -include $(DEPENDFILE_CIN)
-endif
-ifeq ($(BUILD_FTLIB),YES)
--include $(DEPENDFILE_FTLIB)
 endif
 ifeq ($(BUILD_ANGELWRAP),YES)
 -include $(DEPENDFILE_TV_SERVER)

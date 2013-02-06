@@ -25,17 +25,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // shared callbacks
 
-extern void ( *module_Printf )( const char *format, ... );
-extern void ( *module_Error )( const char *format, ... );
-extern void *( *module_Malloc )( size_t size );
-extern void ( *module_Free )( void *data );
-extern void ( *module_Trace )( trace_t *t, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int ignore, int contentmask, int timeDelta );
-extern entity_state_t *( *module_GetEntityState )( int entNum, int deltaTime );
-extern int ( *module_PointContents )( vec3_t point, int timeDelta );
-extern void ( *module_PredictedEvent )( int entNum, int ev, int parm );
-extern void ( *module_PMoveTouchTriggers )( pmove_t *pm );
-extern void ( *module_RoundUpToHullSize )( vec3_t mins, vec3_t maxs );
-extern const char *( *module_GetConfigString )( int index );
+void ( *module_Printf )( const char *format, ... );
+void ( *module_Error )( const char *format, ... );
+void *( *module_Malloc )( size_t size );
+void ( *module_Free )( void *data );
+void ( *module_Trace )( trace_t *t, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int ignore, int contentmask, int timeDelta );
+entity_state_t *( *module_GetEntityState )( int entNum, int deltaTime );
+int ( *module_PointContents )( vec3_t point, int timeDelta );
+void ( *module_PredictedEvent )( int entNum, int ev, int parm );
+void ( *module_PMoveTouchTriggers )( pmove_t *pm );
+void ( *module_RoundUpToHullSize )( vec3_t mins, vec3_t maxs );
+const char *( *module_GetConfigString )( int index );
 
 //===============================================================
 //		WARSOW player AAboxes sizes
@@ -157,7 +157,7 @@ extern gs_state_t gs;
 
 #define GS_MatchState() ( gs.gameState.stats[GAMESTAT_MATCHSTATE] )
 #define GS_MaxPlayersInTeam() ( gs.gameState.stats[GAMESTAT_MAXPLAYERSINTEAM] )
-#define GS_InvidualGameType() ( GS_MaxPlayersInTeam() == 1 ? qtrue : qfalse )
+#define GS_InvidualGameType() ( GS_MaxPlayersInTeam() == 1 )
 
 #define GS_MatchDuration() ( gs.gameState.longstats[GAMELONG_MATCHDURATION] )
 #define GS_MatchStartTime() ( gs.gameState.longstats[GAMELONG_MATCHSTART] )
@@ -502,16 +502,16 @@ typedef enum
 typedef struct gitem_s
 {
 	//header
-	char *classname;        // spawning name
+	char * const classname;        // spawning name
 	int tag;
 	itemtype_t type;
 	int flags;              // actions the item does in the game
 
 	//media
-	char *world_model[MAX_ITEM_MODELS];
-	char *icon;
-	char *simpleitem;       // Kurim : we use different images for representing simpleitems
-	char *pickup_sound;
+	const char * const world_model[MAX_ITEM_MODELS];
+	const char * const icon;
+	const char * const simpleitem;       // Kurim : we use different images for representing simpleitems
+	const char * const pickup_sound;
 	int effects;
 
 
@@ -529,9 +529,9 @@ typedef struct gitem_s
 	void *info;             // miscelanea info goes pointed in here
 
 	// space separated string of stuff to precache that's not mentioned above
-	char *precache_models;
-	char *precache_sounds;
-	char *precache_images;
+	const char * const precache_models;
+	const char * const precache_sounds;
+	const char * const precache_images;
 
 	int asRefCount, asFactored;
 } gsitem_t;
@@ -567,8 +567,8 @@ enum
 // teams
 const char *GS_TeamName( int team );
 const char *GS_DefaultTeamName( int team );
-const char *GS_TeamSkinName( int team );
-int GS_Teams_TeamFromName( const char *teamname );
+char *GS_TeamSkinName( int team );
+int GS_Teams_TeamFromName( char *teamname );
 qboolean GS_IsTeamDamage( entity_state_t *targ, entity_state_t *attacker );
 
 //===============================================================
@@ -659,10 +659,10 @@ const char *GS_MatchMessageString( matchmessage_t mm );
 #define	PMFEAT_CONTINOUSJUMP	( 1<<9 )
 #define	PMFEAT_ITEMPICK			( 1<<10 )
 #define	PMFEAT_GUNBLADEAUTOATTACK ( 1<<11 )
-#define	PMFEAT_WEAPONSWITCH		( 1<<12 )
+#define	PMFEAT_WEAPONSWITCH ( 1<<12 )
 
-#define PMFEAT_ALL				( 0xFFFF )
-#define PMFEAT_DEFAULT			( PMFEAT_ALL & ~PMFEAT_GHOSTMOVE )
+#define PMFEAT_ALL			( 0xFFFF )
+#define PMFEAT_DEFAULT		( PMFEAT_ALL & ~PMFEAT_GHOSTMOVE )
 
 enum
 {

@@ -12,6 +12,7 @@
 namespace ASUI {
 
 typedef WSWUI::UI_Main UI_Main;
+typedef std::list<asIScriptContext *> ContextList;
 
 //=======================================
 
@@ -131,7 +132,9 @@ class ASModule : public ASInterface
 {
 	UI_Main *ui_main;
 
+	int engineHandle;
 	asIScriptEngine *engine;
+	ContextList contexts;
 	asIScriptModule *module;
 	struct angelwrap_api_s *as_api;
 	asIObjectType *stringObjectType;
@@ -142,7 +145,7 @@ class ASModule : public ASInterface
 public:
 
 	ASModule()
-		: ui_main(0), engine(0),
+		: ui_main(0), engineHandle(0), engine(0),
 		module(0), as_api(0),
 		stringObjectType(0),
 		scriptCount(0), _isBuilding( false )
@@ -153,22 +156,65 @@ public:
 	{
 	}
 
+	void MessageCallback(const asSMessageInfo *msg)
+	{
+		const char *msg_type;
+		switch( msg->type )
+		{
+			case asMSGTYPE_ERROR:
+				msg_type = S_COLOR_RED "ERROR: ";
+				break;
+			case asMSGTYPE_WARNING:
+				msg_type = S_COLOR_YELLOW "WARNING: ";
+			case asMSGTYPE_INFORMATION:
+			default:
+				msg_type = S_COLOR_CYAN "ANGELSCRIPT: ";
+				break;
+		}
+
+		Com_Printf( "%s%s %d:%d: %s\n", msg_type, msg->section, msg->row, msg->col, msg->message );
+	}
+
+	void ExceptionCallback( asIScriptContext *ctx )
+	{
+		int line, col;
+		asIScriptFunction *func;
+		const char *sectionName, *exceptionString, *funcDecl;
+
+		line = ctx->GetExceptionLineNumber( &col, &sectionName );
+		func = ctx->GetExceptionFunction();
+		exceptionString = ctx->GetExceptionString();
+		funcDecl = ( func ? func->GetDeclaration( true ) : "" );
+
+		Com_Printf( S_COLOR_RED "ASModule::ExceptionCallback:\n%s %d:%d %s: %s\n", sectionName, line, col, funcDecl, exceptionString );
+	}
+
 	virtual bool Init( void )
 	{
-		bool as_max_portability = false;
+		qboolean as_max_portability = qfalse;
 
 		as_api = trap::asGetAngelExport();
 		if( !as_api )
 			return false;
 
-		engine = as_api->asCreateEngine( &as_max_portability );
-		if( engine == NULL ){
+		engineHandle = as_api->asCreateScriptEngine( &as_max_portability );
+		if( engineHandle == -1 ){
 			return false;
 		}
 
-		if( as_max_portability != false ){
+		if( as_max_portability != qfalse ){
 			return false;
 		}
+
+		engine = static_cast<asIScriptEngine*>( as_api->asGetEngineCpp( engineHandle ) );
+		if( !engine ){
+			return false;
+		}
+
+		engine->SetMessageCallback( asMETHOD(ASModule, MessageCallback), (void*)this, asCALL_THISCALL );
+
+		// koochi: always enable default constructor
+		engine->SetEngineProperty( asEP_ALWAYS_IMPL_DEFAULT_CONSTRUCT, 1 );
 
 		stringObjectType = engine->GetObjectTypeById(engine->GetTypeIdByDecl("String"));
 
@@ -183,12 +229,23 @@ public:
 
 	virtual void Shutdown( void )
 	{
+		struct angelwrap_api_s *as_api;
+
+		as_api = trap::asGetAngelExport();
+
 		module = 0;
 
-		if( as_api && engine != NULL )
-			as_api->asReleaseEngine( engine );
+		for( ContextList::iterator it = contexts.begin(); it != contexts.end(); it++ )
+		{
+			(*it)->Release();
+		}
+		contexts.clear();
+
+		if( as_api && engineHandle != -1 )
+			as_api->asReleaseScriptEngine( engineHandle );
 
 		engine = 0;
+		engineHandle = -1;
 
 		as_api = NULL;
 
@@ -209,17 +266,32 @@ public:
 	}
 
 	virtual asIScriptContext *getContext( void )
-	{
-		if( !as_api ) {
+	{ 
+		// try to reuse a free context
+		for( ContextList::iterator it = contexts.begin(); it != contexts.end(); it++ )
+		{
+			if( (*it)->GetState() == asEXECUTION_FINISHED ) {
+				return *it;
+			}
+		}
+
+		if( !engine ) {
 			return NULL;
 		}
 
-		return as_api->asAcquireContext( engine );
+		asIScriptContext *context = engine->CreateContext();
+		if( !context ) {
+			return NULL;
+		}
+
+		context->SetExceptionCallback( asMETHOD(ASModule, ExceptionCallback), (void*)this, asCALL_THISCALL );
+		contexts.push_back( context );
+		return context;
 	}
 
 	virtual asIScriptContext *getActiveContext( void )
 	{ 
-		return as_api ? as_api->asGetActiveContext() : NULL;
+		return as_api ? static_cast<asIScriptContext*>( as_api->asGetActiveContext() ) : NULL;
 	}
 
 	virtual asIScriptModule *getActiveModule( void )
@@ -525,7 +597,7 @@ public:
 	virtual CScriptDictionaryInterface *createDictionary( void )
 	{
 		if( as_api ) {
-			return static_cast<CScriptDictionaryInterface *>( as_api->asCreateDictionaryCpp( engine ) );
+			return static_cast<CScriptDictionaryInterface *>( as_api->asCreateDictionaryCpp( static_cast<void *>( engine ) ) );
 		}
 		return NULL;
 	}

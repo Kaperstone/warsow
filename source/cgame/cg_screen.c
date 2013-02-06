@@ -73,8 +73,7 @@ cvar_t *cg_showTeamMates;
 
 cvar_t *cg_showPressedKeys;
 
-cvar_t *cg_scoreboardFontFamily;
-cvar_t *cg_scoreboardFontSize;
+cvar_t *cg_scoreboardFont;
 cvar_t *cg_scoreboardWidthScale;
 
 cvar_t *cg_showTeamLocations;
@@ -147,7 +146,7 @@ void CG_CenterPrintToUpper( char *str )
 static void CG_DrawCenterString( void )
 {
 	int y;
-	struct qfontface_s *font = cgs.fontSystemMedium;
+	struct mufont_s *font = cgs.fontSystemMedium;
 	char *helpmessage = scr_centerstring;
 	int x = cgs.vidWidth / 2;
 	int width = cgs.vidWidth / 2;
@@ -302,8 +301,7 @@ void CG_ScreenInit( void )
 
 	cg_showPressedKeys = trap_Cvar_Get( "cg_showPressedKeys", "0", CVAR_ARCHIVE );
 
-	cg_scoreboardFontFamily = trap_Cvar_Get( "cg_scoreboardFontFamily", DEFAULT_SCOREBOARD_FONT_FAMILY, CVAR_ARCHIVE );
-	cg_scoreboardFontSize = trap_Cvar_Get( "cg_scoreboardFontSize", STR_TOSTR( DEFAULT_SCOREBOARD_FONT_SIZE ), CVAR_ARCHIVE );
+	cg_scoreboardFont = trap_Cvar_Get( "cg_scoreboardFont", DEFAULT_FONT_SCOREBOARD, CVAR_ARCHIVE );
 	cg_scoreboardWidthScale = trap_Cvar_Get( "cg_scoreboardWidthScale", "1.0", CVAR_ARCHIVE );
 
 	// wsw : hud debug prints
@@ -508,7 +506,7 @@ void CG_DrawKeyState( int x, int y, int w, int h, int align, char *key )
 /*
 * CG_DrawClock
 */
-void CG_DrawClock( int x, int y, int align, struct qfontface_s *font, vec4_t color )
+void CG_DrawClock( int x, int y, int align, struct mufont_s *font, vec4_t color )
 {
 	unsigned int clocktime, startTime, duration, curtime;
 	double seconds;
@@ -611,7 +609,7 @@ void CG_UpdatePointedNum( void )
 /*
 * CG_DrawPlayerNames
 */
-void CG_DrawPlayerNames( struct qfontface_s *font, vec4_t color )
+void CG_DrawPlayerNames( struct mufont_s *font, vec4_t color )
 {
 	static vec4_t alphagreen = { 0, 1, 0, 0 }, alphared = { 1, 0, 0, 0 }, alphayellow = { 1, 1, 0, 0 }, alphamagenta = { 1, 0, 1, 1 }, alphagrey = { 0.85, 0.85, 0.85, 1 };
 	centity_t *cent;
@@ -814,7 +812,7 @@ void CG_DrawTeamMates( void )
 /*
 * CG_DrawTeamInfo
 */
-void CG_DrawTeamInfo( int x, int y, int align, struct qfontface_s *font, vec4_t color )
+void CG_DrawTeamInfo( int x, int y, int align, struct mufont_s *font, vec4_t color )
 {
 	char string[128];
 	int team;
@@ -953,7 +951,7 @@ void CG_DrawTeamInfo( int x, int y, int align, struct qfontface_s *font, vec4_t 
 /*
 * CG_DrawRSpeeds
 */
-void CG_DrawRSpeeds( int x, int y, int align, struct qfontface_s *font, vec4_t color )
+void CG_DrawRSpeeds( int x, int y, int align, struct mufont_s *font, vec4_t color )
 {
 	char msg[1024];
 

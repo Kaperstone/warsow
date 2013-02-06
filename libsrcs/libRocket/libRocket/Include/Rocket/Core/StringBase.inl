@@ -357,7 +357,7 @@ StringBase< T > StringBase< T >::ToLower() const
 template< typename T >
 StringBase< T > StringBase< T >::ToUpper() const
 {
-	// Loop through the string, looking for an lowercase character
+	// Loop through the string, looking for an uppercase character
 	size_t copy_index = npos;
 	for (size_t i = 0; i < length; i++)
 	{
@@ -466,9 +466,7 @@ StringBase< T >& StringBase< T >::operator=(const T* assign)
 template< typename T >
 StringBase< T >& StringBase< T >::operator=(const StringBase< T >& assign)
 {	
-	StringBase< T >&out = Assign(assign);
-	out.hash = assign.hash;
-	return out;
+	return Assign(assign);
 }
 
 template< typename T >

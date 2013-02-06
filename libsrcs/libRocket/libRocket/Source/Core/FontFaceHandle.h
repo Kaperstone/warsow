@@ -81,7 +81,7 @@ public:
 
 	/// Returns the font's glyphs.
 	/// @return The font's glyphs.
-	const FontGlyphList& GetGlyphs() const;
+	const FontGlyphMap& GetGlyphs() const;
 
 	/// Returns the width a string will take up if rendered with this handle.
 	/// @param[in] string The string to measure.
@@ -138,11 +138,11 @@ private:
 	// Generates (or shares) a layer derived from a font effect.
 	FontFaceLayer* GenerateLayer(FontEffect* font_effect);
 
-	typedef std::vector< int > GlyphKerningList;
-	typedef std::vector< GlyphKerningList > FontKerningList;
+	typedef std::map< word, int > GlyphKerningMap;
+	typedef std::map< word, GlyphKerningMap > FontKerningMap;
 
-	FontGlyphList glyphs;
-	FontKerningList kerning;
+	FontGlyphMap glyphs;
+	FontKerningMap kerning;
 
 	typedef std::map< const FontEffect*, FontFaceLayer* > FontLayerMap;
 	typedef std::map< String, FontFaceLayer* > FontLayerCache;
@@ -173,7 +173,6 @@ private:
 
 	String raw_charset;
 	UnicodeRangeList charset;
-	unsigned int max_codepoint;
 };
 
 }

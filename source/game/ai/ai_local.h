@@ -155,8 +155,8 @@ typedef struct nav_path_s
 
 } nav_path_t;
 
-extern nav_plink_t pLinks[MAX_NODES];      // pLinks array
-extern nav_node_t nodes[MAX_NODES];        // nodes array
+nav_plink_t pLinks[MAX_NODES];      // pLinks array
+nav_node_t nodes[MAX_NODES];        // nodes array
 
 typedef struct
 {
@@ -175,7 +175,7 @@ typedef struct
 
 } ai_navigation_t;
 
-extern ai_navigation_t	nav;
+ai_navigation_t	nav;
 
 //=============================================================
 //	WEAPON DECISSIONS DATA
@@ -281,7 +281,7 @@ qboolean    AI_AddLink( int n1, int n2, int linkType );
 qboolean    AI_PlinkExists( int n1, int n2 );
 int	    AI_PlinkMoveType( int n1, int n2 );
 int	    AI_findNodeInRadius( int from, vec3_t org, float rad, qboolean ignoreHeight );
-const char *AI_LinkString( int linktype );
+char *AI_LinkString( int linktype );
 int	    AI_GravityBoxToLink( int n1, int n2 );
 int	    AI_LinkCloseNodes_JumpPass( int start );
 int		AI_LinkCloseNodes_RocketJumpPass( int start );

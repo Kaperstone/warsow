@@ -93,7 +93,7 @@ static inline int PF_CM_LeafArea( int leafnum ) {
 /*
 * PF_DropClient
 */
-static void PF_DropClient( edict_t *ent, int type, const char *message )
+static void PF_DropClient( edict_t *ent, int type, char *message )
 {
 	int p;
 	client_t *drop;

@@ -1217,25 +1217,6 @@ void R_SetScissorRegion( int x, int y, int w, int h )
 }
 
 /*
-* R_GetScissorRegion
-*/
-void R_GetScissorRegion( int *x, int *y, int *w, int *h )
-{
-	if( x ) {
-		*x = glState.scissorX;
-	}
-	if( y ) {
-		*y = glState.scissorY;
-	}
-	if( w ) {
-		*w = glState.scissorW;
-	}
-	if( h ) {
-		*h = glState.scissorH;
-	}
-}
-
-/*
 * R_PolyBlend
 */
 static void R_PolyBlend( void )

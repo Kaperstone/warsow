@@ -243,6 +243,8 @@ void CG_RegisterMediaModels( void )
 	for( i = 0; i < MAX_TECHY_GIBS; i++ )
 		cgs.media.modTechyGibs[i] = CG_RegisterMediaModel( va( "models/objects/gibs/gib%i/gib%i.md3", i+1, i+1 ), qtrue );
 
+	for( i = 0; i < MAX_MEATY_GIBS; i++ )
+		cgs.media.modMeatyGibs[i] = CG_RegisterMediaModel( va( "models/objects/oldgibs/gib%i/gib%i.md3", i+1, i+1 ), qtrue );
 }
 
 //======================================================================
@@ -471,45 +473,34 @@ void CG_RegisterLevelMinimap( void )
 */
 void CG_RegisterFonts( void )
 {
-	cvar_t *con_fontSystemFamily = trap_Cvar_Get( "con_fontSystemFamily", DEFAULT_SYSTEM_FONT_FAMILY, CVAR_ARCHIVE|CVAR_LATCH_VIDEO );
-	cvar_t *con_fontSystemSmallSize = trap_Cvar_Get( "con_fontSystemSmallSize", STR_TOSTR( DEFAULT_SYSTEM_FONT_SMALL_SIZE ), CVAR_ARCHIVE|CVAR_LATCH_VIDEO );
-	cvar_t *con_fontSystemMediumSize = trap_Cvar_Get( "con_fontSystemMediumSize", STR_TOSTR( DEFAULT_SYSTEM_FONT_MEDIUM_SIZE ), CVAR_ARCHIVE|CVAR_LATCH_VIDEO );
-	cvar_t *con_fontSystemBigSize = trap_Cvar_Get( "con_fontSystemBigSize", STR_TOSTR( DEFAULT_SYSTEM_FONT_BIG_SIZE ), CVAR_ARCHIVE|CVAR_LATCH_VIDEO );
+	cvar_t *con_fontSystemSmall = trap_Cvar_Get( "con_fontSystemSmall", DEFAULT_FONT_SMALL, CVAR_ARCHIVE );
+	cvar_t *con_fontSystemMedium = trap_Cvar_Get( "con_fontSystemMedium", DEFAULT_FONT_MEDIUM, CVAR_ARCHIVE );
+	cvar_t *con_fontSystemBig = trap_Cvar_Get( "con_fontSystemBig", DEFAULT_FONT_BIG, CVAR_ARCHIVE );
 
-	// register system fonts
-	Q_strncpyz( cgs.fontSystemFamily, con_fontSystemFamily->string, sizeof( cgs.fontSystemFamily ) );
-	if( !con_fontSystemSmallSize->integer ) {
-		trap_Cvar_Set( con_fontSystemSmallSize->name, con_fontSystemSmallSize->dvalue );
-	}
-	if( !con_fontSystemMediumSize->integer ) {
-		trap_Cvar_Set( con_fontSystemMediumSize->name, con_fontSystemMediumSize->dvalue );
-	}
-	if( !con_fontSystemBigSize->integer ) {
-		trap_Cvar_Set( con_fontSystemBigSize->name, con_fontSystemBigSize->dvalue );
-	}
-
-	cgs.fontSystemSmallSize = con_fontSystemSmallSize->integer;
-	cgs.fontSystemSmall = trap_SCR_RegisterFont( cgs.fontSystemFamily, QFONT_STYLE_NONE, cgs.fontSystemSmallSize );
+	Q_strncpyz( cgs.fontNameSystemSmall, con_fontSystemSmall->string, sizeof( cgs.fontNameSystemSmall ) );
+	cgs.fontSystemSmall = trap_SCR_RegisterFont( cgs.fontNameSystemSmall );
 	if( !cgs.fontSystemSmall )
 	{
-		Q_strncpyz( cgs.fontSystemFamily, DEFAULT_SYSTEM_FONT_FAMILY, sizeof( cgs.fontSystemFamily ) );
-		cgs.fontSystemSmallSize = DEFAULT_SYSTEM_FONT_SMALL_SIZE;
+		Q_strncpyz( cgs.fontNameSystemSmall, DEFAULT_FONT_SMALL, sizeof( cgs.fontNameSystemSmall ) );
+		cgs.fontSystemSmall = trap_SCR_RegisterFont( cgs.fontNameSystemSmall );
 
-		cgs.fontSystemSmall = trap_SCR_RegisterFont( cgs.fontSystemFamily, QFONT_STYLE_NONE, cgs.fontSystemSmallSize );
 		if( !cgs.fontSystemSmall )
-			CG_Error( "Couldn't load default font \"%s\"", cgs.fontSystemFamily );
+			CG_Error( "Couldn't load default font \"%s\"", DEFAULT_FONT_SMALL );
 	}
 
-	cgs.fontSystemMediumSize = con_fontSystemMediumSize->integer;
-	cgs.fontSystemMedium = trap_SCR_RegisterFont( cgs.fontSystemFamily, QFONT_STYLE_NONE, cgs.fontSystemMediumSize );
-	if( !cgs.fontSystemMedium ) {
-		cgs.fontSystemMediumSize = DEFAULT_SYSTEM_FONT_MEDIUM_SIZE;
-		cgs.fontSystemMedium = trap_SCR_RegisterFont( cgs.fontSystemFamily, QFONT_STYLE_NONE, cgs.fontSystemMediumSize );
+	Q_strncpyz( cgs.fontNameSystemMedium, con_fontSystemMedium->string, sizeof( cgs.fontNameSystemMedium ) );
+	cgs.fontSystemMedium = trap_SCR_RegisterFont( cgs.fontNameSystemMedium );
+	if( !cgs.fontSystemMedium )
+	{
+		Q_strncpyz( cgs.fontNameSystemSmall, DEFAULT_FONT_MEDIUM, sizeof( cgs.fontNameSystemMedium ) );
+		cgs.fontSystemMedium = trap_SCR_RegisterFont( cgs.fontNameSystemMedium );
 	}
 
-	cgs.fontSystemBigSize = con_fontSystemBigSize->integer;
-	cgs.fontSystemSmall = trap_SCR_RegisterFont( cgs.fontSystemFamily, QFONT_STYLE_NONE, cgs.fontSystemBigSize );
+	Q_strncpyz( cgs.fontNameSystemBig, con_fontSystemBig->string, sizeof( cgs.fontNameSystemBig ) );
+	cgs.fontSystemBig = trap_SCR_RegisterFont( cgs.fontNameSystemBig );
 	if( !cgs.fontSystemBig )
-		cgs.fontSystemBigSize = DEFAULT_SYSTEM_FONT_BIG_SIZE;
-		cgs.fontSystemBig = trap_SCR_RegisterFont( cgs.fontSystemFamily, QFONT_STYLE_NONE, cgs.fontSystemBigSize );
+	{
+		Q_strncpyz( cgs.fontNameSystemBig, DEFAULT_FONT_BIG, sizeof( cgs.fontNameSystemBig ) );
+		cgs.fontSystemBig = trap_SCR_RegisterFont( cgs.fontNameSystemBig );
+	}
 }

@@ -396,7 +396,7 @@ qboolean GS_CheckAmmoInWeapon( player_state_t *playerState, int checkweapon )
 	if( !firedef->usage_count || firedef->ammo_id == AMMO_NONE )
 		return qtrue;
 
-	return ( playerState->inventory[firedef->ammo_id] >= firedef->usage_count ) ? qtrue : qfalse;
+	return ( playerState->inventory[firedef->ammo_id] >= firedef->usage_count );
 }
 
 /*

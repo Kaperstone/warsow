@@ -701,7 +701,7 @@ static void CG_DrawEntityNumbers( void )
 	}
 }
 
-void CG_Democam_DrawCenterSubtitle( int y, unsigned int maxwidth, struct qfontface_s *font, char *text )
+void CG_Democam_DrawCenterSubtitle( int y, unsigned int maxwidth, struct mufont_s *font, char *text )
 {
 	char *ptr, *s, *t, c, d;
 	int x = cgs.vidWidth / 2;

@@ -39,7 +39,7 @@ extern cvar_t *g_gametypes_list;
 typedef struct gameaward_s
 {
 	// ch : size of this?
-	const char *name;
+	char *name;
 	int count;
 	// struct gameaward_s *next;
 } gameaward_t;
@@ -182,10 +182,10 @@ typedef struct
 	int asFactored;
 } g_teamlist_t;
 
-extern g_teamlist_t teamlist[GS_MAX_TEAMS];
+g_teamlist_t teamlist[GS_MAX_TEAMS];
 
 //clock
-extern char clockstring[16];
+char clockstring[16];
 
 //
 //	matches management

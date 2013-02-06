@@ -249,12 +249,12 @@ static inline char *trap_Cmd_Args( void )
 	return GAME_IMPORT.Cmd_Args();
 }
 
-static inline void trap_Cmd_AddCommand( const char *name, void ( *cmd )(void) )
+static inline void trap_Cmd_AddCommand( char *name, void ( *cmd )(void) )
 {
 	GAME_IMPORT.Cmd_AddCommand( name, cmd );
 }
 
-static inline void trap_Cmd_RemoveCommand( const char *cmd_name )
+static inline void trap_Cmd_RemoveCommand( char *cmd_name )
 {
 	GAME_IMPORT.Cmd_RemoveCommand( cmd_name );
 }
@@ -340,7 +340,7 @@ static inline size_t trap_ML_GetMapByNum( int num, char *out, size_t size )
 	return GAME_IMPORT.ML_GetMapByNum( num, out, size );
 }
 
-static inline void trap_Cmd_ExecuteText( int exec_when, const char *text )
+static inline void trap_Cmd_ExecuteText( int exec_when, char *text )
 {
 	GAME_IMPORT.Cmd_ExecuteText( exec_when, text );
 }
@@ -350,7 +350,7 @@ static inline void trap_Cbuf_Execute( void )
 	GAME_IMPORT.Cbuf_Execute();
 }
 
-static inline int trap_FakeClientConnect( char *fakeUserinfo, char *fakeSocketType, const char *fakeIP )
+static inline int trap_FakeClientConnect( char *fakeUserinfo, char *fakeSocketType, char *fakeIP )
 {
 	return GAME_IMPORT.FakeClientConnect( fakeUserinfo, fakeSocketType, fakeIP );
 }
@@ -365,7 +365,7 @@ static inline void trap_ExecuteClientThinks( int clientNum )
 	GAME_IMPORT.ExecuteClientThinks( clientNum );
 }
 
-static inline void trap_DropClient( edict_t *ent, int type, const char *message )
+static inline void trap_DropClient( edict_t *ent, int type, char *message )
 {
 	GAME_IMPORT.DropClient( ent, type, message );
 }
