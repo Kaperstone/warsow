@@ -21,6 +21,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __Q_ANGELIFACE_H__
 #define __Q_ANGELIFACE_H__
 
+#if defined ( __APPLE__ )
+#include "angelscript/angelscript.h"
+#else
+#include "angelscript.h"
+#endif
+
 // public interfaces
 
 typedef struct asstring_s
@@ -34,8 +40,6 @@ typedef struct asvec3_s
 {
 	vec3_t v;
 } asvec3_t;
-
-#ifdef __cplusplus
 
 class CScriptArrayInterface
 {
@@ -114,107 +118,37 @@ public:
 	virtual int  GetTypeId() const = 0;
 };
 
-#endif
-
 typedef	struct angelwrap_api_s
 {
 	int angelwrap_api_version;
 
-	// ENGINE--
-	int ( *asCreateScriptEngine )( qboolean *as_max_portability );
-	int ( *asReleaseScriptEngine )( int engineHandle );
-	int ( *asAdquireContext )( int engineHandle );
+	// C++ interfaces
 
-	// Script modules
-	int ( *asAddScriptSection )( int engineHandle, const char *module, const char *name, const char *code, size_t codeLength );
-	int ( *asBuildModule )( int engineHandle, const char *module );
+	// engine
+	asIScriptEngine *( *asCreateEngine )( bool *asMaxPortability );
+	void ( *asReleaseEngine )( asIScriptEngine *engine );
 
-	// Garbage collection
-	int ( *asGarbageCollect )( int engineHandle );
-	void ( *asGetGCStatistics )(  int engineHandle, unsigned int *currentSize, unsigned int *totalDestroyed, unsigned int *totalDetected );
-
-	// CONTEXT--
-	int ( *asPrepare )( int contextHandle, void *fptr );
-	int ( *asExecute )( int contextHandle );
-	int ( *asAbort )( int contextHandle );
-
-	// Return types
-
-	int ( *asSetArgByte )( int contextHandle, unsigned int arg, unsigned char value );
-	int ( *asSetArgWord )( int contextHandle, unsigned int arg, unsigned short value );
-	int ( *asSetArgDWord )( int contextHandle, unsigned int arg, unsigned int value );
-	int ( *asSetArgQWord )( int contextHandle, unsigned int arg, quint64 value );
-	int ( *asSetArgFloat )( int contextHandle, unsigned int arg, float value );
-	int ( *asSetArgDouble )( int contextHandle, unsigned int arg, double value );
-	int ( *asSetArgAddress )( int contextHandle, unsigned int arg, void *addr );
-	int ( *asSetArgObject )( int contextHandle, unsigned int arg, void *obj );
-
-	int ( *asSetObject )( int contextHandle, void *obj );
-
-	unsigned char ( *asGetReturnByte )( int contextHandle );
-	unsigned int  ( *asGetReturnBool )( int contextHandle );
-	unsigned short ( *asGetReturnWord )( int contextHandle );
-	unsigned int ( *asGetReturnDWord )( int contextHandle );
-	quint64 ( *asGetReturnQWord )( int contextHandle );
-	float ( *asGetReturnFloat )( int contextHandle );
-	double ( *asGetReturnDouble )( int contextHandle );
-	void *( *asGetReturnAddress )( int contextHandle );
-	void *( *asGetReturnObject )( int contextHandle );
-	void *( *asGetAddressOfReturnValue )( int contextHandle );
-
-	// OBJECTS --
-	int ( *asRegisterObjectType )( int engineHandle, const char *name, int byteSize, unsigned int flags );
-	int ( *asRegisterObjectProperty )( int engineHandle, const char *objname, const char *declaration, int byteOffset );
-	int ( *asRegisterObjectMethod )( int engineHandle, const char *objname, const char *declaration, const void *funcPointer, int callConv );
-	int ( *asRegisterObjectBehaviour )( int engineHandle, const char *objname, unsigned int behavior, const char *declaration, const void *funcPointer, int callConv );
-
-	// GLOBAL --
-	int ( *asRegisterGlobalProperty )( int engineHandle, const char *declaration, void *pointer );
-	int ( *asRegisterGlobalFunction )( int engineHandle, const char *declaration, const void *funcPointer, int callConv );
-	void *( *asGetGlobalFunctionByDecl )( int engineHandle, const char *decl );
-
-	int ( *asRegisterEnum )( int engineHandle, const char *type );
-	int ( *asRegisterEnumValue )( int engineHandle, const char *type, const char *name, int value );
-
-	int ( *asRegisterStringFactory )( int engineHandle, const char *datatype, const void *factoryFunc, int callConv );
-
-	int ( *asRegisterFuncdef )( int engineHandle, const char *decl );
-
-	// EXCEPTIONS--
-	void *( *asGetExceptionFunction )( int contextHandle );
-	int ( *asGetExceptionLineNumber )( int contextHandle );
-	const char *( *asGetExceptionString )( int contextHandle );
-
-	// functions tools
-	const char *( *asGetFunctionSection )( void *fptr );
-	void *( *asGetFunctionByDecl )( int engineHandle, const char *module, const char *decl );
-	int ( *asGetFunctionType )( void *fptr );
-	const char *( *asGetFunctionName )( void *fptr );
-	const char *( *asGetFunctionDeclaration )( void *fptr, qboolean includeObjectName );
-	unsigned int ( *asGetFunctionParamCount )( void *fptr );
-	int ( *asGetFunctionReturnTypeId )( void *fptr );
-	void ( *asAddFunctionReference )( void *fptr ); 
-	void ( *asReleaseFunction )( void *fptr ); 
+	// context
+	asIScriptContext *( *asAcquireContext )( asIScriptEngine *engine );
+	void ( *asReleaseContext )( asIScriptContext *context );
+	asIScriptContext *( *asGetActiveContext )( void );
 
 	// strings
 	asstring_t *( *asStringFactoryBuffer )( const char *buffer, unsigned int length );
 	void( *asStringRelease )( asstring_t *str );
 	asstring_t *( *asStringAssignString )( asstring_t *self, const char *string, unsigned int strlen );
+	
+	// array
+	CScriptArrayInterface *( *asCreateArrayCpp )( unsigned int length, void *ot );
+	void ( *asReleaseArrayCpp )( CScriptArrayInterface *arr );
 
-	// C++ interfaces
-	void *( *asGetEngineCpp )( int engineHandle );
-	void *( *asGetContextCpp )( int contextHandle );
+	// dictionary
+	CScriptDictionaryInterface *( *asCreateDictionaryCpp )( asIScriptEngine *engine );
+	void ( *asReleaseDictionaryCpp )( CScriptDictionaryInterface *arr );
 
-	void *( *asGetActiveContext )( void );
-
-	void *( *asCreateArrayCpp )( unsigned int length, void *ot );
-	void ( *asReleaseArrayCpp )( void *arr );
-
-	void *( *asCreateDictionaryCpp )( void *engine );
-	void ( *asReleaseDictionaryCpp )( void *arr );
-
-	void *( *asCreateAnyCpp )( void *engine );
-	void ( *asReleaseAnyCpp )( void *any );
+	// any
+	CScriptAnyInterface *( *asCreateAnyCpp )( asIScriptEngine *engine );
+	void ( *asReleaseAnyCpp )( CScriptAnyInterface *any );
 } angelwrap_api_t;
 
 #endif

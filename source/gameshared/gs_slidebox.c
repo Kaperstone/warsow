@@ -52,7 +52,7 @@ static qboolean GS_GoodPosition( int snaptorigin[3], vec3_t mins, vec3_t maxs, i
 		point[i] = (float)snaptorigin[i] * ( 1.0/PM_VECTOR_SNAP );
 
 	module_Trace( &trace, point, mins, maxs, point, passent, contentmask, 0 );
-	return !trace.allsolid;
+	return !trace.allsolid ? qtrue : qfalse;
 }
 
 /*

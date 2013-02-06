@@ -2085,10 +2085,8 @@ void R_InitShaders( void )
 static void R_FreeShader( shader_t *shader )
 {
 	int i;
-	int shaderNum;
 	shaderpass_t *pass;
 
-	shaderNum = shader - r_shaders;
 	if( ( shader->flags & SHADER_SKY ) && shader->skydome ) {
 		R_FreeSkydome( shader->skydome );
 		shader->skydome = NULL;

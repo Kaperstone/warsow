@@ -772,7 +772,7 @@ static void SVC_DirectConnect( const socket_t *socket, const netadr_t *address )
 * (Not a real out of band command)
 * A connection request that came from the game module
 */
-int SVC_FakeConnect( char *fakeUserinfo, char *fakeSocketType, char *fakeIP )
+int SVC_FakeConnect( char *fakeUserinfo, char *fakeSocketType, const char *fakeIP )
 {
 	int i;
 	char userinfo[MAX_INFO_STRING];

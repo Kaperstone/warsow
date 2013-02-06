@@ -401,6 +401,11 @@ static inline void trap_R_SetScissorRegion( int x, int y, int w, int h )
 	CGAME_IMPORT.R_SetScissorRegion( x, y, w, h );
 }
 
+static inline void trap_R_GetScissorRegion( int *x, int *y, int *w, int *h )
+{
+	CGAME_IMPORT.R_GetScissorRegion( x, y, w, h );
+}
+
 static inline void trap_R_GetShaderDimensions( const struct shader_s *shader, int *width, int *height, int *depth )
 {
 	CGAME_IMPORT.R_GetShaderDimensions( shader, width, height, depth );
@@ -506,37 +511,37 @@ static inline void trap_S_StopBackgroundTrack( void )
 	CGAME_IMPORT.S_StopBackgroundTrack();
 }
 
-static inline struct mufont_s *trap_SCR_RegisterFont( const char *name )
+static inline struct qfontface_s *trap_SCR_RegisterFont( const char *family, int style, unsigned int size )
 {
-	return CGAME_IMPORT.SCR_RegisterFont( name );
+	return CGAME_IMPORT.SCR_RegisterFont( family, style, size );
 }
 
-static inline void trap_SCR_DrawString( int x, int y, int align, const char *str, struct mufont_s *font, vec4_t color )
+static inline void trap_SCR_DrawString( int x, int y, int align, const char *str, struct qfontface_s *font, vec4_t color )
 {
 	CGAME_IMPORT.SCR_DrawString( x, y, align, str, font, color );
 }
 
-static inline int trap_SCR_DrawStringWidth( int x, int y, int align, const char *str, int maxwidth, struct mufont_s *font, vec4_t color )
+static inline size_t trap_SCR_DrawStringWidth( int x, int y, int align, const char *str, size_t maxwidth, struct qfontface_s *font, vec4_t color )
 {
 	return CGAME_IMPORT.SCR_DrawStringWidth( x, y, align, str, maxwidth, font, color );
 }
 
-static inline void trap_SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct mufont_s *font, vec4_t color )
+static inline void trap_SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct qfontface_s *font, vec4_t color )
 {
 	CGAME_IMPORT.SCR_DrawClampString( x, y, str, xmin, ymin, xmax, ymax, font, color );
 }
 
-static inline size_t trap_SCR_strHeight( struct mufont_s *font )
+static inline size_t trap_SCR_strHeight( struct qfontface_s *font )
 {
 	return CGAME_IMPORT.SCR_strHeight( font );
 }
 
-static inline size_t trap_SCR_strWidth( const char *str, struct mufont_s *font, int maxlen )
+static inline size_t trap_SCR_strWidth( const char *str, struct qfontface_s *font, int maxlen )
 {
 	return CGAME_IMPORT.SCR_strWidth( str, font, maxlen );
 }
 
-static inline size_t trap_SCR_StrlenForWidth( const char *str, struct mufont_s *font, size_t maxwidth )
+static inline size_t trap_SCR_StrlenForWidth( const char *str, struct qfontface_s *font, size_t maxwidth )
 {
 	return CGAME_IMPORT.SCR_StrlenForWidth( str, font, maxwidth );
 }

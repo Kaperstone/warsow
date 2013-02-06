@@ -23,7 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cg_local.h"
 
 extern cvar_t *cg_scoreboardStats;
-extern cvar_t *cg_scoreboardFont;
+extern cvar_t *cg_scoreboardFontFamily;
+extern cvar_t *cg_scoreboardFontSize;
 extern cvar_t *cg_scoreboardWidthScale;
 
 #define SCB_BACKGROUND_ALPHA 0.25f
@@ -126,7 +127,7 @@ static void SCB_ParsePlayerStats( const char **s )
 */
 static int SCB_DrawPlayerStats( int x, int y )
 {
-	struct mufont_s *font = cgs.fontSystemSmall;
+	struct qfontface_s *font = cgs.fontSystemSmall;
 	int xoffset, yoffset, lines;
 	int i, j, num_weapons, weap, xpos, width, done;
 	gsitem_t *it;
@@ -240,7 +241,7 @@ static char scoreboardString[MAX_STRING_CHARS];
 /*
 * SCR_DrawChallengers
 */
-static int SCR_DrawChallengers( const char **ptrptr, int x, int y, int panelWidth, struct mufont_s *font )
+static int SCR_DrawChallengers( const char **ptrptr, int x, int y, int panelWidth, struct qfontface_s *font )
 {
 	char *token;
 	const char *oldptr;
@@ -309,7 +310,7 @@ static int SCR_DrawChallengers( const char **ptrptr, int x, int y, int panelWidt
 /*
 * SCR_DrawSpectators
 */
-static int SCR_DrawSpectators( const char **ptrptr, int x, int y, int panelWidth, struct mufont_s *font )
+static int SCR_DrawSpectators( const char **ptrptr, int x, int y, int panelWidth, struct qfontface_s *font )
 {
 	char *token;
 	const char *oldptr;
@@ -451,7 +452,7 @@ static char *SCR_GetNextColumnLayout( const char **ptrlay, const char **ptrtitle
 /*
 * SCR_DrawTeamTab
 */
-static int SCR_DrawTeamTab( const char **ptrptr, int *curteam, int x, int y, int panelWidth, struct mufont_s *font )
+static int SCR_DrawTeamTab( const char **ptrptr, int *curteam, int x, int y, int panelWidth, struct qfontface_s *font )
 {
 	char *token;
 	char *layout, *titles;
@@ -548,7 +549,7 @@ static int SCR_DrawTeamTab( const char **ptrptr, int *curteam, int x, int y, int
 /*
 * SCR_DrawPlayerTab
 */
-static int SCR_DrawPlayerTab( const char **ptrptr, int team, int x, int y, int panelWidth, struct mufont_s *font )
+static int SCR_DrawPlayerTab( const char **ptrptr, int team, int x, int y, int panelWidth, struct qfontface_s *font )
 {
 	int dir, align, i, columncount;
 	char type, string[MAX_STRING_CHARS];
@@ -724,7 +725,7 @@ void CG_DrawScoreboard( void )
 	int team = TEAM_PLAYERS;
 	int xpos;
 	int ypos, yoffset, maxyoffset;
-	struct mufont_s *font;
+	struct qfontface_s *font;
 	int width, panelWidth;
 	vec4_t whiteTransparent = { 1.0f, 1.0f, 1.0f, 0.5f };
 
@@ -735,14 +736,15 @@ void CG_DrawScoreboard( void )
 	if( scoreboardString[0] != '&' ) // nothing to draw
 		return;
 
-	font = trap_SCR_RegisterFont( cg_scoreboardFont->string );
+	font = trap_SCR_RegisterFont( cg_scoreboardFontFamily->string, QFONT_STYLE_NONE, cg_scoreboardFontSize->integer );
 	if( !font )
 	{
-		CG_Printf( "%sWarning: Invalid font in 'cg_scoreboardFont'. Reseting to default%s\n", S_COLOR_YELLOW, S_COLOR_WHITE );
-		trap_Cvar_Set( "cg_scoreboardFont", cg_scoreboardFont->dvalue );
-		font = trap_SCR_RegisterFont( cg_scoreboardFont->string );
+		CG_Printf( "%sWarning: Invalid font in 'cg_scoreboardFontFamily'. Reseting to default\n", S_COLOR_YELLOW );
+		trap_Cvar_Set( cg_scoreboardFontFamily->name, cg_scoreboardFontFamily->dvalue );
+		trap_Cvar_Set( cg_scoreboardFontSize->name, cg_scoreboardFontSize->dvalue );
+		font = trap_SCR_RegisterFont( cg_scoreboardFontFamily->string, QFONT_STYLE_NONE, cg_scoreboardFontSize->integer );
 		if( !font )
-			CG_Error( "Couldn't load default scoreboard font \"%s\"", cg_scoreboardFont->dvalue );
+			CG_Error( "Couldn't load default scoreboard font \"%s\"", cg_scoreboardFontFamily->dvalue );
 	}
 
 	xpos = (int)( cgs.vidWidth * 0.5 );

@@ -33,6 +33,7 @@ end of unit intermissions
 */
 
 #include "client.h"
+#include "ftlib.h"
 
 float scr_con_current;    // aproaches scr_conlines at scr_conspeed
 float scr_con_previous;
@@ -52,6 +53,11 @@ static cvar_t *scr_graphscale;
 static cvar_t *scr_graphshift;
 static cvar_t *scr_forceclear;
 
+static cvar_t *con_fontSystemFamily;
+static cvar_t *con_fontSystemSmallSize;
+static cvar_t *con_fontSystemMediumSize;
+static cvar_t *con_fontSystemBigSize;
+
 /*
 ===============================================================================
 
@@ -69,308 +75,126 @@ MUFONT STRINGS
 //FONT LOADING
 //===============================================================================
 
-mempool_t *fonts_mempool;
-
-#define Font_Alloc( size ) Mem_Alloc( fonts_mempool, size )
-#define Font_Free( size ) Mem_Free( size )
-
-#define REPLACEMENT_CHAR 127
-
-#define MIN_FONT_CHARS 128	// to fit REPLACEMENT_CHAR
-#define MAX_FONT_CHARS	0x2200
-
-typedef struct
-{
-	unsigned short x, y;
-	qbyte width, height;
-	float s1, t1, s2, t2;
-} muchar_t;
-
-typedef struct mufont_s
-{
-	char *name;
-	char *shadername;
-	int fontheight;
-	float imagewidth, imageheight;
-	struct shader_s	*shader;
-	struct mufont_s	*next;
-	unsigned int numchars;
-	muchar_t *chars;
-} mufont_t;
-
-static mufont_t *gs_muFonts;
-
-static mufont_t *SCR_LoadMUFont( const char *name, size_t len )
-{
-	size_t filename_size;
-	char *filename;
-	qbyte *buf;
-	char *ptr, *token, *start;
-	int filenum;
-	int length;
-	mufont_t *font;
-	struct shader_s *shader;
-	int numchar;
-	int x, y, w, h;
-
-	filename_size = strlen( "fonts/" ) + len + strlen( ".tga" ) + 1;
-	filename = Mem_TempMalloc( filename_size );
-	Q_snprintfz( filename, filename_size, "fonts/%s", name );
-
-	// load the shader
-	COM_ReplaceExtension( filename, ".tga", filename_size );
-
-	shader = R_RegisterPic( filename );
-	if( !shader )
-	{
-		Mem_TempFree( filename );
-		return NULL;
-	}
-
-	// load the font description
-	COM_ReplaceExtension( filename, ".wfd", filename_size );
-
-	// load the file
-	length = FS_FOpenFile( filename, &filenum, FS_READ );
-	if( length == -1 )
-	{
-		Mem_TempFree( filename );
-		return NULL;
-	}
-
-	buf = Mem_TempMalloc( length + 1 );
-	length = FS_Read( buf, length, filenum );
-	FS_FCloseFile( filenum );
-	if( !length )
-	{
-		Mem_TempFree( filename );
-		Mem_TempFree( buf );
-		return NULL;
-	}
-
-	// seems to be valid. Allocate it
-	font = (mufont_t *)Font_Alloc( sizeof( mufont_t ) );
-	font->shader = shader;
-
-	font->name = Font_Alloc( len + 1 );
-	Q_strncpyz( font->name, name, len + 1 );
-
-	font->shadername = Font_Alloc( filename_size );
-	Q_strncpyz( font->shadername, filename, filename_size );
-	COM_ReplaceExtension( font->shadername, ".tga", filename_size );
-
-	// proceed
-	ptr = ( char * )buf;
-
-	// get texture width and height
-	token = COM_Parse( &ptr );
-	if( !token[0] )
-		goto error;
-	font->imagewidth = atoi( token );
-
-	token = COM_Parse( &ptr );
-	if( !token[0] )
-		goto error;
-	font->imageheight = atoi( token );
-
-	font->numchars = MIN_FONT_CHARS;
-
-	// get the number of chars
-	start = ptr;
-	while( ptr )
-	{
-		// "<char>" "<x>" "<y>" "<width>" "<height>"
-		token = COM_Parse( &ptr );
-		if( !token[0] )
-			break;
-		numchar = atoi( token );
-		if( numchar <= 0 )
-			break;
-
-		x = atoi( COM_Parse( &ptr ) ), y = atoi( COM_Parse( &ptr ) );
-		w = atoi( COM_Parse( &ptr ) ), h = atoi( COM_Parse( &ptr ) );
-
-		if( numchar < 32 || numchar >= MAX_FONT_CHARS )
-			continue;
-		if( ( unsigned int )( numchar + 1 ) > font->numchars )
-			font->numchars = ( unsigned int )numchar + 1;
-	}
-
-	if( !font->numchars )
-		goto error;
-
-	font->chars = Font_Alloc( font->numchars * sizeof( muchar_t ) );
-
-	// get the chars
-	ptr = start;
-	while( ptr )
-	{
-		token = COM_Parse( &ptr );
-		if( !token[0] )
-			break;
-		numchar = atoi( token );
-		if( numchar <= 0 )
-			break;
-
-		x = atoi( COM_Parse( &ptr ) ), y = atoi( COM_Parse( &ptr ) );
-		w = atoi( COM_Parse( &ptr ) ), h = atoi( COM_Parse( &ptr ) );
-
-		if( numchar < 32 || ( unsigned int )numchar >= font->numchars )
-			continue;
-
-		font->chars[numchar].x = x;
-		font->chars[numchar].y = y;
-		font->chars[numchar].width = w;
-		font->chars[numchar].height = h;
-
-		// create the texture coordinates
-		font->chars[numchar].s1 = ( (float)x )/(float)font->imagewidth;
-		font->chars[numchar].s2 = ( (float)( x + w ) )/(float)font->imagewidth;
-		font->chars[numchar].t1 = ( (float)y )/(float)font->imageheight;
-		font->chars[numchar].t2 = ( (float)( y + h ) )/(float)font->imageheight;
-	}
-
-	// mudFont is not always giving a proper size to the space character
-	font->chars[' '].width = font->chars['-'].width;
-
-	// height is the same for every character
-	font->fontheight = font->chars['a'].height;
-
-	// if REPLACEMENT_CHAR is not present in this font, copy '?' to that position
-	if( !( font->chars[REPLACEMENT_CHAR].height ) )
-		font->chars[REPLACEMENT_CHAR] = font->chars['?'];
-
-	Mem_TempFree( filename );
-	Mem_TempFree( buf );
-	return font;
-
-error:
-	if( font->chars )
-		Font_Free( font->chars );
-	if( font->name )
-		Font_Free( font->name );
-	Font_Free( font );
-
-	Mem_TempFree( filename );
-	Mem_TempFree( buf );
-	return NULL;
-}
-
-/*
-* SCR_FreeMUFont
-*/
-void SCR_FreeMUFont( mufont_t *font )
-{
-	assert( font );
-
-	Font_Free( font->chars );
-	Font_Free( font->name );
-	Font_Free( font->shadername );
-	Font_Free( font );
-}
-
 /*
 * SCR_RegisterFont
 */
-struct mufont_s *SCR_RegisterFont( const char *name )
+qfontface_t *SCR_RegisterFont( const char *family, qfontstyle_t style, unsigned int size )
 {
-	mufont_t *font;
-	const char *extension;
-	size_t len;
-
-	extension = COM_FileExtension( name );
-	len = ( extension ? extension - name - 1 : strlen( name ) );
-
-	for( font = gs_muFonts; font; font = font->next )
-	{
-		if( !Q_strnicmp( font->name, name, len ) ) {
-			font->shader = R_RegisterPic( font->shadername );
-			return font;
-		}
-	}
-
-	font = SCR_LoadMUFont( name, len );
-	if( !font )
-	{
-		return NULL;
-	}
-
-	font->next = gs_muFonts;
-	gs_muFonts = font;
-
-	return font;
+	return FTLIB_RegisterFont( family, (qfontstyle_t)style, size );
 }
 
 /*
-* SCR_FreeFont
+* SCR_RegisterSystemFonts
 */
-static void SCR_FreeFont( struct mufont_s *font )
+static void SCR_RegisterSystemFonts( void )
 {
-	mufont_t *prev, *iter;
-
-	assert( font );
-
-	prev = NULL;
-	iter = gs_muFonts;
-	while( iter )
-	{
-		if( iter == font )
-			break;
-		prev = iter;
-		iter = iter->next;
-	}
-	assert( iter == font );
-	if( prev )
-	{
-		prev->next = font->next;
-	}
-	else
-	{
-		gs_muFonts = font->next;
-	}
-
-	SCR_FreeMUFont( font );
-}
-
-static void SCR_InitFonts( void )
-{
-	cvar_t *con_fontSystemSmall = Cvar_Get( "con_fontSystemSmall", DEFAULT_FONT_SMALL, CVAR_ARCHIVE|CVAR_LATCH_VIDEO );
-	cvar_t *con_fontSystemMedium = Cvar_Get( "con_fontSystemMedium", DEFAULT_FONT_MEDIUM, CVAR_ARCHIVE|CVAR_LATCH_VIDEO );
-	cvar_t *con_fontSystemBig = Cvar_Get( "con_fontSystemBig", DEFAULT_FONT_BIG, CVAR_ARCHIVE|CVAR_LATCH_VIDEO );
-
-	fonts_mempool = Mem_AllocPool( NULL, "Fonts" );
+	const char *con_fontSystemFamilyName;
+	const qfontstyle_t con_fontSystemStyle = (qfontstyle_t)DEFAULT_SYSTEM_FONT_STYLE;
 
 	// register system fonts
-	cls.fontSystemSmall = SCR_RegisterFont( con_fontSystemSmall->string );
+	con_fontSystemFamilyName = con_fontSystemFamily->string;
+	if( !con_fontSystemSmallSize->integer ) {
+		Cvar_ForceSet( con_fontSystemSmallSize->name, con_fontSystemSmallSize->dvalue );
+	}
+	if( !con_fontSystemMediumSize->integer ) {
+		Cvar_ForceSet( con_fontSystemMediumSize->name, con_fontSystemMediumSize->dvalue );
+	}
+	if( !con_fontSystemBigSize->integer ) {
+		Cvar_ForceSet( con_fontSystemBigSize->name, con_fontSystemBigSize->dvalue );
+	}
+
+	cls.fontSystemSmall = FTLIB_RegisterFont( con_fontSystemFamilyName, con_fontSystemStyle, con_fontSystemSmallSize->integer );
 	if( !cls.fontSystemSmall )
 	{
-		cls.fontSystemSmall = SCR_RegisterFont( DEFAULT_FONT_SMALL );
+		Cvar_ForceSet( con_fontSystemFamily->name, con_fontSystemFamily->dvalue );
+		con_fontSystemFamilyName = con_fontSystemFamily->dvalue;
+
+		cls.fontSystemSmall = FTLIB_RegisterFont( con_fontSystemFamilyName, con_fontSystemStyle, DEFAULT_SYSTEM_FONT_SMALL_SIZE );
 		if( !cls.fontSystemSmall )
-			Com_Error( ERR_FATAL, "Couldn't load default font \"%s\"", DEFAULT_FONT_SMALL );
+			Com_Error( ERR_FATAL, "Couldn't load default font \"%s\"", con_fontSystemFamily->dvalue );
 	}
 
-	cls.fontSystemMedium = SCR_RegisterFont( con_fontSystemMedium->string );
+	cls.fontSystemMedium = FTLIB_RegisterFont( con_fontSystemFamilyName, con_fontSystemStyle, con_fontSystemMediumSize->integer );
 	if( !cls.fontSystemMedium )
-		cls.fontSystemMedium = SCR_RegisterFont( DEFAULT_FONT_MEDIUM );
+		cls.fontSystemMedium = FTLIB_RegisterFont( con_fontSystemFamilyName, con_fontSystemStyle, DEFAULT_SYSTEM_FONT_MEDIUM_SIZE );
 
-	cls.fontSystemBig = SCR_RegisterFont( con_fontSystemBig->string );
+	cls.fontSystemBig = FTLIB_RegisterFont( con_fontSystemFamily->string, con_fontSystemStyle, con_fontSystemBigSize->integer );
 	if( !cls.fontSystemBig )
-		cls.fontSystemBig = SCR_RegisterFont( DEFAULT_FONT_BIG );
+		cls.fontSystemBig = FTLIB_RegisterFont( con_fontSystemFamilyName, con_fontSystemStyle, DEFAULT_SYSTEM_FONT_BIG_SIZE );
 }
 
-static void SCR_ShutdownFonts( void )
+/*
+* SCR_InitFonts
+*/
+static void SCR_InitFonts( qboolean verbose )
 {
-	while( gs_muFonts )
-	{
-		SCR_FreeFont( gs_muFonts );
-	}
+	const qfontstyle_t con_fontSystemStyle = (qfontstyle_t)DEFAULT_SYSTEM_FONT_STYLE;
+
+	FTLIB_PrecacheFonts( verbose );
+	
+	// always register default fonts
+	FTLIB_RegisterFont( DEFAULT_SYSTEM_FONT_FAMILY, con_fontSystemStyle, DEFAULT_SYSTEM_FONT_SMALL_SIZE );
+	FTLIB_RegisterFont( DEFAULT_SYSTEM_FONT_FAMILY, con_fontSystemStyle, DEFAULT_SYSTEM_FONT_MEDIUM_SIZE );
+	FTLIB_RegisterFont( DEFAULT_SYSTEM_FONT_FAMILY, con_fontSystemStyle, DEFAULT_SYSTEM_FONT_BIG_SIZE );
+
+	con_fontSystemFamily = Cvar_Get( "con_fontSystemFamily", DEFAULT_SYSTEM_FONT_FAMILY, CVAR_ARCHIVE );
+	con_fontSystemSmallSize = Cvar_Get( "con_fontSystemSmallSize", STR_TOSTR( DEFAULT_SYSTEM_FONT_SMALL_SIZE ), CVAR_ARCHIVE );
+	con_fontSystemMediumSize = Cvar_Get( "con_fontSystemMediumSize", STR_TOSTR( DEFAULT_SYSTEM_FONT_MEDIUM_SIZE ), CVAR_ARCHIVE );
+	con_fontSystemBigSize = Cvar_Get( "con_fontSystemBigSize", STR_TOSTR( DEFAULT_SYSTEM_FONT_BIG_SIZE ), CVAR_ARCHIVE );
+
+	SCR_RegisterSystemFonts();
+}
+
+/*
+* SCR_ShutdownFonts
+*/
+static void SCR_ShutdownFonts( qboolean verbose )
+{
+	FTLIB_FreeFonts( verbose );
 
 	cls.fontSystemSmall = NULL;
 	cls.fontSystemMedium = NULL;
 	cls.fontSystemBig = NULL;
 
-	Mem_FreePool( &fonts_mempool );
+	con_fontSystemFamily = NULL;
+	con_fontSystemSmallSize = con_fontSystemMediumSize = con_fontSystemBigSize = NULL;
 }
+
+/*
+* SCR_CheckSystemFontsModified
+*
+* Reloads system fonts on demand
+*/
+static void SCR_CheckSystemFontsModified( void )
+{
+	if( !con_fontSystemFamily ) {
+		return;
+	}
+	if( con_fontSystemFamily->modified 
+		|| con_fontSystemSmallSize->modified 
+		|| con_fontSystemMediumSize->modified 
+		|| con_fontSystemBigSize->modified 
+		) {
+		SCR_RegisterSystemFonts();
+		con_fontSystemFamily->modified = qfalse;
+		con_fontSystemSmallSize->modified = qfalse;
+		con_fontSystemMediumSize->modified = qfalse;
+		con_fontSystemBigSize->modified = qfalse;
+	}
+}
+
+/*
+* SCR_ChangeSystemFontSmallSize
+*/
+void SCR_ChangeSystemFontSmallSize( int ch )
+{
+	if( !con_fontSystemSmallSize ) {
+		return;
+	}
+	Cvar_ForceSet( con_fontSystemSmallSize->name, va( "%i", con_fontSystemSmallSize->integer + ch ) );
+	SCR_CheckSystemFontsModified();
+}
+
 
 //===============================================================================
 //STRINGS HELPERS
@@ -405,405 +229,94 @@ static int SCR_VerticalAlignForString( const int y, int align, int height )
 	return ny;
 }
 
-/*
-* SCR_strHeight
-* it's font height in fact, but for preserving simetry I call it str
-*/
-size_t SCR_strHeight( struct mufont_s *font )
+size_t SCR_strHeight( qfontface_t *font )
 {
-	if( !font )
-		font = cls.fontSystemSmall;
-
-	return font->fontheight;
+	return FTLIB_FontHeight( font );
 }
 
-/*
-* SCR_strWidth
-* doesn't count invisible characters. Counts up to given length, if any.
-*/
-size_t SCR_strWidth( const char *str, struct mufont_s *font, int maxlen )
+size_t SCR_strWidth( const char *str, qfontface_t *font, size_t maxlen )
 {
-	const char *s = str;
-	size_t width = 0;
-	qwchar num;
-
-	if( !str )
-		return 0;
-
-	if( !font )
-		font = cls.fontSystemSmall;
-
-	while( *s && *s != '\n' )
-	{
-		if( maxlen && ( s - str ) >= maxlen )  // stop counting at desired len
-			return width;
-
-		switch( Q_GrabWCharFromColorString( &s, &num, NULL ) )
-		{
-		case GRABCHAR_CHAR:
-			if( num < ' ' )
-				break;
-			if( num >= font->numchars || !( font->chars[num].height ) )
-				num = REPLACEMENT_CHAR;
-			width += font->chars[num].width;
-			break;
-
-		case GRABCHAR_COLOR:
-			break;
-
-		case GRABCHAR_END:
-			return width;
-
-		default:
-			assert( 0 );
-		}
-	}
-
-	return width;
+	return FTLIB_StringWidth( str, font, maxlen );
 }
 
-/*
-* SCR_StrlenForWidth
-* returns the len allowed for the string to fit inside a given width when using a given font.
-*/
-size_t SCR_StrlenForWidth( const char *str, struct mufont_s *font, size_t maxwidth )
+size_t SCR_StrlenForWidth( const char *str, qfontface_t *font, size_t maxwidth )
 {
-	const char *s, *olds;
-	size_t width = 0;
-	int gc;
-	qwchar num;
-
-	if( !str )
-		return 0;
-
-	if( !font )
-		font = cls.fontSystemSmall;
-
-	s = str;
-
-	while( s )
-	{
-		olds = s;
-		gc = Q_GrabWCharFromColorString( &s, &num, NULL );
-		if( gc == GRABCHAR_CHAR )
-		{
-			if( num == '\n' )
-				break;
-			if( num < ' ' )
-				continue;
-			if( num >= font->numchars || !( font->chars[num].height ) )
-				num = REPLACEMENT_CHAR;
-
-			if( maxwidth && ( ( width + font->chars[num].width ) > maxwidth ) )
-			{
-				s = olds;
-				break;
-			}
-
-			width += font->chars[num].width;
-		}
-		else if( gc == GRABCHAR_COLOR )
-			continue;
-		else if( gc == GRABCHAR_END )
-			break;
-		else
-			assert( 0 );
-	}
-
-	return (unsigned int)( s - str );
+	return FTLIB_StrlenForWidth( str, font, maxwidth );
 }
-
 
 //===============================================================================
 //STRINGS DRAWING
 //===============================================================================
 
-/*
-* SCR_DrawRawChar
-* 
-* Draws one graphics character with 0 being transparent.
-* It can be clipped to the top of the screen to allow the console to be
-* smoothly scrolled off.
-*/
-void SCR_DrawRawChar( int x, int y, qwchar num, struct mufont_s *font, vec4_t color )
+void SCR_DrawRawChar( int x, int y, qwchar num, qfontface_t *font, vec4_t color )
 {
-	if( !font )
-		font = cls.fontSystemSmall;
-
-	if( num <= ' ' )
-		return;
-	if( num >= font->numchars || !( font->chars[num].height ) )
-		num = REPLACEMENT_CHAR;
-
-	if( y <= -font->fontheight )
-		return; // totally off screen
-
-	R_DrawStretchPic( x, y, font->chars[num].width, font->fontheight,
-		font->chars[num].s1, font->chars[num].t1, font->chars[num].s2, font->chars[num].t2,
-		color, font->shader );
+	FTLIB_DrawRawChar( x, y, num, font, color );
 }
 
-static void SCR_DrawClampChar( int x, int y, qwchar num, int xmin, int ymin, int xmax, int ymax, struct mufont_s *font, vec4_t color )
+void SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, qfontface_t *font, vec4_t color )
 {
-	float pixelsize;
-	float s1, s2, t1, t2;
-	int sx, sy, sw, sh;
-	int offset;
-
-	if( !font )
-		font = cls.fontSystemSmall;
-
-	if( num <= ' ' )
-		return;
-	if( num >= font->numchars || !( font->chars[num].height ) )
-		num = REPLACEMENT_CHAR;
-
-	// ignore if completely out of the drawing space
-	if( y + font->fontheight <= ymin || y >= ymax ||
-		x + font->chars[num].width <= xmin || x >= xmax )
-		return;
-
-	pixelsize = 1.0f / font->imageheight;
-
-	s1 = font->chars[num].s1;
-	t1 = font->chars[num].t1;
-	s2 = font->chars[num].s2;
-	t2 = font->chars[num].t2;
-
-	sx = x;
-	sy = y;
-	sw = font->chars[num].width;
-	sh = font->fontheight;
-
-	// clamp xmin
-	if( x < xmin && x + font->chars[num].width >= xmin )
-	{
-		offset = xmin - x;
-		if( offset )
-		{
-			sx += offset;
-			sw -= offset;
-			s1 += ( pixelsize * offset );
-		}
-	}
-
-	// clamp ymin
-	if( y < ymin && y + font->chars[num].height >= ymin )
-	{
-		offset = ymin - y;
-		if( offset )
-		{
-			sy += offset;
-			sh -= offset;
-			t1 += ( pixelsize * offset );
-		}
-	}
-
-	// clamp xmax
-	if( x < xmax && x + font->chars[num].width >= xmax )
-	{
-		offset = ( x + font->chars[num].width ) - xmax;
-		if( offset != 0 )
-		{
-			sw -= offset;
-			s2 -= ( pixelsize * offset );
-		}
-	}
-
-	// clamp ymax
-	if( y < ymax && y + font->chars[num].height >= ymax )
-	{
-		offset = ( y + font->chars[num].height ) - ymax;
-		if( offset != 0 )
-		{
-			sh -= offset;
-			t2 -= ( pixelsize * offset );
-		}
-	}
-
-	R_DrawStretchPic( sx, sy, sw, sh, s1, t1, s2, t2, color, font->shader );
-}
-
-void SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct mufont_s *font, vec4_t color )
-{
-	int xoffset = 0, yoffset = 0;
-	vec4_t scolor;
-	int colorindex;
-	qwchar num;
-	const char *s = str;
-	int gc;
-
-	if( !str )
-		return;
-
-	if( !font )
-		font = cls.fontSystemSmall;
-
-	// clamp mins and maxs to the screen space
-	if( xmin < 0 )
-		xmin = 0;
-	if( xmax > (int)viddef.width )
-		xmax = (int)viddef.width;
-	if( ymin < 0 )
-		ymin = 0;
-	if( ymax > (int)viddef.height )
-		ymax = (int)viddef.height;
-	if( xmax <= xmin || ymax <= ymin || x > xmax || y > ymax )
-		return;
-
-	Vector4Copy( color, scolor );
-
-	while( 1 )
-	{
-		gc = Q_GrabWCharFromColorString( &s, &num, &colorindex );
-		if( gc == GRABCHAR_CHAR )
-		{
-			if( num == '\n' )
-				break;
-			if( num < ' ' )
-				continue;
-			if( num >= font->numchars || !( font->chars[num].height ) )
-				num = REPLACEMENT_CHAR;
-
-			if( num != ' ' )
-				SCR_DrawClampChar( x + xoffset, y + yoffset, num, xmin, ymin, xmax, ymax, font, scolor );
-
-			xoffset += font->chars[num].width;
-			if( x + xoffset > xmax )
-				break;
-		}
-		else if( gc == GRABCHAR_COLOR )
-		{
-			assert( ( unsigned )colorindex < MAX_S_COLORS );
-			VectorCopy( color_table[colorindex], scolor );
-		}
-		else if( gc == GRABCHAR_END )
-			break;
-		else
-			assert( 0 );
-	}
-}
-
-/*
-* SCR_DrawRawString - Doesn't care about aligning. Returns drawn len.
-* It can stop when reaching maximum width when a value has been parsed.
-*/
-static int SCR_DrawRawString( int x, int y, const char *str, int maxwidth, struct mufont_s *font, vec4_t color )
-{
-	int xoffset = 0, yoffset = 0;
-	vec4_t scolor;
-	const char *s, *olds;
-	int gc, colorindex;
-	qwchar num;
-
-	if( !str )
-		return 0;
-
-	if( !font )
-		font = cls.fontSystemSmall;
-
-	if( maxwidth < 0 )
-		maxwidth = 0;
-
-	Vector4Copy( color, scolor );
-
-	s = str;
-
-	while( s )
-	{
-		olds = s;
-		gc = Q_GrabWCharFromColorString( &s, &num, &colorindex );
-		if( gc == GRABCHAR_CHAR )
-		{
-			if( num == '\n' )
-				break;
-			if( num < ' ' )
-				continue;
-			if( num >= font->numchars || !( font->chars[num].height ) )
-				num = REPLACEMENT_CHAR;
-
-			if( maxwidth && ( ( xoffset + font->chars[num].width ) > maxwidth ) )
-			{
-				s = olds;
-				break;
-			}
-
-			if( num != ' ' )
-				R_DrawStretchPic( x+xoffset, y+yoffset, font->chars[num].width, font->chars[num].height,
-				font->chars[num].s1, font->chars[num].t1, font->chars[num].s2, font->chars[num].t2,
-				scolor, font->shader );
-
-			xoffset += font->chars[num].width;
-		}
-		else if( gc == GRABCHAR_COLOR )
-		{
-			assert( ( unsigned )colorindex < MAX_S_COLORS );
-			VectorCopy( color_table[colorindex], scolor );
-		}
-		else if( gc == GRABCHAR_END )
-			break;
-		else
-			assert( 0 );
-	}
-
-	return ( s - str );
+	FTLIB_DrawClampString( x, y, str, xmin, ymin, xmax, ymax, font, color );
 }
 
 /*
 * SCR_DrawString
 */
-void SCR_DrawString( int x, int y, int align, const char *str, struct mufont_s *font, vec4_t color )
+void SCR_DrawString( int x, int y, int align, const char *str, qfontface_t *font, vec4_t color )
 {
-	int width;
+	size_t width;
+	int fontHeight;
 
 	if( !str )
 		return;
 
 	if( !font )
 		font = cls.fontSystemSmall;
+	fontHeight = FTLIB_FontHeight( font );
 
-	width = SCR_strWidth( str, font, 0 );
+	width = FTLIB_StringWidth( str, font, 0 );
 	if( width )
 	{
 		x = SCR_HorizontalAlignForString( x, align, width );
-		y = SCR_VerticalAlignForString( y, align, font->fontheight );
+		y = SCR_VerticalAlignForString( y, align, fontHeight );
 
-		if( y <= -font->fontheight || y >= (int)viddef.height )
+		if( y <= -fontHeight || y >= (int)viddef.height )
 			return; // totally off screen
 
-		if( x <= -width || x >= (int)viddef.width )
+		if( x + width <= 0 || x >= (int)viddef.width )
 			return; // totally off screen
 
-		SCR_DrawRawString( x, y, str, 0, font, color );
+		FTLIB_DrawRawString( x, y, str, 0, font, color );
 	}
 }
 
 /*
 * SCR_DrawStringWidth - clamp to width in pixels. Returns drawn len
 */
-int SCR_DrawStringWidth( int x, int y, int align, const char *str, int maxwidth, struct mufont_s *font, vec4_t color )
+size_t SCR_DrawStringWidth( int x, int y, int align, const char *str, size_t maxwidth, qfontface_t *font, vec4_t color )
 {
-	int width;
+	size_t width;
+	int fontHeight;
 
 	if( !str )
 		return 0;
 
 	if( !font )
 		font = cls.fontSystemSmall;
+	fontHeight = FTLIB_FontHeight( font );
 
 	if( maxwidth < 0 )
 		maxwidth = 0;
 
-	width = SCR_strWidth( str, font, 0 );
+	width = FTLIB_StringWidth( str, font, 0 );
 	if( width )
 	{
 		if( maxwidth && width > maxwidth )
 			width = maxwidth;
 
 		x = SCR_HorizontalAlignForString( x, align, width );
-		y = SCR_VerticalAlignForString( y, align, font->fontheight );
+		y = SCR_VerticalAlignForString( y, align, fontHeight );
 
-		return SCR_DrawRawString( x, y, str, maxwidth, font, color );
+		return FTLIB_DrawRawString( x, y, str, maxwidth, font, color );
 	}
 
 	return 0;
@@ -928,6 +441,8 @@ void SCR_InitScreen( void )
 	scr_graphshift = Cvar_Get( "graphshift", "0", 0 );
 	scr_forceclear = Cvar_Get( "scr_forceclear", "0", CVAR_READONLY );
 
+	FTLIB_LoadLibrary( qtrue );
+
 	scr_initialized = qtrue;
 }
 
@@ -1011,19 +526,20 @@ void SCR_EndLoadingPlaque( void )
 /*
 * SCR_RegisterConsoleMedia
 */
-void SCR_RegisterConsoleMedia( void )
+void SCR_RegisterConsoleMedia( qboolean verbose )
 {
 	cls.whiteShader = R_RegisterPic( "$whiteimage" );
 	cls.consoleShader = R_RegisterPic( "gfx/ui/console" );
-	SCR_InitFonts();
+
+	SCR_InitFonts( verbose );
 }
 
 /*
 * SCR_ShutDownConsoleMedia
 */
-void SCR_ShutDownConsoleMedia( void )
+void SCR_ShutDownConsoleMedia( qboolean verbose )
 {
-	SCR_ShutdownFonts();
+	SCR_ShutdownFonts( verbose );
 }
 
 //============================================================================
@@ -1083,6 +599,8 @@ void SCR_UpdateScreen( void )
 		return;     // not initialized yet
 
 	Con_CheckResize();
+
+	SCR_CheckSystemFontsModified();
 
 	/*
 	** range check cl_camera_separation so we don't inadvertently fry someone's

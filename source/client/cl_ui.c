@@ -214,6 +214,7 @@ void CL_UIModule_Init( void )
 	import.R_DrawStretchPoly = R_DrawStretchPoly;
 	import.R_TransformVectorToScreen = R_TransformVectorToScreen;
 	import.R_SetScissorRegion = R_SetScissorRegion;
+	import.R_GetScissorRegion = R_GetScissorRegion;
 	import.R_GetShaderDimensions = R_GetShaderDimensions;
 	import.R_SkeletalGetNumBones = R_SkeletalGetNumBones;
 	import.R_SkeletalGetBoneInfo = R_SkeletalGetBoneInfo;

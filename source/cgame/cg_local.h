@@ -423,13 +423,14 @@ typedef struct
 	struct shader_s	*shaderMiniMap;
 
 	// fonts
-	struct mufont_s	*fontSystemSmall;
-	struct mufont_s	*fontSystemMedium;
-	struct mufont_s	*fontSystemBig;
+	char fontSystemFamily[MAX_QPATH];
+	int fontSystemSmallSize;
+	int fontSystemMediumSize;
+	int fontSystemBigSize;
 
-	char fontNameSystemSmall[MAX_QPATH];
-	char fontNameSystemMedium[MAX_QPATH];
-	char fontNameSystemBig[MAX_QPATH];
+	struct qfontface_s *fontSystemSmall;
+	struct qfontface_s *fontSystemMedium;
+	struct qfontface_s *fontSystemBig;
 
 	int initialSharedSeed;
 
@@ -697,7 +698,8 @@ typedef struct
 
 extern vrect_t scr_vrect;
 
-extern cvar_t *cg_scoreboardFont;
+extern cvar_t *cg_scoreboardFontFamily;
+extern cvar_t *cg_scoreboardFontSize;
 extern cvar_t *cg_showFPS;
 extern cvar_t *cg_showAwards;
 extern cvar_t *cg_showZoomEffect;
@@ -725,11 +727,11 @@ void CG_ScreenCrosshairDamageUpdate( void );
 
 int CG_ParseValue( const char **s );
 
-void CG_DrawClock( int x, int y, int align, struct mufont_s *font, vec4_t color );
-void CG_DrawPlayerNames( struct mufont_s *font, vec4_t color );
+void CG_DrawClock( int x, int y, int align, struct qfontface_s *font, vec4_t color );
+void CG_DrawPlayerNames( struct qfontface_s *font, vec4_t color );
 void CG_DrawTeamMates( void );
 void CG_DrawHUDNumeric( int x, int y, int align, float *color, int charwidth, int charheight, int value );
-void CG_DrawTeamInfo( int x, int y, int align, struct mufont_s *font, vec4_t color );
+void CG_DrawTeamInfo( int x, int y, int align, struct qfontface_s *font, vec4_t color );
 void CG_DrawNet( int x, int y, int w, int h, int align, vec4_t color );
 
 void CG_GameMenu_f( void );
@@ -1054,7 +1056,7 @@ extern cvar_t *con_chatCGame;
 
 void CG_InitChat( cg_gamechat_t *chat );
 void CG_StackChatString( cg_gamechat_t *chat, const char *str );
-void CG_DrawChat( cg_gamechat_t *chat, int x, int y, char *fontName, struct mufont_s *font, 
+void CG_DrawChat( cg_gamechat_t *chat, int x, int y, char *fontName, struct qfontface_s *font, 
 				 int width, int height, int padding_x, int padding_y, vec4_t backColor, struct shader_s *backShader );
 
 //=================================================

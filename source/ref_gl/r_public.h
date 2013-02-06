@@ -58,6 +58,7 @@ void		R_DrawRotatedStretchPic( int x, int y, int w, int h, float s1, float t1, f
 void		R_DrawStretchRaw( int x, int y, int w, int h, int cols, int rows, qbyte *data );
 void		R_DrawStretchPoly( const poly_t *poly, float x_offset, float y_offset );
 void		R_SetScissorRegion( int x, int y, int w, int h );
+void		R_GetScissorRegion( int *x, int *y, int *w, int *h );
 
 void		R_SetCustomColor( int num, int r, int g, int b );
 void		R_LightForOrigin( const vec3_t origin, vec3_t dir, vec4_t ambient, vec4_t diffuse, float radius );

@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "qas_local.h"
+#include "qas_precompiled.h"
 
 struct mempool_s *angelwrappool;
 
@@ -35,68 +35,16 @@ void QAS_InitAngelExport( void )
 
 	angelExport.angelwrap_api_version = ANGELWRAP_API_VERSION;
 
-	angelExport.asCreateScriptEngine = qasCreateScriptEngine;
-	angelExport.asReleaseScriptEngine = qasReleaseScriptEngine;
-	angelExport.asGarbageCollect = qasGarbageCollect;
-	angelExport.asGetGCStatistics = qasGetGCStatistics;
-	angelExport.asAdquireContext = qasAdquireContext;
-	angelExport.asAddScriptSection = qasAddScriptSection;
-	angelExport.asBuildModule = qasBuildModule;
-	angelExport.asPrepare = qasPrepare;
-	angelExport.asExecute = qasExecute;
-	angelExport.asAbort = qasAbort;
-	angelExport.asSetArgByte = qasSetArgByte;
-	angelExport.asSetArgWord = qasSetArgWord;
-	angelExport.asSetArgDWord = qasSetArgDWord;
-	angelExport.asSetArgQWord = qasSetArgQWord;
-	angelExport.asSetArgFloat = qasSetArgFloat;
-	angelExport.asSetArgDouble = qasSetArgDouble;
-	angelExport.asSetArgAddress = qasSetArgAddress;
-	angelExport.asSetArgObject = qasSetArgObject;
-	angelExport.asSetObject = qasSetObject;
-	angelExport.asGetReturnByte = qasGetReturnByte;
-	angelExport.asGetReturnBool = qasGetReturnBool;
-	angelExport.asGetReturnWord = qasGetReturnWord;
-	angelExport.asGetReturnDWord = qasGetReturnDWord;
-	angelExport.asGetReturnQWord = qasGetReturnQWord;
-	angelExport.asGetReturnFloat = qasGetReturnFloat;
-	angelExport.asGetReturnDouble = qasGetReturnDouble;
-	angelExport.asGetReturnAddress = qasGetReturnAddress;
-	angelExport.asGetReturnObject = qasGetReturnObject;
-	angelExport.asGetAddressOfReturnValue = qasGetAddressOfReturnValue;
-	angelExport.asRegisterObjectType = qasRegisterObjectType;
-	angelExport.asRegisterObjectProperty = qasRegisterObjectProperty;
-	angelExport.asRegisterObjectMethod = qasRegisterObjectMethod;
-	angelExport.asRegisterObjectBehaviour = qasRegisterObjectBehaviour;
-	angelExport.asRegisterGlobalProperty = qasRegisterGlobalProperty;
-	angelExport.asRegisterGlobalFunction = qasRegisterGlobalFunction;
-	angelExport.asGetGlobalFunctionByDecl = qasGetGlobalFunctionByDecl;
-	angelExport.asRegisterEnum = qasRegisterEnum;
-	angelExport.asRegisterEnumValue = qasRegisterEnumValue;
-	angelExport.asRegisterStringFactory = qasRegisterStringFactory;
-	angelExport.asRegisterFuncdef = qasRegisterFuncdef;
-	angelExport.asGetExceptionFunction = qasGetExceptionFunction;
-	angelExport.asGetExceptionLineNumber = qasGetExceptionLineNumber;
-	angelExport.asGetExceptionString = qasGetExceptionString;
+	angelExport.asCreateEngine = qasCreateEngine;
+	angelExport.asReleaseEngine = qasReleaseEngine;
 
-	angelExport.asGetFunctionSection = qasGetFunctionSection;
-	angelExport.asGetFunctionByDecl = qasGetFunctionByDecl;
-	angelExport.asGetFunctionType = qasGetFunctionType;
-	angelExport.asGetFunctionName = qasGetFunctionName;
-	angelExport.asGetFunctionDeclaration = qasGetFunctionDeclaration;
-	angelExport.asGetFunctionParamCount = qasGetFunctionParamCount;
-	angelExport.asGetFunctionReturnTypeId = qasGetFunctionReturnTypeId;
-	angelExport.asAddFunctionReference = qasAddFunctionReference;
-	angelExport.asReleaseFunction = qasReleaseFunction;
+	angelExport.asAcquireContext = qasAcquireContext;
+	angelExport.asReleaseContext = qasReleaseContext;
+	angelExport.asGetActiveContext = qasGetActiveContext;
 
 	angelExport.asStringFactoryBuffer = qasStringFactoryBuffer;
 	angelExport.asStringRelease = qasStringRelease;
 	angelExport.asStringAssignString = qasStringAssignString;
-
-	angelExport.asGetEngineCpp = qasGetEngineCpp;
-	angelExport.asGetContextCpp = qasGetContextCpp;
-
-	angelExport.asGetActiveContext = qasGetActiveContext;
 
 	angelExport.asCreateArrayCpp = qasCreateArrayCpp;
 	angelExport.asReleaseArrayCpp = qasReleaseArrayCpp;

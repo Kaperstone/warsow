@@ -1799,7 +1799,7 @@ void CL_InitMedia( qboolean verbose )
 	cls.mediaInitialized = qtrue;
 
 	// register console font and background
-	SCR_RegisterConsoleMedia();
+	SCR_RegisterConsoleMedia( verbose );
 
 	// load user interface
 	CL_UIModule_Init();
@@ -1826,8 +1826,7 @@ void CL_ShutdownMedia( qboolean verbose )
 	// shutdown user interface
 	CL_UIModule_Shutdown();
 
-	// wsw : jalfonts
-	SCR_ShutDownConsoleMedia();
+	SCR_ShutDownConsoleMedia( verbose );
 
 	CL_SoundModule_StopAllSounds();
 }
@@ -2722,7 +2721,7 @@ static void CL_CheckForUpdate( void )
 
 	// send campaign ID
 	campaign = NULL;
-	campaignSize = FS_LoadBaseFile( "campaign.txt", &campaign, NULL, 0 );
+	campaignSize = FS_LoadBaseFile( "campaign.txt", (void **)&campaign, NULL, 0 );
 	if( campaignSize > 0 ) {
 		headers[headerNum++] = "X-Campaign";
 		headers[headerNum++] = campaign;
@@ -2730,7 +2729,7 @@ static void CL_CheckForUpdate( void )
 
 	// send profile ID
 	profileId = NULL;
-	profileIdSize = FS_LoadFile( TRACKING_PROFILE_ID, &profileId, NULL, 0 );
+	profileIdSize = FS_LoadFile( TRACKING_PROFILE_ID, (void **)&profileId, NULL, 0 );
 	if( profileIdSize > 0 ) {
 		headers[headerNum++] = "X-Profile-Id";
 		headers[headerNum++] = Q_strlwr( profileId );
@@ -2802,7 +2801,7 @@ void CL_AsyncStreamRequest( const char *url, const char **headers, int timeout, 
 	if( urlencodeUnsafe ) {
 		// urlencode unsafe characters
 		size_t allocSize = strlen( url ) * 3 + 1;
-		tmpUrl = Mem_TempMalloc( allocSize );
+		tmpUrl = ( char * )Mem_TempMalloc( allocSize );
 		AsyncStream_UrlEncodeUnsafeChars( url, tmpUrl, allocSize );
 
 		safeUrl = tmpUrl;
@@ -2812,7 +2811,7 @@ void CL_AsyncStreamRequest( const char *url, const char **headers, int timeout, 
 	}
 
 	AsyncStream_PerformRequestExt( cl_async_stream, safeUrl, "GET", NULL, headers, timeout, 
-		resumeFrom, read_cb, done_cb, header_cb, NULL );
+		resumeFrom, read_cb, done_cb, (async_stream_header_cb_t)header_cb, NULL );
 
 	if( urlencodeUnsafe ) {
 		Mem_TempFree( tmpUrl );

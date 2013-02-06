@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // cg_public.h -- client game dll information visible to engine
 
-#define	CGAME_API_VERSION   61
+#define	CGAME_API_VERSION   62
 
 //
 // structs and variables shared with the main engine
@@ -65,6 +65,7 @@ struct refdef_s;
 struct poly_s;
 struct model_s;
 struct cmodel_s;
+struct qfontface_s;
 
 //
 // functions provided by the main engine
@@ -173,6 +174,7 @@ typedef struct
 	void ( *R_DrawStretchPoly )( const struct poly_s *poly, float x_offset, float y_offset );
 	void ( *R_DrawRotatedStretchPic )( int x, int y, int w, int h, float s1, float t1, float s2, float t2, float angle, const vec4_t color, const struct shader_s *shader );
 	void ( *R_SetScissorRegion )( int x, int y, int w, int h );
+	void ( *R_GetScissorRegion )( int *x, int *y, int *w, int *h );
 	void ( *R_GetShaderDimensions )( const struct shader_s *shader, int *width, int *height, int *depth );
 	void ( *R_TransformVectorToScreen )( const struct refdef_s *rd, const vec3_t in, vec2_t out );
 	int ( *R_SkeletalGetNumBones )( const struct model_s *mod, int *numFrames );
@@ -202,13 +204,13 @@ typedef struct
 	void ( *S_StopBackgroundTrack )( void );
 
 	// fonts
-	struct mufont_s *( *SCR_RegisterFont )( const char *name );
-	void ( *SCR_DrawString )( int x, int y, int align, const char *str, struct mufont_s *font, vec4_t color );
-	int ( *SCR_DrawStringWidth )( int x, int y, int align, const char *str, int maxwidth, struct mufont_s *font, vec4_t color );
-	void ( *SCR_DrawClampString )( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct mufont_s *font, vec4_t color );
-	size_t ( *SCR_strHeight )( struct mufont_s *font );
-	size_t ( *SCR_strWidth )( const char *str, struct mufont_s *font, int maxlen );
-	size_t ( *SCR_StrlenForWidth )( const char *str, struct mufont_s *font, size_t maxwidth );
+	struct qfontface_s *( *SCR_RegisterFont )( const char *family, qfontstyle_t style, unsigned int size );
+	void ( *SCR_DrawString )( int x, int y, int align, const char *str, struct qfontface_s *font, vec4_t color );
+	size_t ( *SCR_DrawStringWidth )( int x, int y, int align, const char *str, size_t maxwidth, struct qfontface_s *font, vec4_t color );
+	void ( *SCR_DrawClampString )( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct qfontface_s *font, vec4_t color );
+	size_t ( *SCR_strHeight )( struct qfontface_s *font );
+	size_t ( *SCR_strWidth )( const char *str, struct qfontface_s *font, size_t maxlen );
+	size_t ( *SCR_StrlenForWidth )( const char *str, struct qfontface_s *font, size_t maxwidth );
 
 	// managed memory allocation
 	void *( *Mem_Alloc )( size_t size, const char *filename, int fileline );

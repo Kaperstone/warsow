@@ -30,6 +30,9 @@
 #include "keys.h"
 #include "console.h"
 
+typedef struct shader_s shader_t;
+typedef struct qfontface_s qfontface_t;
+
 //=============================================================================
 
 #define MAX_TIMEDELTAS_BACKUP 8
@@ -248,13 +251,13 @@ typedef struct
 	cl_demo_t demo;
 
 	// these shaders have nothing to do with media
-	struct shader_s *whiteShader;
-	struct shader_s *consoleShader;
+	shader_t *whiteShader;
+	shader_t *consoleShader;
 
 	// system fonts
-	struct mufont_s *fontSystemSmall;
-	struct mufont_s *fontSystemMedium;
-	struct mufont_s *fontSystemBig;
+	qfontface_t *fontSystemSmall;
+	qfontface_t *fontSystemMedium;
+	qfontface_t *fontSystemBig;
 
 	// these are our reliable messages that go to the server
 	unsigned int reliableSequence;          // the last one we put in the list to be sent
@@ -538,16 +541,17 @@ void SCR_BeginLoadingPlaque( void );
 void SCR_EndLoadingPlaque( void );
 void SCR_DebugGraph( float value, float r, float g, float b );
 void SCR_RunConsole( int msec );
-void SCR_RegisterConsoleMedia( void );
-void SCR_ShutDownConsoleMedia( void );
-struct mufont_s *SCR_RegisterFont( const char *name );
-size_t SCR_strHeight( struct mufont_s *font );
-size_t SCR_strWidth( const char *str, struct mufont_s *font, int maxlen );
-size_t SCR_StrlenForWidth( const char *str, struct mufont_s *font, size_t maxwidth );
-void SCR_DrawString( int x, int y, int align, const char *str, struct mufont_s *font, vec4_t color );
-int SCR_DrawStringWidth( int x, int y, int align, const char *str, int maxwidth, struct mufont_s *font, vec4_t color );
-void SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct mufont_s *font, vec4_t color );
-void SCR_DrawRawChar( int x, int y, qwchar num, struct mufont_s *font, vec4_t color );
+void SCR_RegisterConsoleMedia( qboolean verbose );
+void SCR_ShutDownConsoleMedia( qboolean verbose );
+void SCR_ChangeSystemFontSmallSize( int ch );
+qfontface_t *SCR_RegisterFont( const char *family, qfontstyle_t style, unsigned int size );
+size_t SCR_strHeight( qfontface_t *font );
+size_t SCR_strWidth( const char *str, qfontface_t *font, size_t maxlen );
+size_t SCR_StrlenForWidth( const char *str, qfontface_t *font, size_t maxwidth );
+void SCR_DrawString( int x, int y, int align, const char *str, qfontface_t *font, vec4_t color );
+size_t SCR_DrawStringWidth( int x, int y, int align, const char *str, size_t maxwidth, qfontface_t *font, vec4_t color );
+void SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, qfontface_t *font, vec4_t color );
+void SCR_DrawRawChar( int x, int y, qwchar num, qfontface_t *font, vec4_t color );
 void SCR_DrawFillRect( int x, int y, int w, int h, vec4_t color );
 
 void CL_InitMedia( qboolean verbose );

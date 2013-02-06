@@ -2,12 +2,6 @@
 #ifndef __ASUI_LOCAL_H__
 #define __ASUI_LOCAL_H__
 
-#if defined ( __APPLE__ )
-#include "angelscript/angelscript.h"
-#else
-#include "angelscript.h"
-#endif
-
 #include "../gameshared/q_angeliface.h"
 #include "../gameshared/q_shared.h"
 #include "../gameshared/q_comref.h"

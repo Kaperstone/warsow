@@ -101,7 +101,7 @@ static void CG_SetChatCvars( int x, int y, char *fontName, int font_height, int 
 /*
 ** CG_DrawChat
 */
-void CG_DrawChat( cg_gamechat_t *chat, int x, int y, char *fontName, struct mufont_s *font, 
+void CG_DrawChat( cg_gamechat_t *chat, int x, int y, char *fontName, struct qfontface_s *font, 
 				 int width, int height, int padding_x, int padding_y, vec4_t backColor, struct shader_s *backShader )
 {
 	int i, j;

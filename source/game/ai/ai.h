@@ -49,7 +49,7 @@ typedef struct
 
 typedef struct
 {
-	char *netname;
+	const char *netname;
 	float skillLevel;       // Affects AIM and fire rate (fraction of 1)
 	unsigned int moveTypesMask;      // bot can perform these moves, to check against required moves for a given path
 	float inventoryWeights[MAX_ITEMS];
@@ -149,8 +149,8 @@ void        AI_EnemyAdded( edict_t *ent );
 void        AI_EnemyRemoved( edict_t *ent );
 
 // bot_spawn.c
-void        BOT_SpawnBot( char *team );
-void        BOT_RemoveBot( char *name );
+void        BOT_SpawnBot( const char *team );
+void        BOT_RemoveBot( const char *name );
 void        BOT_Respawn( edict_t *ent );
 
 // ai_tools.c

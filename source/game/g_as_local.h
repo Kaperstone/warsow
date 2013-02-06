@@ -18,7 +18,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "../gameshared/angelref.h"
+#if defined ( __APPLE__ )
+#include "angelscript/angelscript.h"
+#else
+#include "angelscript.h"
+#endif
+
+#include "../gameshared/q_angeliface.h"
 
 #define G_AsMalloc								G_LevelMalloc
 #define G_AsFree								G_LevelFree
@@ -36,7 +42,9 @@ extern angelwrap_api_t *angelExport;
 #define MAP_SCRIPTS_DIRECTORY				"maps"
 #define MAP_SCRIPTS_PROJECT_EXTENSION		".mp"
 
-qboolean G_LoadGameScript( const char *moduleName, const char *dir, const char *filename, const char *ext );
-qboolean G_ExecutionErrorReport( int asEngineHandle, int asContextHandle, int error );
+#define GAME_AS_ENGINE()					(static_cast<asIScriptEngine *>(game.asEngine))
+
+asIScriptModule *G_LoadGameScript( const char *moduleName, const char *dir, const char *filename, const char *ext );
+qboolean G_ExecutionErrorReport( int error );
 
 extern qboolean inMapFuncCall; // FIXME: this is a nasty hack used to avoid breaking the angelwrap API

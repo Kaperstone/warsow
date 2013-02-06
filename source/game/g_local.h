@@ -153,6 +153,10 @@ typedef struct
 	// cross level triggers
 	int serverflags;
 
+	// AngelScript engine object
+	void *asEngine;
+	qboolean asGlobalsInitialized;
+
 	unsigned int frametime;         // in milliseconds
 	int snapFrameTime;              // in milliseconds
 	unsigned int realtime;          // actual time, set with Sys_Milliseconds every frame
@@ -206,10 +210,6 @@ typedef struct
 	qboolean exitNow;
 	qboolean hardReset;
 
-	// angelScript engine handle
-	int asEngineHandle;
-	qboolean asGlobalsInitialized;
-
 	// gametype definition and execution
 	gametype_descriptor_t gametype;
 
@@ -244,9 +244,9 @@ typedef struct
 {
 	// world vars
 	float fov;
-	char *nextmap;
+	const char *nextmap;
 
-	char *music;
+	const char *music;
 
 	int lip;
 	int distance;
@@ -254,13 +254,13 @@ typedef struct
 	float roll;
 	float radius;
 	float phase;
-	char *noise;
-	char *noise_start;
-	char *noise_stop;
+	const char *noise;
+	const char *noise_start;
+	const char *noise_stop;
 	float pausetime;
-	char *item;
-	char *gravity;
-	char *debris1, *debris2;
+	const char *item;
+	const char *gravity;
+	const char *debris1, *debris2;
 
 	int notsingle;
 	int notteam;
@@ -274,8 +274,8 @@ typedef struct
 
 	int weight;
 	float scale;
-	char *gametype;
-	char *shaderName;
+	const char *gametype;
+	const char *shaderName;
 	int size;
 } spawn_temp_t;
 
@@ -442,7 +442,7 @@ void SP_info_player_intermission( edict_t *ent );
 //
 // g_func.c
 //
-void G_AssignMoverSounds( edict_t *ent, char *start, char *move, char *stop );
+void G_AssignMoverSounds( edict_t *ent, const char *start, const char *move, const char *stop );
 qboolean G_EntIsADoor( edict_t *ent );
 
 void SP_func_plat( edict_t *ent );
@@ -546,12 +546,15 @@ extern const field_t fields[];
 //
 // g_cmds.c
 //
+
+typedef void ( *gamecommandfunc_t )( edict_t * );
+
 char *G_StatsMessage( edict_t *ent );
 qboolean CheckFlood( edict_t *ent, qboolean teamonly );
 void G_InitGameCommands( void );
 void G_PrecacheGameCommands( void );
-void G_AddCommand( char *name, void *cmdfunc );
-void G_BOTvsay_f( edict_t *ent, char *msg, qboolean team );
+void G_AddCommand( const char *name, gamecommandfunc_t cmdfunc );
+void G_BOTvsay_f( edict_t *ent, const char *msg, qboolean team );
 
 //
 // g_items.c
@@ -583,10 +586,10 @@ qboolean Add_Armor( edict_t *ent, edict_t *other, qboolean pick_it );
 
 qboolean KillBox( edict_t *ent );
 float LookAtKillerYAW( edict_t *self, edict_t *inflictor, edict_t *attacker );
-edict_t *G_Find( edict_t *from, size_t fieldofs, char *match );
+edict_t *G_Find( edict_t *from, size_t fieldofs, const char *match );
 edict_t *findradius( edict_t *from, edict_t *to, vec3_t org, float rad );
 edict_t *G_FindBoxInRadius( edict_t *from, edict_t *to, vec3_t org, float rad );
-edict_t *G_PickTarget( char *targetname );
+edict_t *G_PickTarget( const char *targetname );
 void G_UseTargets( edict_t *ent, edict_t *activator );
 void G_SetMovedir( vec3_t angles, vec3_t movedir );
 void G_InitMover( edict_t *ent );
@@ -604,7 +607,7 @@ char *_G_LevelCopyString( const char *in, const char *filename, int fileline );
 void G_LevelGarbageCollect( void );
 
 void G_StringPoolInit( void );
-char *_G_RegisterLevelString( const char *string, const char *filename, int fileline );
+const char *_G_RegisterLevelString( const char *string, const char *filename, int fileline );
 #define G_RegisterLevelString( in ) _G_RegisterLevelString( in, __FILE__, __LINE__ )
 
 char *G_ListNameForPosition( const char *namesList, int position, const char separator );
@@ -723,7 +726,7 @@ void GClip_BackUpCollisionFrame( void );
 edict_t *GClip_FindBoxInRadius4D( edict_t *from, vec3_t org, float rad, int timeDelta );
 void G_SplashFrac4D( int entNum, vec3_t hitpoint, float maxradius, vec3_t pushdir, float *kickFrac, float *dmgFrac, int timeDelta );
 void	GClip_ClearWorld( void );
-void	GClip_SetBrushModel( edict_t *ent, char *name );
+void	GClip_SetBrushModel( edict_t *ent, const char *name );
 void	GClip_SetAreaPortalState( edict_t *ent, qboolean open );
 void	GClip_LinkEntity( edict_t *ent );
 void	GClip_UnlinkEntity( edict_t *ent );
@@ -1247,8 +1250,8 @@ struct edict_s
 	int movetype;
 	int flags;
 
-	char *model;
-	char *model2;
+	const char *model;
+	const char *model2;
 	unsigned int freetime;          // time when the object was freed
 
 	int numEvents;
@@ -1258,7 +1261,7 @@ struct edict_s
 	// only used locally in game, not by server
 	//
 
-	char *classname;
+	const char *classname;
 	const char *spawnString;			// keep track of string definition of this entity
 	int spawnflags;
 
@@ -1271,11 +1274,11 @@ struct edict_s
 	void ( *die )( edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, const vec3_t point );
 	void ( *stop )( edict_t *self );
 
-	char *target;
-	char *targetname;
-	char *killtarget;
-	char *team;
-	char *pathtarget;
+	const char *target;
+	const char *targetname;
+	const char *killtarget;
+	const char *team;
+	const char *pathtarget;
 	edict_t	*target_ent;
 
 	vec3_t velocity;
@@ -1294,7 +1297,7 @@ struct edict_s
 
 	int dmg;
 
-	char *message;
+	const char *message;
 	int mass;
 	unsigned int air_finished;
 	float gravity;              // per entity gravity multiplier (1.0 is normal) // use for lowgrav artifact, flares
@@ -1310,12 +1313,12 @@ struct edict_s
 	int gib_health;
 	int deadflag;
 
-	char *map;                  // target_changelevel
+	const char *map;                  // target_changelevel
 
 	int viewheight;             // height above origin where eyesight is determined
 	int takedamage;
 
-	char *sounds;                   //make this a spawntemp var?
+	const char *sounds;                   //make this a spawntemp var?
 	int count;
 
 	unsigned int timeout; // for SW and fat PG
@@ -1367,7 +1370,7 @@ struct edict_s
 
 	int asRefCount, asFactored;
 	qboolean scriptSpawned;
-	const char *scriptModule;
+	void *asScriptModule;
 	void *asSpawnFunc, *asThinkFunc, *asUseFunc, *asTouchFunc, *asPainFunc, *asDieFunc, *asStopFunc;
 };
 

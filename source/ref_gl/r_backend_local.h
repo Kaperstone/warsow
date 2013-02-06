@@ -28,7 +28,7 @@ typedef struct r_backend_s
 	const meshbuffer_t *currentMeshBuffer;
 	const mesh_vbo_t *currentMeshVBO;
 	const rbackAnimData_t *currentAnimData;
-	shadowGroup_t *currentCastGroup;
+	const shadowGroup_t *currentCastGroup;
 
 	unsigned int currentDlightBits;
 	unsigned int currentShadowBits;

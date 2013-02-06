@@ -126,11 +126,8 @@ static qboolean CG_UpdateLinearProjectilePosition( centity_t *cent )
 static void CG_NewPacketEntityState( entity_state_t *state )
 {
 	centity_t *cent;
-	qboolean hasVelocity;
 
 	cent = &cg_entities[state->number];
-
-	hasVelocity = qfalse;
 
 	VectorClear( cent->prevVelocity );
 	cent->canExtrapolatePrev = qfalse;
@@ -261,7 +258,6 @@ static void CG_NewPacketEntityState( entity_state_t *state )
 		if( cgs.extrapolationTime && ( state->svflags & SVF_TRANSMITORIGIN2 ) &&
 			( cent->current.type == ET_PLAYER || cent->current.type == ET_CORPSE ) )
 		{
-			hasVelocity = qtrue;
 			VectorCopy( cent->current.origin2, cent->velocity );
 			VectorCopy( cent->prev.origin2, cent->prevVelocity );
 			cent->canExtrapolate = cent->canExtrapolatePrev = qtrue;
@@ -275,7 +271,6 @@ static void CG_NewPacketEntityState( entity_state_t *state )
 
 			VectorSubtract( cent->current.origin, cent->prev.origin, cent->velocity );
 			VectorScale( cent->velocity, 1000.0f/snapTime, cent->velocity );
-			hasVelocity = qtrue;
 		}
 
 		if( ( cent->current.type == ET_GENERIC || cent->current.type == ET_PLAYER
@@ -2090,16 +2085,7 @@ void CG_UpdateEntities( void )
 			{
 				cent->renderfx |= RF_NOSHADOW;
 				CG_UpdateGenericEnt( cent );
-
-				// set the gib model ignoring the modelindex one
-				if( cg_gibs->integer == 1 )
-				{
-					cent->ent.model = CG_MediaModel( cgs.media.modTechyGibs[ 0 ] );
-				}
-				else
-				{
-					cent->ent.model = CG_MediaModel( cgs.media.modMeatyGibs[ 0 ] );
-				}
+				cent->ent.model = CG_MediaModel( cgs.media.modTechyGibs[ 0 ] );
 			}
 			break;
 

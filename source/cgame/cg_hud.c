@@ -765,7 +765,7 @@ void CG_SC_Obituary( void )
 	}
 }
 
-static void CG_DrawObituaries( int x, int y, int align, struct mufont_s *font, vec4_t color, int width, int height,
+static void CG_DrawObituaries( int x, int y, int align, struct qfontface_s *font, vec4_t color, int width, int height,
                                int internal_align, unsigned int icon_size )
 {
 	int i, num, skip, next, w, num_max;
@@ -939,7 +939,7 @@ static void CG_DrawObituaries( int x, int y, int align, struct mufont_s *font, v
 
 //=============================================================================
 
-static void CG_DrawAwards( int x, int y, int align, struct mufont_s *font, vec4_t basecolor )
+static void CG_DrawAwards( int x, int y, int align, struct qfontface_s *font, vec4_t basecolor )
 {
 	int i, count, current;
 	int yoffset;
@@ -1344,8 +1344,11 @@ static int layout_cursor_height = 100;
 static int layout_cursor_align = ALIGN_LEFT_TOP;
 static vec4_t layout_cursor_color = { 1, 1, 1, 1 };
 static vec3_t layout_cursor_rotation = { 0, 0, 0 };
-static struct mufont_s *layout_cursor_font;
+
+static struct qfontface_s *layout_cursor_font;
 static char layout_cursor_font_name[MAX_QPATH];
+static int layout_cursor_font_size;
+static qfontstyle_t layout_cursor_font_style;
 
 enum
 {
@@ -1651,32 +1654,89 @@ static int CG_LFuncAlign( struct cg_layoutnode_s *commandnode, struct cg_layoutn
 	return qtrue;
 }
 
-static int CG_LFuncFont( struct cg_layoutnode_s *commandnode, struct cg_layoutnode_s *argumentnode, int numArguments )
+static int CG_LFuncFontFamily( struct cg_layoutnode_s *commandnode, struct cg_layoutnode_s *argumentnode, int numArguments )
 {
-	struct mufont_s *font = NULL;
+	struct qfontface_s *font;
 	char *fontname = CG_GetStringArg( &argumentnode );
 
-	if( !Q_stricmp( fontname, "con_fontsystemsmall" ) )
+	if( !Q_stricmp( fontname, "con_fontSystem" ) )
 	{
-		font = cgs.fontSystemSmall;
-		Q_strncpyz( layout_cursor_font_name, cgs.fontNameSystemSmall, sizeof( layout_cursor_font_name ) );
-	}
-	else if( !Q_stricmp( fontname, "con_fontsystemmedium" ) )
-	{
-		font = cgs.fontSystemMedium;
-		Q_strncpyz( layout_cursor_font_name, cgs.fontNameSystemMedium, sizeof( layout_cursor_font_name ) );
-	}
-	else if( !Q_stricmp( fontname, "con_fontsystembig" ) )
-	{
-		font = cgs.fontSystemBig;
-		Q_strncpyz( layout_cursor_font_name, cgs.fontNameSystemBig, sizeof( layout_cursor_font_name ) );
+		Q_strncpyz( layout_cursor_font_name, cgs.fontSystemFamily, sizeof( layout_cursor_font_name ) );
 	}
 	else
 	{
-		font = trap_SCR_RegisterFont( fontname );
 		Q_strncpyz( layout_cursor_font_name, fontname, sizeof( layout_cursor_font_name ) );
 	}
 
+	font = trap_SCR_RegisterFont( layout_cursor_font_name, layout_cursor_font_style, layout_cursor_font_size );
+	if( font )
+	{
+		layout_cursor_font = font;
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+static int CG_LFuncFontSize( struct cg_layoutnode_s *commandnode, struct cg_layoutnode_s *argumentnode, int numArguments )
+{
+	struct qfontface_s *font;
+	char *fontsize = CG_GetStringArg( &argumentnode );
+
+	if( !Q_stricmp( fontsize, "con_fontsystemsmall" ) )
+	{
+		layout_cursor_font_size = cgs.fontSystemSmallSize;
+	}
+	else if( !Q_stricmp( fontsize, "con_fontsystemmedium" ) )
+	{
+		layout_cursor_font_size = cgs.fontSystemMediumSize;
+	}
+	else if( !Q_stricmp( fontsize, "con_fontsystembig" ) )
+	{
+		layout_cursor_font_size = cgs.fontSystemBigSize;
+	}
+	else
+	{
+		layout_cursor_font_size = atoi( fontsize );
+	}
+
+	font = trap_SCR_RegisterFont( layout_cursor_font_name, layout_cursor_font_style, layout_cursor_font_size );
+	if( font )
+	{
+		layout_cursor_font = font;
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+static int CG_LFuncFontStyle( struct cg_layoutnode_s *commandnode, struct cg_layoutnode_s *argumentnode, int numArguments )
+{
+	struct qfontface_s *font;
+	char *fontstyle = CG_GetStringArg( &argumentnode );
+
+	if( !Q_stricmp( fontstyle, "normal" ) )
+	{
+		layout_cursor_font_style = QFONT_STYLE_NONE;
+	}
+	else if( !Q_stricmp( fontstyle, "italic" ) )
+	{
+		layout_cursor_font_style = QFONT_STYLE_ITALIC;
+	}
+	else if( !Q_stricmp( fontstyle, "bold" ) )
+	{
+		layout_cursor_font_style = QFONT_STYLE_BOLD;
+	}
+	else if( !Q_stricmp( fontstyle, "bold-italic" ) )
+	{
+		layout_cursor_font_style = (qfontstyle_t)(QFONT_STYLE_BOLD | QFONT_STYLE_ITALIC);
+	}
+	else
+	{
+		CG_Printf( "WARNING 'CG_LFuncFontStyle' Unknown font style '%s'", fontstyle );
+	}
+
+	font = trap_SCR_RegisterFont( layout_cursor_font_name, layout_cursor_font_style, layout_cursor_font_size );
 	if( font )
 	{
 		layout_cursor_font = font;
@@ -2078,10 +2138,26 @@ static cg_layoutcommand_t cg_LayoutCommands[] =
 	},
 
 	{
-		"setFont",
-		CG_LFuncFont,
+		"setFontFamily",
+		CG_LFuncFontFamily,
 		1,
-		"Sets font by font name. Accepts 'con_fontsystemsmall', 'con_fontsystemmedium' and 'con_fontsystembig' as shortcut to default game fonts.",
+		"Sets font by font family. Accepts 'con_fontSystem', as a shortcut to default game font family.",
+		qfalse
+	},
+
+	{
+		"setFontSize",
+		CG_LFuncFontSize,
+		1,
+		"Sets font by font name. Accepts 'con_fontSystemSmall', 'con_fontSystemMedium' and 'con_fontSystemBig' as shortcuts to default game fonts sizes.",
+		qfalse
+	},
+
+	{
+		"setFontStyle",
+		CG_LFuncFontStyle,
+		1,
+		"Sets font style. Possible values are: 'normal', 'italic', 'bold' and 'bold-italic'.",
 		qfalse
 	},
 
@@ -3536,8 +3612,11 @@ static void CG_LoadStatusBarFile( char *path )
 	CG_Free( opt );
 
 	// set up layout font as default system font
-	layout_cursor_font = trap_SCR_RegisterFont( DEFAULT_FONT_SMALL );
+	Q_strncpyz( layout_cursor_font_name, DEFAULT_SYSTEM_FONT_FAMILY, sizeof( layout_cursor_font_name ) );
+	layout_cursor_font_style = QFONT_STYLE_NONE;
+	layout_cursor_font_size = DEFAULT_SYSTEM_FONT_SMALL_SIZE;
 
+	layout_cursor_font = trap_SCR_RegisterFont( layout_cursor_font_name, layout_cursor_font_style, layout_cursor_font_size );
 	for( i = 0; i < WEAP_TOTAL-1; i++ )
 	{
 		customWeaponPics[i] = NULL;

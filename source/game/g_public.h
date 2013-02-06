@@ -186,8 +186,8 @@ typedef struct
 
 	// a fake client connection, ClientConnect is called afterwords
 	// with fakeClient set to true
-	int ( *FakeClientConnect )( char *fakeUserinfo, char *fakeSocketType, char *fakeIP );
-	void ( *DropClient )( struct edict_s *ent, int type, char *message );
+	int ( *FakeClientConnect )( char *fakeUserinfo, char *fakeSocketType, const char *fakeIP );
+	void ( *DropClient )( struct edict_s *ent, int type, const char *message );
 	int ( *GetClientState )( int numClient );
 	void ( *ExecuteClientThinks )( int clientNum );
 

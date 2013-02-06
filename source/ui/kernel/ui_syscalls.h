@@ -168,31 +168,31 @@ namespace trap
 			UI_IMPORT.S_StopBackgroundTrack ();
 		}
 
-		inline struct mufont_s *SCR_RegisterFont( const char *name ) {
-			return UI_IMPORT.SCR_RegisterFont( name );
+		inline struct qfontface_s *SCR_RegisterFont( const char *name, qfontstyle_t style, unsigned int size ) {
+			return UI_IMPORT.SCR_RegisterFont( name, style, size );
 		}
 
-		inline void SCR_DrawString( int x, int y, int align, const char *str, struct mufont_s *font, vec4_t color ) {
+		inline void SCR_DrawString( int x, int y, int align, const char *str, struct qfontface_s *font, vec4_t color ) {
 			UI_IMPORT.SCR_DrawString( x, y, align, str, font, color );
 		}
 
-		inline int SCR_DrawStringWidth( int x, int y, int align, const char *str, int maxwidth, struct mufont_s *font, vec4_t color ) {
+		inline size_t SCR_DrawStringWidth( int x, int y, int align, const char *str, size_t maxwidth, struct qfontface_s *font, vec4_t color ) {
 			return UI_IMPORT.SCR_DrawStringWidth( x, y, align, str, maxwidth, font, color );
 		}
 
-		inline void SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct mufont_s *font, vec4_t color ) {
+		inline void SCR_DrawClampString( int x, int y, const char *str, int xmin, int ymin, int xmax, int ymax, struct qfontface_s *font, vec4_t color ) {
 			UI_IMPORT.SCR_DrawClampString( x, y, str, xmin, ymin, xmax, ymax, font, color );
 		}
 
-		inline size_t SCR_strHeight( struct mufont_s *font ) {
+		inline size_t SCR_strHeight( struct qfontface_s *font ) {
 			return UI_IMPORT.SCR_strHeight( font );
 		}
 
-		inline size_t SCR_strWidth( const char *str, struct mufont_s *font, int maxlen ) {
+		inline size_t SCR_strWidth( const char *str, struct qfontface_s *font, size_t maxlen ) {
 			return UI_IMPORT.SCR_strWidth( str, font, maxlen );
 		}
 
-		inline size_t SCR_StrlenForWidth( const char *str, struct mufont_s *font, size_t maxwidth ) {
+		inline size_t SCR_StrlenForWidth( const char *str, struct qfontface_s *font, size_t maxwidth ) {
 			return UI_IMPORT.SCR_StrlenForWidth( str, font, maxwidth );
 		}
 
