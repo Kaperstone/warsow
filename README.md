@@ -13,7 +13,7 @@ Our goal is to offer a fast and fun competitive first-person shooter without
 hard graphical violence - Warsow has no blood or guts flying around. Red stars
 instead of blood indicate hits and colored cubes replace guts as gib effects.
 
-More information: http://www.warsow.net/
+More information: http://www.warsow.net/.
 
 # This repository
 
@@ -21,7 +21,8 @@ The intention of this mirror is to make it easier to create and maintain mods
 if you like to use GitHub, as well as enabling you to reference sections of the
 code and to track the changes developers have made each version.
 
-This is not an official repository.
+This is not an official repository. For official development on the engine
+behind Warsow, see https://github.com/viciious/qfusion.
 
 ## Branches
 
